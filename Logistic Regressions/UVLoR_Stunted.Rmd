@@ -1,0 +1,14 @@
+---
+title: "UVLoR_Stunted"
+author: "Jim Perry"
+date: "5/25/2022"
+output: pdf_document
+---
+
+Unbalanced:
+```{r}
+```
+
+SMOTE:
+```{r}
+```

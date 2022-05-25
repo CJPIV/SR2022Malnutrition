@@ -1,0 +1,15 @@
+---
+title: "MVLoR_Stunted"
+author: "Jim Perry"
+date: "5/25/2022"
+output: pdf_document
+---
+
+Unbalanced:
+```{r}
+stunting = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/stunting.csv")
+```
+
+SMOTE:
+```{r}
+```
