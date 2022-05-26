@@ -4,9 +4,9 @@ author: "Jim Perry"
 date: "5/25/2022"
 output: pdf_document
 ---
-
+1036 total samples collected.
+133 variables.
 ```{r setup, include=FALSE}
-stunting = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/stunting.csv")
-thinness = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/thinness.csv")
+raw = read.xlsx("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/Gut-Microbiome electronic data in the Data entry format_ZM_Final checked_14092021.xlsx")
 #98 total factors measured
 ```
