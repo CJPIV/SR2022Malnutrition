@@ -18,10 +18,10 @@ thinness = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research
 ```{r ReliefF}
 library(FSelectorRcpp)
 relF = relief(Stunting~., stunting, neighboursCount = 5)
-sorted_relF_Stunting = relF[order(relF$importance), ] #returns a list of important features and their ranking
+FS_relF_Stunting = relF[order(relF$importance), ] #returns a list of important features and their ranking
 
 relF = relief(Thinness~., thinness, neighboursCount = 5)
-sorted_relF_Thinness = relF[order(relF$importance), ]
+FS_relF_Thinness = relF[order(relF$importance), ]
 ```
 
 ```{r InfoGain}
@@ -29,10 +29,10 @@ sorted_relF_Thinness = relF[order(relF$importance), ]
 library(FSelectorRcpp)
 
 infogain = information_gain(Stunting~., data = stunting, type = 'infogain')
-sorted_Info_Stunting = infogain[order(infogain$importance), ] #returns a list of important features and their ranking
+FS_InfoG_Stunting = infogain[order(infogain$importance), ] #returns a list of important features and their ranking
 
 infogain = information_gain(Thinness~., data = thinness, type = 'infogain')
-sorted_Info_Thinness = infogain[order(infogain$importance), ]
+FS_InfoG_Thinness = infogain[order(infogain$importance), ]
 ```
 
 ```{r mRMR}
@@ -40,13 +40,16 @@ sorted_Info_Thinness = infogain[order(infogain$importance), ]
 library(mRMRe)
 
 mrmr = mRMR.data(data = stunting)
-sortedMRMR = mRMR.classic(data = mrmr)
+FS_MRMR_Stunting = mRMR.classic(data = mrmr)
+
+mrmr = mRMR.data(data = thinness)
+FS_MRMR_Thinness = mRMR.classic(data = mrmr)
 ```
 
 ```{r JMI}
 
 ```
-
+'
 ```{r Univariate Logistic Regression}
 library(dplyr)       # For data manipulation (dplyr) 
 library(broom)       # For making model summary tidy
@@ -92,6 +95,7 @@ model_logi_thinness = glm(Thinness~., data=thinness, family = "binomial")       
 #summary(model_logi)
 tidy(model_logi_thinness, exponentiate = TRUE, conf.level = 0.95)
 ```
+'
 
 ```{r Literature-based selection}
 
