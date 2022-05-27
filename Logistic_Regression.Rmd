@@ -38,6 +38,7 @@ MV_logi = glm(paste(responseVar," ~ ",
                        #list(names(dependent)),
                        columns_formula,
                        sep = ""), data = data, family = "binomial")
+#p.adjust(summary(MV_logi)$coefficients[1:length(columns)-1,4],method = "BH") #already accounted for
 summary(MV_logi)
 #exp(confint(MV_logi, columns))
 tidy(MV_logi, exponentiate = TRUE, conf.level = 0.95)
