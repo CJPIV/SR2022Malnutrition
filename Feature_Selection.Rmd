@@ -4,4 +4,95 @@ author: "Jim Perry"
 date: "5/25/2022"
 output: pdf_document
 ---
+This R script includes feature selection methods that were used to determine 
+important features for RandomForest and SVM classification and association rule
+learning. The returned features from this list were later used in the 
+classification and ARL R scripts.
+All scripts run Stunting data first, then Thinness.
 
+```{r DATA IMPORTATION}
+stunting = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/forFS_Stunting.csv")
+thinness = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/forFS_Thinness.csv")
+```
+
+```{r ReliefF}
+library(FSelectorRcpp)
+relF = relief(Stunting~., stunting, neighboursCount = 5)
+sorted_relF_Stunting = relF[order(relF$importance), ] #returns a list of important features and their ranking
+
+relF = relief(Thinness~., thinness, neighboursCount = 5)
+sorted_relF_Thinness = relF[order(relF$importance), ]
+```
+
+```{r InfoGain}
+#install.packages("FSelectorRcpp")
+library(FSelectorRcpp)
+
+infogain = information_gain(Stunting~., data = stunting, type = 'infogain')
+sorted_Info_Stunting = infogain[order(infogain$importance), ] #returns a list of important features and their ranking
+
+infogain = information_gain(Thinness~., data = thinness, type = 'infogain')
+sorted_Info_Thinness = infogain[order(infogain$importance), ]
+```
+
+```{r mRMR}
+#install.packages("mRMRe")
+library(mRMRe)
+
+mrmr = mRMR.data(data = stunting)
+sortedMRMR = mRMR.classic(data = mrmr)
+```
+
+```{r JMI}
+
+```
+
+```{r Univariate Logistic Regression}
+library(dplyr)       # For data manipulation (dplyr) 
+library(broom)       # For making model summary tidy
+library(visreg)      # For plotting logodds and probability 
+library(rcompanion)  # To calculate pseudo R-squared
+library(MASS)        # For stepwise model selection
+library(ROCR)        # To find the probability threshold for best accuracy
+library(car)         # For multicollinearity function vif()
+
+LoR_Stunting = read.csv('C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/stunting.csv')
+
+#Train/test splits
+set.seed(13)  
+train_indices = sample(1:n, 0.9*nrow(LM_data))  # Create a vector of indices which is an 90% random sample
+train = LM_data[train_indices, ]     # Subset the Diabetes data frame to training indices only
+test = LM_data[-train_indices, ]     # Exclude the training indices to create the test data set
+paste("train sample size: ", dim(train)[1])   # Training sample size
+paste("test sample size: ", dim(test)[1])     # Test sample size
+```
+
+```{r Multivariate Logistic Regression}
+LoR_Stunting = read.csv('C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/stunting.csv')
+
+#Create train/test splits
+set.seed(13)  
+train_indices = sample(1:nrow(stunting), 0.9*nrow(stunting))  # Create a vector of indices which is an 90% random sample
+train = stunting[train_indices, ]     # Subset the Stunting data frame to training indices only
+test = stunting[-train_indices, ]     # Exclude the training indices to create the test data set
+#paste("train sample size: ", dim(train)[1])   # Training sample size
+#paste("test sample size: ", dim(test)[1])     # Test sample size
+model_logi_stunting = glm(Stunting~., data=stunting, family = "binomial")         # Fitting a binary logistic regression
+#summary(model_logi)
+tidy(model_logi_stunting, exponentiate = TRUE, conf.level = 0.95)
+
+#Create train/test splits
+set.seed(13)  
+train_indices = sample(1:nrow(thinness), 0.9*nrow(thinness))  # Create a vector of indices which is an 90% random sample
+train = thinness[train_indices, ]     # Subset the thinness data frame to training indices only
+test = thinness[-train_indices, ]     # Exclude the training indices to create the test data set
+#paste("train sample size: ", dim(train)[1])   # Training sample size
+#paste("test sample size: ", dim(test)[1])     # Test sample size
+model_logi_thinness = glm(Thinness~., data=thinness, family = "binomial")         # Fitting a binary logistic regression
+#summary(model_logi)
+tidy(model_logi_thinness, exponentiate = TRUE, conf.level = 0.95)
+```
+
+```{r Literature-based selection}
+
+```
