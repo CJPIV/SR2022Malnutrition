@@ -27,7 +27,7 @@ columns_grouped = list(c('Age'), c('HouseholdNumb'), c('NumbOldSib'), c('Young12
 responseVar = names(data[ncol(data)])
 ```
 
-```{r Multivariate Logistic Regression}
+```{r Multivariate Logistic Regression, warning = FALSE}
 #this is the vector with all the columns, for multivariate analysis.
 columns = unlist(columns_grouped)
 options(scipen=999)
@@ -38,6 +38,9 @@ MV_logi = glm(paste(responseVar," ~ ",
                        #list(names(dependent)),
                        columns_formula,
                        sep = ""), data = data, family = "binomial")
+summary(MV_logi)
+#exp(confint(MV_logi, columns))
+tidy(MV_logi, exponentiate = TRUE, conf.level = 0.95)
 
 #This code writes the results to multiple csv files.
 # write.csv(cbind(attr((MV_logi$terms), "term.labels"),
@@ -47,20 +50,22 @@ MV_logi = glm(paste(responseVar," ~ ",
 #                 exp(confint(MV_logi))[1:length(columns)+1, 1:2]),
 #           file = "STH_multi.csv", row.names = F)
 
-write.csv(cbind(attr((MV_logi$terms), "term.labels"),
-                summary(MV_logi)$coefficients[1:length(columns),4], #OOB
-                exp(summary(MV_logi)$coef[1:length(columns)]),
-                exp(confint(MV_logi))[1:length(columns), 1:2]),
+
+
+write.csv(cbind(attr((MV_logi$terms), "term.labels"), #Variable names
+                summary(MV_logi)$coefficients[1:length(columns)-1,4], #OOB
+                exp(summary(MV_logi)$coef[1:length(columns)]), #OR
+                exp(confint(MV_logi))[1:length(columns), 1:2]), #OR CI
           file = paste("MVLoR_",responseVar,".csv", sep = ""), row.names = F)
 ```
 
-```{r Univariate Logistic Regression}
+```{r Univariate Logistic Regression, warning = FALSE}
 #This code creates blank data frames for univariate logistic regression models.
-df_uni = data.frame(Variable_Name=character(),
+UV_logi_DF = data.frame(Variable_Name=character(),
                          C_Odds_Ratio=numeric(),
                          Conf_025=numeric(),
                          Conf_975=numeric(),
-                         P_Value_uni=numeric()
+                         P_Value=numeric()
                          )
 
 #This code performs univariate analysis (by groups), and then appends the results
@@ -78,33 +83,32 @@ for (i in 1:length(columns_grouped)){
   for (j in 1:length(vec)){
     print(j)
     uni <- c(trm[j],
-                 (exp(summary(uni_model)$coef[j,][1])),
-                 exp((confint(uni_model)[j,])),
-                 (summary(uni_model)$coef[j,][4])
+                 (exp(summary(uni_model)$coef[j,][1])), #OR
+                 exp((confint(uni_model)[j,])), #OR CI
+                 (summary(uni_model)$coef[j,][4]) #p-value
                  )
-    df_uni[nrow(df_uni) + 1,] = uni
+    UV_logi_DF[nrow(UV_logi_DF) + 1,] = uni
   }
 }
 
 #This replaces NAs with 0 (in case the probabilities could not fit to 0 or 1)
-df_uni[is.na(df_uni)] <- 0
+UV_logi_DF[is.na(UV_logi_DF)] <- 0
 #Adjusting the p-values
-df_uni$P_Value_uni = p.adjust(df_uni$P_Value_uni)#, method = "BH")
-#df_uni_Par$P_Value_uni = p.adjust(df_uni_Par$P_Value_uni)#, method = "BH")
+UV_logi_DF$P_Value = p.adjust(UV_logi_DF$P_Value)#, method = "BH")
 #This writes the results to csv files.
-write.csv(df_uni, file = paste("UVLoR_",responseVar,".csv", sep = ""), row.names = FALSE)
+write.csv(UV_logi_DF, file = paste("UVLoR_",responseVar,".csv", sep = ""), row.names = FALSE)
 
 #This code is optional, for visual ease. 
-create_table <- function(dataframe, label) {
-  kableExtra::kable_styling(knitr::kable(dataframe[dataframe$P_Value <= 0.05,],
-                                         booktabs = TRUE, 
-                                         caption = label
-                                         ),
-                            font_size = 10
-                            )
-}
+#create_table <- function(dataframe, label) {
+#  kableExtra::kable_styling(knitr::kable(dataframe[dataframe$P_Value <= 0.05,],
+#                                         booktabs = TRUE, 
+#                                         caption = label
+#                                         ),
+#                            font_size = 10
+#                            )
+#}
 
-#create_table(df_uni_Helm, "Helm")
+#create_table(UV_logi_DF, responseVar)
 
 #This code finds the frequencies of positive and negative cases for each risk factor
 df_counts = data.frame(Var_name = character(), 
@@ -126,6 +130,7 @@ for (i in 1:length(columns)){
 }
 
 #This prints the results to a csv file.
-write.csv(df_counts, file = paste("UVLoR_",responseVar,".csv", sep = ""), 
+write.csv(df_counts, 
+          file = paste("CaseFrequency_",responseVar,".csv", sep = ""), 
           row.names = FALSE)
 ```
