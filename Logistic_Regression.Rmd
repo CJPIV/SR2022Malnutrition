@@ -1,0 +1,131 @@
+---
+title: "Logistic Regression"
+author: "Jim Perry"
+date: "5/26/2022"
+output: pdf_document
+---
+
+```{r Data Preparation}
+datasets = c("stunting", "thinness")
+#for (dependent in datasets){ #Perform univariate logistic regression for every
+                               #dependent variable.
+dependent = 'stunting'
+fileLoc = paste("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/",dependent,".csv", sep = "")
+
+data = read.csv(fileLoc)
+
+#here the columns are grouped if they were one-hot encoded from one categorical
+#column. This is necessary for univariate logistic regression analysis. This
+#must be done by hand.
+
+columns_grouped = list(c('Age'), c('HouseholdNumb'), c('NumbOldSib'), c('Young12'), c('FeverPWeek'), c('DiarrheaPWeek'), c('CoughPWeek'), c('DistLatHouse'), c('DistLatKitch'), c('WeeksDeworming'), c('Sex'), c('VaginalDeliv'), c('Csection'), c('No.Vaccine'), c('NoBCG'), c('Fever'), c('Diarrhea'), c('Cough'), c('NoTrimNails'), c('DirtyNails'), c('TrimOnce2Week'), c('TrimOnceMonth'), c('NoLatDoors'), c('Flies'), c('StoolFloor'), c('Suburban'), c('Rural'), c('NoLitMom'), c('PrimMom'), c('HSMom'), c('KitchSep'), c('KitchRoof'), c('KitchWall'), c('CookWood'), c('CookGas'), c('CookCoal'), c('CookKerosine'), c('CookElectric'), c('NoElect'), c('Radio'), c('TV'), c('Phone'), c('Cattle'), c('SheepGoat'), c('Chicken'), c('Pet'), c('None'), c('PotableWater'), c('DrinkDirect'), c('OwnLatrine'), c('Outside.Latrine'), c('Sewage'), c('Ditch'), c('River'), c('SometimesBathRiv'), c('NeverBathRiv'), c('SometimesWashCloth'), c('NeverWashCloth'), c('AlwaysDeficate'), c('SometimesDeficate'), c('AlwaysSchoolLat'), c('SometimesSchoolLat'), c('SometimesTP'), c('NeverTP'), c('SometimesWashHands'), c('NeverWashHands'), c('WaterWashHands'), c('AlwashHandsEating'), c('SometimesHandsEating'), c('WaterWashEat'), c('AlwaysSoil'), c('SometimesSoil'), c('NeverWashFruits'), c('SometimesWashFruits'), c('SometimesRawVeg'), c('AlwaysRawVeg'), c('SometimesBarefoot'), c('AlwaysBarefoot'), c('NoShoes'), c('Sandals'), c('Deworm'), c('Antibiotic'), c('Drugs'), c('Antimalarial'), c('Wheezing',
+                                                  'Wheezing0y',
+                                                  'Wheezing0y.1'),c('Wheeze13'), c('Wheeze412'), c('Asthma', 
+                  'Asthma0y',
+                  'Asthma0y.1'),c('NoDoctCon'), c('Rash'), c('Sneeze'), c('HayFever'), c('Colds')) 
+    
+responseVar = names(data[ncol(data)])
+```
+
+```{r Multivariate Logistic Regression}
+#this is the vector with all the columns, for multivariate analysis.
+columns = unlist(columns_grouped)
+options(scipen=999)
+
+#This code performs the multivariate logistic regressions for each outcome.
+columns_formula = paste(columns, collapse = "+")
+MV_logi = glm(paste(responseVar," ~ ", 
+                       #list(names(dependent)),
+                       columns_formula,
+                       sep = ""), data = data, family = "binomial")
+
+#This code writes the results to multiple csv files.
+# write.csv(cbind(attr((MV_logi$terms), "term.labels"),
+#                 p.adjust(summary(MV_logi)$coefficients[1:length(columns)+1,4],
+#                          method = "BH"),
+#                 exp(summary(MV_logi)$coef[1:length(columns)+1]),
+#                 exp(confint(MV_logi))[1:length(columns)+1, 1:2]),
+#           file = "STH_multi.csv", row.names = F)
+
+write.csv(cbind(attr((MV_logi$terms), "term.labels"),
+                summary(MV_logi)$coefficients[1:length(columns),4], #OOB
+                exp(summary(MV_logi)$coef[1:length(columns)]),
+                exp(confint(MV_logi))[1:length(columns), 1:2]),
+          file = paste("MVLoR_",responseVar,".csv", sep = ""), row.names = F)
+```
+
+```{r Univariate Logistic Regression}
+#This code creates blank data frames for univariate logistic regression models.
+df_uni = data.frame(Variable_Name=character(),
+                         C_Odds_Ratio=numeric(),
+                         Conf_025=numeric(),
+                         Conf_975=numeric(),
+                         P_Value_uni=numeric()
+                         )
+
+#This code performs univariate analysis (by groups), and then appends the results
+#to the data frames made in the above code.
+for (i in 1:length(columns_grouped)){
+  vec = unlist(columns_grouped[i])
+  factor = paste(vec,
+            collapse = "+"
+            )
+  uni_model = glm(paste(responseVar, " ~ ", factor, sep = ""),
+                      data = data,
+                      family ="binomial"
+                      )
+  trm <- attr(uni_model$terms, "term.labels")
+  for (j in 1:length(vec)){
+    print(j)
+    uni <- c(trm[j],
+                 (exp(summary(uni_model)$coef[j,][1])),
+                 exp((confint(uni_model)[j,])),
+                 (summary(uni_model)$coef[j,][4])
+                 )
+    df_uni[nrow(df_uni) + 1,] = uni
+  }
+}
+
+#This replaces NAs with 0 (in case the probabilities could not fit to 0 or 1)
+df_uni[is.na(df_uni)] <- 0
+#Adjusting the p-values
+df_uni$P_Value_uni = p.adjust(df_uni$P_Value_uni)#, method = "BH")
+#df_uni_Par$P_Value_uni = p.adjust(df_uni_Par$P_Value_uni)#, method = "BH")
+#This writes the results to csv files.
+write.csv(df_uni, file = paste("UVLoR_",responseVar,".csv", sep = ""), row.names = FALSE)
+
+#This code is optional, for visual ease. 
+create_table <- function(dataframe, label) {
+  kableExtra::kable_styling(knitr::kable(dataframe[dataframe$P_Value <= 0.05,],
+                                         booktabs = TRUE, 
+                                         caption = label
+                                         ),
+                            font_size = 10
+                            )
+}
+
+#create_table(df_uni_Helm, "Helm")
+
+#This code finds the frequencies of positive and negative cases for each risk factor
+df_counts = data.frame(Var_name = character(), 
+                       true_count = character(),
+                       false_count = character())
+
+for (i in 1:length(columns)){
+  v = c(columns[i], 
+        paste(length(which(data[columns[i]] == 1 & data[responseVar] == 1)),
+        " (",round(length(which(data[columns[i]] == 1 & 
+        data[responseVar]==1)) / length(which(data[columns[i]] == 1))*100,1),
+        ")%",
+        sep =""),
+        paste(length(which(data[columns[i]] == 1 & data[responseVar]==0)),
+        " (",
+        round(length(which(data[columns[i]] == 1))))
+        )
+  df_counts[nrow(df_counts) + 1,] = v
+}
+
+#This prints the results to a csv file.
+write.csv(df_counts, file = paste("UVLoR_",responseVar,".csv", sep = ""), 
+          row.names = FALSE)
+```
