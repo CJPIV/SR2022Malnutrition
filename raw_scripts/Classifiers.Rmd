@@ -1,20 +1,29 @@
 ---
-title: "Logistic Regression"
+title: "Classifiers"
 author: "Jim Perry"
-date: "5/26/2022"
+date: "5/30/2022"
 output: pdf_document
 ---
 
-```{r Data Preparation}
+```{r Random Forest (RF)}
+```
+
+```{r Support Vector Machine (SVM)}
+```
+
+```{r Extreme Gradient Boosting (XGBoost)}
+```
+
+
+```{r Logistic Regression Preparations}
 datasets = c("stunting", "thinness")
-#for (dependent in datasets){ #Perform univariate logistic regression for every
-                               #dependent variable.
-dependent = 'stunting'
+
+#dependent = 'stunting'
 fileLoc = paste("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/",dependent,".csv", sep = "")
 
 data = read.csv(fileLoc)
 
-#here the columns are grouped if they were one-hot encoded from one categorical
+#here the columns are grouped if they were one-hot encoded separately from one categorical
 #column. This is necessary for univariate logistic regression analysis. This
 #must be done by hand.
 
@@ -28,6 +37,7 @@ responseVar = names(data[ncol(data)])
 ```
 
 ```{r Multivariate Logistic Regression, warning = FALSE}
+for (dependent in datasets){
 #this is the vector with all the columns, for multivariate analysis.
 options(scipen=50)
 columns = unlist(columns_grouped)
@@ -49,14 +59,21 @@ tidy(MV_logi, exponentiate = TRUE, conf.level = 0.95) #turns logodds to odds, ma
 #           file = paste("MVLoR",responseVar,".csv",sep=""),
 #                  row.names = F)
 
+"
+P-VALUES IN .csv ARE SHIFTED ONE BLOCK DOWN; ASK AZIZ.
+Doesn't want to output anything for last variable; somehow OOB.
+"
 write.csv(cbind(attr((MV_logi$terms), "term.labels"), #Variable names
-                summary(MV_logi)$coefficients[1:length(columns)-1,4], #OOB
-                exp(summary(MV_logi)$coef[1:length(columns)+1]), #OR
+                summary(MV_logi)$coefficients[1:length(columns)+1,4], #p-vals
+                exp(summary(MV_logi)$coef[1:length(columns)+1]), #odds ratio -1
                 exp(confint(MV_logi))[1:length(columns)+1, 1:2]), #OR CI
           file = paste("MVLoR_",responseVar,".csv", sep = ""), row.names = F)
+}
 ```
 
+
 ```{r Univariate Logistic Regression, warning = FALSE}
+for (dependent in datasets){
 #This code creates blank data frames for univariate logistic regression models.
 UV_logi_DF = data.frame(Variable_Name=character(),
                          C_Odds_Ratio=numeric(),
@@ -93,41 +110,10 @@ UV_logi_DF[is.na(UV_logi_DF)] <- 0
 #Adjusting the p-values
 UV_logi_DF$P_Value = p.adjust(UV_logi_DF$P_Value)#, method = "BH")
 #This writes the results to csv files.
-write.csv(UV_logi_DF, file = paste("UVLoR_",responseVar,".csv", sep = ""), row.names = FALSE)
-
-#This code is optional, for visual ease. 
-#create_table <- function(dataframe, label) {
-#  kableExtra::kable_styling(knitr::kable(dataframe[dataframe$P_Value <= 0.05,],
-#                                         booktabs = TRUE, 
-#                                         caption = label
-#                                         ),
-#                            font_size = 10
-#                            )
-#}
-
-#create_table(UV_logi_DF, responseVar)
-```
-#This code finds the frequencies of positive and negative cases for each risk factor
-df_counts = data.frame(Var_name = character(), 
-                       true_count = character(),
-                       false_count = character())
-
-for (i in 1:length(columns)){
-  v = c(columns[i], 
-        paste(length(which(data[columns[i]] == 1 & data[responseVar] == 1)),
-        " (",round(length(which(data[columns[i]] == 1 & 
-        data[responseVar]==1)) / length(which(data[columns[i]] == 1))*100,1),
-        ")%",
-        sep =""),
-        paste(length(which(data[columns[i]] == 1 & data[responseVar]==0)),
-        " (",
-        round(length(which(data[columns[i]] == 1))))
-        )
-  df_counts[nrow(df_counts) + 1,] = v
-}
-
-#This prints the results to a csv file.
-write.csv(df_counts, 
-          file = paste("CaseFrequency_",responseVar,".csv", sep = ""), 
+write.csv(UV_logi_DF,
+          file = paste("UVLoR_",responseVar,".csv", sep = ""),
           row.names = FALSE)
+}
 ```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

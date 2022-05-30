@@ -1,0 +1,34 @@
+## ----Setup------------------------------------------------------------------------------
+#####
+# Prepares child documents for future use.
+#####
+library(purrr)
+
+sections.path = file.path(rprojroot::find_root("SR2022Malnutrition.Rproj"))
+r.files.vec <- list.files(sections.path)
+r.files.vec <- r.files.vec[grepl(".Rmd", r.files.vec)]
+
+scripts.path <- file.path(rprojroot::find_root("SR2022Malnutrition.Rproj"),
+                           "raw_scripts")
+
+purrr::map(r.files.vec, function(file.i) {
+  # print(file.i)
+  file.name <- gsub(".Rmd", "", file.i)
+  scripts.file <- paste0(file.name, ".Rmd")
+  knitr::purl(
+    file.path(sections.path, file.i),
+    file.path(scripts.path, scripts.file)
+    )
+})
+
+source.vec <- c(
+  "Preprocessing.Rmd",
+  "Feature_Selection.Rmd",
+  "Classifiers",
+  "Association_Rule_Learning",
+)
+
+purrr::map(source.vec, function(source.i) {
+  source(file.path(scripts.path, source.i))
+})
+

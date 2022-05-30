@@ -1,0 +1,93 @@
+---
+title: "Malnutrition Masterscript"
+author: "Jim Perry"
+date: "5/30/2022"
+output: pdf_document
+---
+
+```{r Train/Test Splits}
+#####
+# Prepares train/test splits for use in feature selection and classifier model training.
+#####
+library(caret)
+library(tidyverse)
+#library(performanceEstimation)
+library(smotefamily)
+
+stunting = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/stunting.csv")
+thinness = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/thinness.csv")
+
+set.seed(13)
+folds = createFolds(stunting$Stunting, k = 10) #Create k splits
+testSets = list(stunting[folds$Fold01, ], stunting[folds$Fold02, ], stunting[folds$Fold03, ],
+                stunting[folds$Fold04, ], stunting[folds$Fold05, ], stunting[folds$Fold06, ],
+                stunting[folds$Fold07, ], stunting[folds$Fold08, ], stunting[folds$Fold09, ],
+                stunting[folds$Fold10, ]
+                )
+trainSetsUB = list(stunting[-folds$Fold01, ], stunting[-folds$Fold02, ],
+                   stunting[-folds$Fold03, ], stunting[-folds$Fold04, ],
+                   stunting[-folds$Fold05, ], stunting[-folds$Fold06, ],
+                   stunting[-folds$Fold07, ], stunting[-folds$Fold08, ],
+                   stunting[-folds$Fold09, ], stunting[-folds$Fold10, ]
+                   )
+trainSetsSMOTE = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  trainSetsSMOTE[[i]] = SMOTE(X = as.data.frame(trainSetsUB[[1]]),
+                              target = trainSetsUB[[1]]$Stunting,
+                              K = 5,
+                              dup_size = 3
+                              )
+}
+
+barplot(prop.table(table(trainSetsUB[[1]]$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'Stunting Training Set Class Distribution (Unbalanced)')
+
+barplot(prop.table(table(trainSetsSMOTE[[1]]$data$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'Stunting Training Set Class Distribution (SMOTE)')
+
+# Following code writes each training set to its own .csv files for use in other scripts.
+#####
+# FS_UB_Stunting = rbind(testSets[1:10])
+# FS_SMOTE_Stunting = rbind(trainSetsSMOTE[1:10])
+# write.csv(FS_UB_Stunting, "FS_UB_Stunting.csv")
+# write.csv(FS_SMOTE_Stunting, "FS_SMOTE_Stunting.csv")
+```
+
+```{r Feature Selection}
+#####
+# Selects important model features to reduce noise and help prevent overfitting.
+#####
+#InfoGain
+library(FSelectorRcpp)
+
+sortedIG = list()
+for (i in 1:10){
+  infogain = information_gain(Stunting~.,
+                              data = as.data.frame(trainSetsUB[[1]]),
+                              type = 'infogain'
+                              )
+  sortedIG[[i]] = infogain[order(infogain$importance), ]
+}
+#FS_IG_UB = mean(IG[1:10])
+#
+```
+
+```{r Classifier Models}
+
+```
+
+```{r Association Rule Learning}
+
+```
