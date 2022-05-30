@@ -4,14 +4,12 @@ author: "Jim Perry"
 date: "5/30/2022"
 output: pdf_document
 ---
-
+# TRAIN/TEST SPLITS: Prepares train/test splits for use in feature selection and
+# classifier model training.
+#####
 ```{r Train/Test Splits}
-#####
-# Prepares train/test splits for use in feature selection and classifier model training.
-#####
 library(caret)
 library(tidyverse)
-#library(performanceEstimation)
 library(smotefamily)
 
 stunting = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/stunting.csv")
@@ -47,6 +45,7 @@ barplot(prop.table(table(trainSetsUB[[1]]$Stunting)),
         xlab = "Stunting",
         names = c("No", "Yes"),
         main = 'Stunting Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
 
 barplot(prop.table(table(trainSetsSMOTE[[1]]$data$Stunting)),
         col = c("white", "darkgrey"),
@@ -56,7 +55,7 @@ barplot(prop.table(table(trainSetsSMOTE[[1]]$data$Stunting)),
         xlab = "Stunting",
         names = c("No", "Yes"),
         main = 'Stunting Training Set Class Distribution (SMOTE)')
-
+abline(h = 0)
 # Following code writes each training set to its own .csv files for use in other scripts.
 #####
 # FS_UB_Stunting = rbind(testSets[1:10])
@@ -65,29 +64,88 @@ barplot(prop.table(table(trainSetsSMOTE[[1]]$data$Stunting)),
 # write.csv(FS_SMOTE_Stunting, "FS_SMOTE_Stunting.csv")
 ```
 
-```{r Feature Selection}
 #####
-# Selects important model features to reduce noise and help prevent overfitting.
+# FEATURE SELECTION: Selects important model features to reduce noise and help prevent 
+# overfitting.
 #####
-#InfoGain
+```{r ReliefF}
+#This one takes a while.
 library(FSelectorRcpp)
 
-sortedIG = list()
+FS_RLF_UB_Stunting = list()
 for (i in 1:10){
-  infogain = information_gain(Stunting~.,
-                              data = as.data.frame(trainSetsUB[[1]]),
-                              type = 'infogain'
-                              )
-  sortedIG[[i]] = infogain[order(infogain$importance), ]
+  relF = relief(Stunting~.,
+                as.data.frame(trainSetsUB[[i]]),
+                neighboursCount = 5
+                )
+  FS_RLF_UB_Stunting[[i]] = relF[order(relF$importance), ] #returns a list of important features and their ranking
 }
-#FS_IG_UB = mean(IG[1:10])
-#
 ```
 
+```{r InfoGain}
+#This one is pretty quick.
+library(FSelectorRcpp)
+
+FS_IG_UB_Stunting = list()
+for (i in 1:10){
+  infogain = information_gain(formula = Stunting~.,
+                              data = as.data.frame(trainSetsUB[[i]]),
+                              type = 'infogain',
+                              equal = TRUE
+                              )
+  FS_IG_UB_Stunting[[i]] = infogain[order(infogain$importance), ]
+}
+
+FS_IG_SMOTE_Stunting = list()
+for (i in 1:10){
+  infogain = information_gain(formula = Stunting~.,
+                              data = as.data.frame(trainSetsSMOTE[[i]]$data),
+                              type = 'infogain',
+                              equal = TRUE
+                              )
+  FS_IG_SMOTE_Stunting[[i]] = infogain[order(infogain$importance), ] #returns a list of important features and their ranking
+}
+
+```
+
+```{r mRMR}
+library(mRMRe)
+
+mrmr = mRMR.data(data = stunting)
+FS_MRMR_Stunting = mRMR.classic(data = mrmr)
+```
+
+```{r JMI}
+#This one takes a while.
+library(JMI)
+
+FS_JMI_UB_Stunting = list()
+FS_JMI_SMOTE_Stunting = list()
+
+for (i in 1:10){
+  FS_JMI_UB_Stunting[[i]] = JMI(x = trainSetsUB[[i]], 
+                                y = trainSetsUB[[i]]$Stunting
+                                )
+}
+```
+
+```{r Literature-Based}
+FS_LB_UB_Stunting = list()
+FS_LB_SMOTE_Stunting = list()
+FS_LB_UB_Thinness = list()
+FS_LB_SMOTE_Thinness = list()
+```
+
+#####
+# CLASSIFIER MODELS:
+#####
 ```{r Classifier Models}
 
 ```
 
+#####
+# ASSOCIATION RULE LEARNING:
+#####
 ```{r Association Rule Learning}
 
 ```
