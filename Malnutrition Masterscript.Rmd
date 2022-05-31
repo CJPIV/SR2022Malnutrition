@@ -180,11 +180,12 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
 
 #####
 # FEATURE SELECTION: Selects important model features to reduce noise and help 
-# prevent overfitting. All feature selection methods must be run on SMOTE-
+# prevent overfitting. All feature selection methods should be run on SMOTE-
 # balanced datasets.
 #####
 ```{r ReliefF}
-#This one takes a while.
+#In progress
+#This one takes a while
 library(FSelectorRcpp)
 ################################################################################
 FS_RLF_Stunting = list()
@@ -213,7 +214,8 @@ for (i in 1:10){
 ```
 
 ```{r InfoGain}
-#This one is pretty quick.
+#Done!
+#This one is pretty quick
 library(FSelectorRcpp)
 ################################################################################
 FS_IG_Stunting = list()
@@ -245,25 +247,49 @@ for (i in 1:10){
 
 ```{r mRMR}
 library(mRMRe)
-
+#In progress; mRMR finishes selecting, but results should be rewritten for legibility
+#This one is pretty quick
 FS_MRMR_Stunting = list()
 for (i in 1:10){
-  mrmr = mRMR.data(data = sansTestStunting[[i]])
-  FS_MRMR_UB_Stunting = mRMR.classic(data = mrmr)
+  FS_MRMR_Stunting[[i]] = list()
+  for (j in 1:10){
+    mrmr = mRMR.data(data = SMOTEStunting[[i]][[j]]$data)
+    FS_MRMR_Stunting[[i]][[j]] = mRMR.classic("mRMRe.Filter",
+                                              data = mrmr,
+                                              target_indices = 98,
+                                              feature_count = 30
+                                              )
+  }
+}
+################################################################################
+FS_MRMR_Thinness = list()
+for (i in 1:10){
+  FS_MRMR_Thinness[[i]] = list()
+  for (j in 1:10){
+    mrmr = mRMR.data(data = SMOTEThinness[[i]][[j]]$data)
+    FS_MRMR_Thinness[[i]][[j]] = mRMR.classic("mRMRe.Filter",
+                                              data = mrmr,
+                                              target_indices = 98,
+                                              feature_count = 30
+                                              )
+  }
 }
 ```
 
 ```{r JMI}
-#This one takes a while.
-library(JMI)
+#Done!
+#This one takes a while
+library(praznik)
+
 ################################################################################
 FS_JMI_Stunting = list()
 for (i in 1:10){
   FS_JMI_Stunting[[i]] = list()
   for (j in 1:10){
-    FS_JMI_Stunting[[i]][[j]] = JMI(x = SMOTEStunting[[i]][[j]], 
-                                y = SMOTEStunting[[i]][[j]]$data$Stunting
-                                )
+    FS_JMI_Stunting[[i]][[j]] = JMI(SMOTEStunting[[i]][[j]]$data[1:97], 
+                                    SMOTEStunting[[i]][[j]]$data$Stunting,
+                                    k = 30
+                                    )
   }
 }
 ################################################################################
@@ -271,14 +297,17 @@ FS_JMI_Thinness = list()
 for (i in 1:10){
   FS_JMI_Thinness[[i]] = list()
   for (j in 1:10){
-    FS_JMI_Thinness[[i]][[j]] = JMI(x = trainSetsSMOTEThinness[[i]][[j]], 
-                                y = trainSetsSMOTEThinness[[i]][[j]]$data$Thinness
-                                )
+    FS_JMI_Thinness[[i]][[j]] = JMI(SMOTEThinness[[i]][[j]]$data[1:97],
+                                    SMOTEThinness[[i]][[j]]$data$Thinness,
+                                    k = 30
+                                    )
   }
 }
 ```
 
 ```{r Literature-Based}
+#Done!
+#This one is pretty quick (it's almost like there's no computations...)
 FS_LB_Stunting = list(c('Age'), c('HouseholdNumb'), c('NumbOldSib'), c('Young12'),  c('DiarrheaPWeek'), c('Sex'), c('No.Vaccine'),c('NoTrimNails'), c('DirtyNails'), c('TrimOnce2Week'), c('TrimOnceMonth'), c('NoLatDoors'), c('Flies'), c('StoolFloor'), c('Suburban'), c('Rural'), c('NoLitMom'), c('PrimMom'), c('HSMom'), c('Radio'), c('TV'), c('Cattle'), c('SheepGoat'), c('Chicken'), c('Pet'), c('PotableWater'), c('DrinkDirect'), c('OwnLatrine'), c('Outside.Latrine'), c('Sewage'), c('Ditch'), c('River'), c('AlwaysSchoolLat'), c('SometimesSchoolLat'), c('SometimesTP'), c('NeverTP'), c('SometimesWashHands'), c('NeverWashHands'), c('WaterWashHands'), c('AlwaysSoil'), c('SometimesSoil'), c('NeverWashFruits'), c('SometimesWashFruits'), c('SometimesBarefoot'), c('AlwaysBarefoot'), c('NoShoes'), c('Sandals'), c('Deworm'), c('Antibiotic'), c('Drugs'), c('Rash'), c('Sneeze'), c('HayFever'), c('Colds')) 
 
 FS_LB_Thinness = FS_LB_Stunting
