@@ -14,7 +14,8 @@ library(caret)
 library(tidyverse)
 library(smotefamily)
 
-stunting = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/stunting.csv")
+# stunting = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/stunting.csv")
+stunting = read.csv("stunting.csv")
 
 set.seed(13)
 testFolds = createFolds(stunting$Stunting, k = 10) #Create k splits
@@ -61,25 +62,25 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
 
 # Barplots for visualization of class imbalance
 #####
-barplot(prop.table(table(UBStunting[[1]][[1]]$Stunting)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Stunting",
-        names = c("No", "Yes"),
-        main = 'Stunting Training Set Class Distribution (Unbalanced)')
-abline(h = 0)
-
-barplot(prop.table(table(SMOTEStunting[[1]][[1]]$data$Stunting)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Stunting",
-        names = c("No", "Yes"),
-        main = 'Stunting Training Set Class Distribution (SMOTE)')
-abline(h = 0)
+# barplot(prop.table(table(UBStunting[[1]][[1]]$Stunting)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Stunting",
+#         names = c("No", "Yes"),
+#         main = 'Stunting Training Set Class Distribution (Unbalanced)')
+# abline(h = 0)
+# 
+# barplot(prop.table(table(SMOTEStunting[[1]][[1]]$data$Stunting)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Stunting",
+#         names = c("No", "Yes"),
+#         main = 'Stunting Training Set Class Distribution (SMOTE)')
+# abline(h = 0)
 
 
 # Following code writes each training set to its own .csv files if needed in other scripts.
@@ -98,7 +99,8 @@ library(caret)
 library(tidyverse)
 library(smotefamily)
 
-thinness = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/thinness.csv")
+# thinness = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/thinness.csv")
+thinness = read.csv("thinness.csv")
 
 set.seed(13)
 testFolds = createFolds(thinness$Thinness, k = 10) #Create k splits
@@ -145,25 +147,25 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
 
 # Barplots for visualization of class imbalance
 #####
-barplot(prop.table(table(UBThinness[[1]][[1]]$Thinness)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Thinness",
-        names = c("No", "Yes"),
-        main = 'Thinness Training Set Class Distribution (Unbalanced)')
-abline(h = 0)
-
-barplot(prop.table(table(SMOTEThinness[[1]][[1]]$data$Thinness)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Thinness",
-        names = c("No", "Yes"),
-        main = 'Thinness Training Set Class Distribution (SMOTE)')
-abline(h = 0)
+# barplot(prop.table(table(UBThinness[[1]][[1]]$Thinness)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Thinness",
+#         names = c("No", "Yes"),
+#         main = 'Thinness Training Set Class Distribution (Unbalanced)')
+# abline(h = 0)
+# 
+# barplot(prop.table(table(SMOTEThinness[[1]][[1]]$data$Thinness)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Thinness",
+#         names = c("No", "Yes"),
+#         main = 'Thinness Training Set Class Distribution (SMOTE)')
+# abline(h = 0)
 
 # Following code writes each training set to its own .csv files if needed in other scripts.
 #####
@@ -190,7 +192,7 @@ for (i in 1:10){
   FS_RLF_Stunting[[i]] = list()
   for (j in 1:10){
     relF = relief(Stunting~.,
-                as.data.frame(SMOTEStunting[[i]][[j]]$data[[-"class"]]),
+                as.data.frame(SMOTEStunting[[i]][[j]]$data),
                 neighboursCount = 5
                 )
     FS_RLF_Stunting[[i]][[j]] = relF[order(relF$importance), ]
@@ -200,11 +202,13 @@ for (i in 1:10){
 FS_RLF_Thinness = list()
 for (i in 1:10){
   FS_RLF_Thinness[[i]] = list()
-  relF = relief(Thinness~.,
-                as.data.frame(SMOTEThinness[[i]][[j]]$data[-class]),
+  for (j in 1:10){
+    relF = relief(Thinness~.,
+                as.data.frame(SMOTEThinness[[i]][[j]]$data),
                 neighboursCount = 5
                 )
-  FS_RLF_Thinness[[i]][[j]] = relF[order(relF$importance), ]
+    FS_RLF_Thinness[[i]][[j]] = relF[order(relF$importance), ]
+  }
 }
 ```
 
@@ -212,7 +216,7 @@ for (i in 1:10){
 #This one is pretty quick.
 library(FSelectorRcpp)
 ################################################################################
-FS_IG_Stunting = list() #THIS WORKS!
+FS_IG_Stunting = list()
 for (i in 1:10){
   FS_IG_Stunting[[i]] = list()
   for (j in 1:10){
@@ -225,7 +229,7 @@ for (i in 1:10){
   }
 }
 ################################################################################
-FS_IG_Thinness = list() #THIS WORKS!
+FS_IG_Thinness = list()
 for (i in 1:10){
   FS_IG_Thinness[[i]] = list()
   for (j in 1:10){
