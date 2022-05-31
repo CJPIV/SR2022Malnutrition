@@ -336,5 +336,9 @@ FS_LB_Thinness = FS_LB_Stunting
 # ASSOCIATION RULE LEARNING:
 #####
 ```{r Association Rule Learning}
+library(arules)
+library(arulesViz)
 
+stuntingRules = apriori(stunting, parameter = list(support = 0.1, confidence = 0.8))
+thinnessRules = apriori(thinness, parameter = list(support = 0.1, confidence = 0.8))
 ```
