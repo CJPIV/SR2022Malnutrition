@@ -5,39 +5,63 @@ date: "5/30/2022"
 output: pdf_document
 ---
 # TRAIN/TEST SPLITS: Prepares train/test splits for use in feature selection and
-# classifier model training.
+# classifier model training. Each dependent variable (Stunting and Thinness)
+# will be cloned; one clone will remain as-is (unbalanced), and the other will
+# be balanced via SMOTE for (hopefully) improved classifier results.
 #####
-```{r Train/Test Splits}
+```{r Stunting Train/Test Splits}
 library(caret)
 library(tidyverse)
 library(smotefamily)
 
 stunting = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/stunting.csv")
-thinness = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/thinness.csv")
 
 set.seed(13)
-folds = createFolds(stunting$Stunting, k = 10) #Create k splits
-testSets = list(stunting[folds$Fold01, ], stunting[folds$Fold02, ], stunting[folds$Fold03, ],
-                stunting[folds$Fold04, ], stunting[folds$Fold05, ], stunting[folds$Fold06, ],
-                stunting[folds$Fold07, ], stunting[folds$Fold08, ], stunting[folds$Fold09, ],
-                stunting[folds$Fold10, ]
-                )
-trainSetsUB = list(stunting[-folds$Fold01, ], stunting[-folds$Fold02, ],
-                   stunting[-folds$Fold03, ], stunting[-folds$Fold04, ],
-                   stunting[-folds$Fold05, ], stunting[-folds$Fold06, ],
-                   stunting[-folds$Fold07, ], stunting[-folds$Fold08, ],
-                   stunting[-folds$Fold09, ], stunting[-folds$Fold10, ]
-                   )
-trainSetsSMOTE = list()
+testFolds = createFolds(stunting$Stunting, k = 10) #Create k splits
+testSetsStunting = list(stunting[testFolds$Fold01, ], stunting[testFolds$Fold02, ],
+                        stunting[testFolds$Fold03, ], stunting[testFolds$Fold04, ],
+                        stunting[testFolds$Fold05, ], stunting[testFolds$Fold06, ],
+                        stunting[testFolds$Fold07, ], stunting[testFolds$Fold08, ],
+                        stunting[testFolds$Fold09, ], stunting[testFolds$Fold10, ]
+                        )
+sansTestStunting = list(stunting[-testFolds$Fold01, ], stunting[-testFolds$Fold02, ],
+                        stunting[-testFolds$Fold03, ], stunting[-testFolds$Fold04, ],
+                        stunting[-testFolds$Fold05, ], stunting[-testFolds$Fold06, ],
+                        stunting[-testFolds$Fold07, ], stunting[-testFolds$Fold08, ],
+                        stunting[-testFolds$Fold09, ], stunting[-testFolds$Fold10, ]
+                        )
+UBStunting = list()
+for (i in 1:10){
+  curSet = sansTestStunting[[i]]
+  validationFolds = createFolds(sansTestStunting[[i]]$Stunting, k = 10)
+  UBStunting[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+                         curSet[-validationFolds$Fold02, ],
+                         curSet[-validationFolds$Fold03, ],
+                         curSet[-validationFolds$Fold04, ],
+                         curSet[-validationFolds$Fold05, ],
+                         curSet[-validationFolds$Fold06, ],
+                         curSet[-validationFolds$Fold07, ],
+                         curSet[-validationFolds$Fold08, ],
+                         curSet[-validationFolds$Fold09, ],
+                         curSet[-validationFolds$Fold10, ]
+                         )
+}
+SMOTEStunting = list()
 for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
-  trainSetsSMOTE[[i]] = SMOTE(X = as.data.frame(trainSetsUB[[1]]),
-                              target = trainSetsUB[[1]]$Stunting,
+  SMOTEStunting[[i]] = list()
+  for (j in 1:10){
+    SMOTEStunting[[i]][[j]] = SMOTE(X = as.data.frame(UBStunting[[i]][[j]]),
+                              target = UBStunting[[i]][[j]]$Stunting,
                               K = 5,
                               dup_size = 3
                               )
+     SMOTEStunting[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+  }
 }
 
-barplot(prop.table(table(trainSetsUB[[1]]$Stunting)),
+# Barplots for visualization of class imbalance
+#####
+barplot(prop.table(table(UBStunting[[1]][[1]]$Stunting)),
         col = c("white", "darkgrey"),
         ylim = c(0, 1),
         xlim = c(0, 3),
@@ -47,7 +71,7 @@ barplot(prop.table(table(trainSetsUB[[1]]$Stunting)),
         main = 'Stunting Training Set Class Distribution (Unbalanced)')
 abline(h = 0)
 
-barplot(prop.table(table(trainSetsSMOTE[[1]]$data$Stunting)),
+barplot(prop.table(table(SMOTEStunting[[1]][[1]]$data$Stunting)),
         col = c("white", "darkgrey"),
         ylim = c(0, 1),
         xlim = c(0, 3),
@@ -56,90 +80,225 @@ barplot(prop.table(table(trainSetsSMOTE[[1]]$data$Stunting)),
         names = c("No", "Yes"),
         main = 'Stunting Training Set Class Distribution (SMOTE)')
 abline(h = 0)
-# Following code writes each training set to its own .csv files for use in other scripts.
+
+
+# Following code writes each training set to its own .csv files if needed in other scripts.
 #####
-# FS_UB_Stunting = rbind(testSets[1:10])
-# FS_SMOTE_Stunting = rbind(trainSetsSMOTE[1:10])
-# write.csv(FS_UB_Stunting, "FS_UB_Stunting.csv")
-# write.csv(FS_SMOTE_Stunting, "FS_SMOTE_Stunting.csv")
+# ForFS_TestStunting = rbind(testSetsStunting[1:10])
+# ForFS_UBStunting = rbind(sansTestStunting[1:10])
+# ForFS_SMOTEStunting = rbind(SMOTEStunting[1:10])
+
+# write.csv(ForFS_TestStunting, "ForFS_TestStunting.csv")
+# write.csv(ForFS_UBStunting, "ForFS_UBStunting.csv")
+# write.csv(ForFS_SMOTEStunting, "ForFS_SMOTEStunting.csv")
+```
+
+```{r Thinness Train/Test Splits}
+library(caret)
+library(tidyverse)
+library(smotefamily)
+
+thinness = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/thinness.csv")
+
+set.seed(13)
+testFolds = createFolds(thinness$Thinness, k = 10) #Create k splits
+testSetsThinness = list(thinness[testFolds$Fold01, ], thinness[testFolds$Fold02, ],
+                        thinness[testFolds$Fold03, ], thinness[testFolds$Fold04, ],
+                        thinness[testFolds$Fold05, ], thinness[testFolds$Fold06, ],
+                        thinness[testFolds$Fold07, ], thinness[testFolds$Fold08, ],
+                        thinness[testFolds$Fold09, ], thinness[testFolds$Fold10, ]
+                        )
+sansTestThinness = list(thinness[-testFolds$Fold01, ], thinness[-testFolds$Fold02, ],
+                        thinness[-testFolds$Fold03, ], thinness[-testFolds$Fold04, ],
+                        thinness[-testFolds$Fold05, ], thinness[-testFolds$Fold06, ],
+                        thinness[-testFolds$Fold07, ], thinness[-testFolds$Fold08, ],
+                        thinness[-testFolds$Fold09, ], thinness[-testFolds$Fold10, ]
+                        )
+UBThinness = list()
+for (i in 1:10){
+  curSet = sansTestThinness[[i]]
+  validationFolds = createFolds(sansTestThinness[[i]]$Thinness, k = 10)
+  UBThinness[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+                         curSet[-validationFolds$Fold02, ],
+                         curSet[-validationFolds$Fold03, ],
+                         curSet[-validationFolds$Fold04, ],
+                         curSet[-validationFolds$Fold05, ],
+                         curSet[-validationFolds$Fold06, ],
+                         curSet[-validationFolds$Fold07, ],
+                         curSet[-validationFolds$Fold08, ],
+                         curSet[-validationFolds$Fold09, ],
+                         curSet[-validationFolds$Fold10, ]
+                         )
+}
+SMOTEThinness = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTEThinness[[i]] = list()
+  for (j in 1:10){
+    SMOTEThinness[[i]][[j]] = SMOTE(X = as.data.frame(UBThinness[[i]][[j]]),
+                              target = UBThinness[[i]][[j]]$Thinness,
+                              K = 5,
+                              dup_size = 24
+                              )
+    SMOTEThinness[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+  }
+}
+
+# Barplots for visualization of class imbalance
+#####
+barplot(prop.table(table(UBThinness[[1]][[1]]$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Thinness",
+        names = c("No", "Yes"),
+        main = 'Thinness Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEThinness[[1]][[1]]$data$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Thinness",
+        names = c("No", "Yes"),
+        main = 'Thinness Training Set Class Distribution (SMOTE)')
+abline(h = 0)
+
+# Following code writes each training set to its own .csv files if needed in other scripts.
+#####
+# ForFS_TestThinness = rbind(testSetsThinness[1:10])
+# ForFS_UBThinness = rbind(trainSetsUBThinness[1:10])
+# ForFS_SMOTEThinness = rbind(trainSetsSMOTEThinness[1:10])
+
+# write.csv(ForFS_TestThinness, "ForFS_TestThinness.csv")
+# write.csv(ForFS_UBThinness, "ForFS_UBThinness.csv")
+# write.csv(ForFS_SMOTEThinness, "ForFS_SMOTEThinness.csv")
 ```
 
 #####
-# FEATURE SELECTION: Selects important model features to reduce noise and help prevent 
-# overfitting.
+# FEATURE SELECTION: Selects important model features to reduce noise and help 
+# prevent overfitting. All feature selection methods must be run on SMOTE-
+# balanced datasets.
 #####
 ```{r ReliefF}
 #This one takes a while.
 library(FSelectorRcpp)
-
-FS_RLF_UB_Stunting = list()
+################################################################################
+FS_RLF_Stunting = list()
 for (i in 1:10){
-  relF = relief(Stunting~.,
-                as.data.frame(trainSetsUB[[i]]),
+  FS_RLF_Stunting[[i]] = list()
+  for (j in 1:10){
+    relF = relief(Stunting~.,
+                as.data.frame(SMOTEStunting[[i]][[j]]$data[[-"class"]]),
                 neighboursCount = 5
                 )
-  FS_RLF_UB_Stunting[[i]] = relF[order(relF$importance), ] #returns a list of important features and their ranking
+    FS_RLF_Stunting[[i]][[j]] = relF[order(relF$importance), ]
+  }
+}
+################################################################################
+FS_RLF_Thinness = list()
+for (i in 1:10){
+  FS_RLF_Thinness[[i]] = list()
+  relF = relief(Thinness~.,
+                as.data.frame(SMOTEThinness[[i]][[j]]$data[-class]),
+                neighboursCount = 5
+                )
+  FS_RLF_Thinness[[i]][[j]] = relF[order(relF$importance), ]
 }
 ```
 
 ```{r InfoGain}
 #This one is pretty quick.
 library(FSelectorRcpp)
-
-FS_IG_UB_Stunting = list()
+################################################################################
+FS_IG_Stunting = list() #THIS WORKS!
 for (i in 1:10){
-  infogain = information_gain(formula = Stunting~.,
-                              data = as.data.frame(trainSetsUB[[i]]),
+  FS_IG_Stunting[[i]] = list()
+  for (j in 1:10){
+    infogain = information_gain(formula = Stunting~.,
+                              data = as.data.frame(SMOTEStunting[[i]][[j]]$data),
                               type = 'infogain',
                               equal = TRUE
                               )
-  FS_IG_UB_Stunting[[i]] = infogain[order(infogain$importance), ]
+    FS_IG_Stunting[[i]][[j]] = infogain[order(infogain$importance), ]
+  }
 }
-
-FS_IG_SMOTE_Stunting = list()
+################################################################################
+FS_IG_Thinness = list() #THIS WORKS!
 for (i in 1:10){
-  infogain = information_gain(formula = Stunting~.,
-                              data = as.data.frame(trainSetsSMOTE[[i]]$data),
+  FS_IG_Thinness[[i]] = list()
+  for (j in 1:10){
+    infogain = information_gain(formula = Thinness~.,
+                              data = as.data.frame(SMOTEThinness[[i]][[j]]$data),
                               type = 'infogain',
                               equal = TRUE
                               )
-  FS_IG_SMOTE_Stunting[[i]] = infogain[order(infogain$importance), ] #returns a list of important features and their ranking
+    FS_IG_Thinness[[i]][[j]] = infogain[order(infogain$importance), ]
+  }
 }
-
 ```
 
 ```{r mRMR}
 library(mRMRe)
 
-mrmr = mRMR.data(data = stunting)
-FS_MRMR_Stunting = mRMR.classic(data = mrmr)
+FS_MRMR_Stunting = list()
+for (i in 1:10){
+  mrmr = mRMR.data(data = sansTestStunting[[i]])
+  FS_MRMR_UB_Stunting = mRMR.classic(data = mrmr)
+}
 ```
 
 ```{r JMI}
 #This one takes a while.
 library(JMI)
-
-FS_JMI_UB_Stunting = list()
-FS_JMI_SMOTE_Stunting = list()
-
+################################################################################
+FS_JMI_Stunting = list()
 for (i in 1:10){
-  FS_JMI_UB_Stunting[[i]] = JMI(x = trainSetsUB[[i]], 
-                                y = trainSetsUB[[i]]$Stunting
+  FS_JMI_Stunting[[i]] = list()
+  for (j in 1:10){
+    FS_JMI_Stunting[[i]][[j]] = JMI(x = SMOTEStunting[[i]][[j]], 
+                                y = SMOTEStunting[[i]][[j]]$data$Stunting
                                 )
+  }
+}
+################################################################################
+FS_JMI_Thinness = list()
+for (i in 1:10){
+  FS_JMI_Thinness[[i]] = list()
+  for (j in 1:10){
+    FS_JMI_Thinness[[i]][[j]] = JMI(x = trainSetsSMOTEThinness[[i]][[j]], 
+                                y = trainSetsSMOTEThinness[[i]][[j]]$data$Thinness
+                                )
+  }
 }
 ```
 
 ```{r Literature-Based}
-FS_LB_UB_Stunting = list()
-FS_LB_SMOTE_Stunting = list()
-FS_LB_UB_Thinness = list()
-FS_LB_SMOTE_Thinness = list()
+FS_LB_Stunting = list(c('Age'), c('HouseholdNumb'), c('NumbOldSib'), c('Young12'),  c('DiarrheaPWeek'), c('Sex'), c('No.Vaccine'),c('NoTrimNails'), c('DirtyNails'), c('TrimOnce2Week'), c('TrimOnceMonth'), c('NoLatDoors'), c('Flies'), c('StoolFloor'), c('Suburban'), c('Rural'), c('NoLitMom'), c('PrimMom'), c('HSMom'), c('Radio'), c('TV'), c('Cattle'), c('SheepGoat'), c('Chicken'), c('Pet'), c('PotableWater'), c('DrinkDirect'), c('OwnLatrine'), c('Outside.Latrine'), c('Sewage'), c('Ditch'), c('River'), c('AlwaysSchoolLat'), c('SometimesSchoolLat'), c('SometimesTP'), c('NeverTP'), c('SometimesWashHands'), c('NeverWashHands'), c('WaterWashHands'), c('AlwaysSoil'), c('SometimesSoil'), c('NeverWashFruits'), c('SometimesWashFruits'), c('SometimesBarefoot'), c('AlwaysBarefoot'), c('NoShoes'), c('Sandals'), c('Deworm'), c('Antibiotic'), c('Drugs'), c('Rash'), c('Sneeze'), c('HayFever'), c('Colds')) 
+
+FS_LB_Thinness = FS_LB_Stunting
 ```
 
 #####
 # CLASSIFIER MODELS:
 #####
-```{r Classifier Models}
+```{r Random Forest}
+
+```
+
+```{r Support Vector Machine}
+
+```
+
+```{r Extreme Gradient Boosting}
+```
+
+```{r Univariate Logistic Regression}
+
+```
+
+```{r Multivariate Logistic Regression}
 
 ```
 
