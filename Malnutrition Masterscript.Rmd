@@ -133,22 +133,54 @@ names(SURVEY)[129] = "HayFever2Yrs"
 names(SURVEY)[130] = "HayFever1Yr"
 
 SURVEY = SURVEY[,-c(1, 7, 8, 9)] #Don't need these columns; I forgot to remove them earlier, and doing so now would mean I'd have to re-index the >100 variable renames I just did above. No way.
+
+reducedSurvey = SURVEY[,-c(44, 46, 48, 51, 64, 95, 101, 105, 107)] #Potential candidates for removal from dataset; we'll work with this, as I think these changes will end up in the final iteration.
+
+#Char to booleans: 19, 21, 23, 31:42, 50:59, 64:68, 75 to "Tap water?", 75, 76, 82:95, 96 to numeric, 97:117
+#Want to split up "Address" into rural/urban - how do manage that?
+city = c("dilfire", "tesfatewahido", "setto-Yido", "amanuel", "jiren", "kito", "hermata mentina")
+rural = c()
+for (i in 1:1036){
+  for (suburb in city){
+    cat(suburb)
+    if (is.null(reducedSurvey[[47, i]])){
+      next
+    }
+    else if(tolower(reducedSurvey[[47, i]]) == suburb){
+      append(rural, 0) 
+      next
+    }else{
+      append(rural, 1)
+    } 
+  }
+}
 ```
 
-```{r Missing Value Imputation}
-#Fill in missing values in dataset
+```{r Preprocessing}
 library(VIM)
 library(fastDummies)
+################################################################################
+#HANDLE NULLS
 
-SURVEY = dummy_cols(.data = SURVEY, ignore_na = TRUE)
+
+
+
+################################################################################
+#DEAL WITH CATEGORICALS
+#impute ordinal categoricals
+imputed = kNN(SURVEY, variable = colnames(SURVEY), k = 5, impNA = TRUE)
+imputed = subset(imputed, select = AL:HayFever1Yr)
+
+#1HE nominal categoricals
+oneHotEncoded = dummy_cols(.data = reducedSurvey,
+                     ignore_na = TRUE,
+                     remove_first_dummy =  TRUE,
+                     split = ",")
+oneHotEncoded = subset(oneHotEncoded, select = AL:HayFever1Yr)
 
 #Convert categorical columns into factors
 catIndices = c()
-SURVEY[,catIndices] = lapply(SURVEY[,catIndices], factor)
-
-
-
-kNNSurvey = kNN(SURVEY, variable = colnames(SURVEY), k = 5, select = AL:HayFever1Yr)
+imputed[,catIndices] = lapply(imputed[,catIndices], factor)
 ```
 
 ```{r Dependent Variable Calculations}
@@ -161,10 +193,10 @@ library(anthroplus)
 
 with(
   SURVEY,
-  anthroplus_zscores(sex = SURVEY["Sex"]+1,
-                              age_in_months = SURVEY["Age"]*12,
-                              weight_in_kg = Survey["weight"],
-                              height_in_cm = SURVEY["Height"]
+  anthroplus_zscores(sex = imputed["Sex"]+1,
+                              age_in_months = imputed["Age"]*12,
+                              weight_in_kg = imputed["weight"],
+                              height_in_cm = imputed["Height"]
                               )
 )
 # names(SURVEY)[] = "WAZ"
