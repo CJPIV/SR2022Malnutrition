@@ -5,39 +5,13 @@ date: "5/26/2022"
 output: pdf_document
 ---
 
-```{r Data Preparation}
-datasets = c("stunting", "thinness")
-
-dependent = 'stunting'
-fileLoc = paste("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/",dependent,".csv", sep = "")
-
-data = read.csv(fileLoc)
-
-#here the columns are grouped if they were one-hot encoded seperately from one categorical
-#column. This is necessary for univariate logistic regression analysis. This
-#must be done by hand.
-
-columns_grouped = list(c('Age'), c('HouseholdNumb'), c('NumbOldSib'), c('Young12'), c('FeverPWeek'), c('DiarrheaPWeek'), c('CoughPWeek'), c('DistLatHouse'), c('DistLatKitch'), c('WeeksDeworming'), c('Sex'), c('VaginalDeliv'), c('Csection'), c('No.Vaccine'), c('NoBCG'), c('Fever'), c('Diarrhea'), c('Cough'), c('NoTrimNails'), c('DirtyNails'), c('TrimOnce2Week'), c('TrimOnceMonth'), c('NoLatDoors'), c('Flies'), c('StoolFloor'), c('Suburban'), c('Rural'), c('NoLitMom'), c('PrimMom'), c('HSMom'), c('KitchSep'), c('KitchRoof'), c('KitchWall'), c('CookWood'), c('CookGas'), c('CookCoal'), c('CookKerosine'), c('CookElectric'), c('NoElect'), c('Radio'), c('TV'), c('Phone'), c('Cattle'), c('SheepGoat'), c('Chicken'), c('Pet'), c('None'), c('PotableWater'), c('DrinkDirect'), c('OwnLatrine'), c('Outside.Latrine'), c('Sewage'), c('Ditch'), c('River'), c('SometimesBathRiv'), c('NeverBathRiv'), c('SometimesWashCloth'), c('NeverWashCloth'), c('AlwaysDeficate'), c('SometimesDeficate'), c('AlwaysSchoolLat'), c('SometimesSchoolLat'), c('SometimesTP'), c('NeverTP'), c('SometimesWashHands'), c('NeverWashHands'), c('WaterWashHands'), c('AlwashHandsEating'), c('SometimesHandsEating'), c('WaterWashEat'), c('AlwaysSoil'), c('SometimesSoil'), c('NeverWashFruits'), c('SometimesWashFruits'), c('SometimesRawVeg'), c('AlwaysRawVeg'), c('SometimesBarefoot'), c('AlwaysBarefoot'), c('NoShoes'), c('Sandals'), c('Deworm'), c('Antibiotic'), c('Drugs'), c('Antimalarial'), c('Wheezing',
-                                                  'Wheezing0y',
-                                                  'Wheezing0y.1'),c('Wheeze13'),c('Wheeze412'), c('Asthma', 
-  'Asthma0y',
-  'Asthma0y.1'),c('NoDoctCon'), c('Rash'), c('Sneeze'), c('HayFever'), c('Colds')) 
-    
-responseVar = names(data[ncol(data)])
-```
-
-```{r Multivariate Logistic Regression, warning = FALSE}
+```{r Multivariate Logistic Regression}
+data = read.csv("stunting.csv")
 #this is the vector with all the columns, for multivariate analysis.
-options(scipen=50)
-columns = unlist(columns_grouped)
-columns_formula = paste(columns, collapse = "+") 
 #This code performs the multivariate logistic regressions for each outcome.
-MV_logi = glm(paste(responseVar," ~ ", 
-                       #list(names(dependent)),
-                       columns_formula,
-                       sep = ""), data = data, family = "binomial")
+MV_logi = glm(Stunting~., data = data, family = "binomial")
 #summary(MV_logi)
-tidy(MV_logi, exponentiate = TRUE, conf.level = 0.95) #turns logodds to odds, makes it pretty
+#tidy(MV_logi, exponentiate = TRUE, conf.level = 0.95) #turns logodds to odds, makes it pretty
 
 #This code writes the results to multiple csv files.
 # write.csv(cbind(attr((MV_logi$terms), "term.labels"),
@@ -53,7 +27,7 @@ P-VALUES IN .csv ARE SHIFTED ONE BLOCK DOWN; ASK AZIZ.
 Doesn't want to output anything for last variable; somehow OOB.
 "
 write.csv(cbind(attr((MV_logi$terms), "term.labels"), #Variable names
-                summary(MV_logi)$coefficients[1:length(columns)+1,4], #p-vals
+                (MV_logi)$coefficients[1:length(columns)+1,4], #p-vals
                 exp(summary(MV_logi)$coef[1:length(columns)+1]), #odds ratio -1
                 exp(confint(MV_logi))[1:length(columns)+1, 1:2]), #OR CI
           file = paste("MVLoR_",responseVar,".csv", sep = ""), row.names = F)

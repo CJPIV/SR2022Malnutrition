@@ -4,6 +4,152 @@ author: "Jim Perry"
 date: "5/30/2022"
 output: pdf_document
 ---
+# PREPROCESSING: Preparing data from original survey for use in statistical/ML analysis.
+#####
+```{r Import Data}
+library(readxl)
+library(dplyr)
+
+SURVEY = read_excel("SURVEY.xlsx")
+SURVEY = SURVEY[-1,] #First row is a misread of some kind, full of NAs - drop it
+SURVEY = SURVEY[,-c(35, 54, 115, 134)] #Empty columns
+
+#Now the fun part - manually rename anything that the reader did weird
+names(SURVEY)[13] = "Class" #Which class of the grade is the child in?
+names(SURVEY)[17] = "FamilySize"
+names(SURVEY)[18] = "NumOldBros"
+names(SURVEY)[19] = "Bros<12?"
+names(SURVEY)[20] = "Vaccine"
+names(SURVEY)[21] = "BCGScar"
+names(SURVEY)[22] = "FeverLast2Weeks"
+names(SURVEY)[23] = "FeverQuantity"
+names(SURVEY)[24] = "DiarrheaLast2Weeks"
+names(SURVEY)[25] = "DiarrheaQuantity"
+names(SURVEY)[26] = "CoughLast2Weeks"
+names(SURVEY)[27] = "CoughQuantity"
+names(SURVEY)[28] = "NailsTrimmed"
+names(SURVEY)[29] = "NailsDirty"
+names(SURVEY)[30] = "NailTrimFrequency"
+names(SURVEY)[31] = "SchoolLat"
+names(SURVEY)[32] = "SchoolLatDoors"
+names(SURVEY)[33] = "SchoolLatFlies"
+names(SURVEY)[34] = "SchoolLatVisibleStool"
+names(SURVEY)[35] = "HeardOfAL"
+names(SURVEY)[36] = "HeardOfTT"
+names(SURVEY)[37] = "HeardOfHW"
+names(SURVEY)[38] = "HeardOfHIV"
+names(SURVEY)[39] = "HeardOfWorms"
+names(SURVEY)[40] = "HeardOfMalaria"
+names(SURVEY)[41] = "HeardOfTB"
+names(SURVEY)[42] = "HeardOfSCh"
+names(SURVEY)[43] = "ToldByFam"
+names(SURVEY)[44] = "ToldByHP"
+names(SURVEY)[45] = "ToldByTeacher"
+names(SURVEY)[46] = "ToldByMedia"
+names(SURVEY)[47] = "KnowWormsSpread"
+names(SURVEY)[48] = "HowKnowWormsSpread"
+names(SURVEY)[49] = "KnowWormsBad"
+names(SURVEY)[50] = "HowKnowWormsBad"
+names(SURVEY)[51] = "KnowAvoidWorms"
+names(SURVEY)[52] = "HowKnowAvoidWorms"
+names(SURVEY)[53] = "WhereLive"
+names(SURVEY)[54] = "Address"
+names(SURVEY)[55] = "Occupation"
+names(SURVEY)[56] = "MomEduc"
+names(SURVEY)[57] = "HouseFloorMats"
+names(SURVEY)[58] = "KitchenSeparate"
+names(SURVEY)[59] = "SepKitchenMats"
+names(SURVEY)[60] = "SepKitchenRoof"
+names(SURVEY)[61] = "SepKitchenWall"
+names(SURVEY)[62] = "SepKitchenNone"
+names(SURVEY)[63] = "CookWood"
+names(SURVEY)[64] = "CookGas"
+names(SURVEY)[65] = "CookCoal"
+names(SURVEY)[66] = "CookKerosine"
+names(SURVEY)[67] = "CookElectric"
+names(SURVEY)[68] = "Electricity"
+names(SURVEY)[69] = "Radio"
+names(SURVEY)[70] = "TV"
+names(SURVEY)[71] = "Phone"
+names(SURVEY)[72] = "WhyPhone"
+names(SURVEY)[73] = "Cattle"
+names(SURVEY)[74] = "Sheep/Goat"
+names(SURVEY)[75] = "Chicken"
+names(SURVEY)[76] = "HousePet"
+names(SURVEY)[77] = "None"
+names(SURVEY)[78] = "HouseHasWater"
+names(SURVEY)[79] = "WhereGetWater"
+names(SURVEY)[80] = "WaterTreated"
+names(SURVEY)[81] = "HowTreat"
+names(SURVEY)[82] = "FamLat"
+names(SURVEY)[83] = "LatOutside"
+names(SURVEY)[84] = "LatDistanceHouse"
+names(SURVEY)[85] = "LatDistanceKitchen"
+names(SURVEY)[86] = "LatConnectedTo"
+names(SURVEY)[87] = "RiverBathFrequency"
+names(SURVEY)[88] = "RiverLaundryFrequency"
+names(SURVEY)[89] = "DeficateField"
+names(SURVEY)[90] = "UseSchoolLat"
+names(SURVEY)[91] = "UseTP"
+names(SURVEY)[92] = "WashHandsLat"
+names(SURVEY)[93] = "WashHandsLatHow"
+names(SURVEY)[94] = "WashHandsSoapLatFrequency"
+names(SURVEY)[95] = "WashHandsEat"
+names(SURVEY)[96] = "WashHandsEatHow"
+names(SURVEY)[97] = "WashHandsSoapEatFrequency"
+names(SURVEY)[98] = "EatSoil"
+names(SURVEY)[99] = "FavFruit"
+names(SURVEY)[100] = "WashFruit"
+names(SURVEY)[101] = "EatRawVeg"
+names(SURVEY)[102] = "WashRawVegFrequency"
+names(SURVEY)[103] = "WalkBarefoot"
+names(SURVEY)[104] = "HomeShoeOrSandal"
+names(SURVEY)[105] = "ForWhatBarefoot"
+names(SURVEY)[106] = "DewormPill"
+names(SURVEY)[107] = "WhenDewormPill"
+names(SURVEY)[108] = "Antibiotics"
+names(SURVEY)[109] = "MostFreqFood"
+names(SURVEY)[110] = "TakesMeds"
+names(SURVEY)[111] = "Name/TypeOfMeds"
+names(SURVEY)[112] = "AntiMalaria3Months"
+names(SURVEY)[113] = "Wheezing"
+names(SURVEY)[114] = "Wheezing2Yrs"
+names(SURVEY)[115] = "Wheezing1Yr"
+names(SURVEY)[116] = "Wheezing1YrQuantity"
+names(SURVEY)[117] = "Asthma"
+names(SURVEY)[118] = "Asthma2Yrs"
+names(SURVEY)[119] = "Asthma1Yr"
+names(SURVEY)[120] = "DocConfirmedAsthma"
+names(SURVEY)[121] = "Rash"
+names(SURVEY)[122] = "RashElbow"
+names(SURVEY)[123] = "RashKnees"
+names(SURVEY)[124] = "RashAnkles"
+names(SURVEY)[125] = "RashButt"
+names(SURVEY)[126] = "RashNeck"
+names(SURVEY)[127] = "RashEyesEars"
+names(SURVEY)[128] = "HayFever"
+names(SURVEY)[129] = "HayFever2Yrs"
+names(SURVEY)[130] = "HayFever1Yr"
+```
+
+```{r Missing Value Imputation}
+#Fill in missing values in dataset
+library(VIM)
+names(SURVEY)[] = "WAZ"
+names(SURVEY)[] = "HAZ"
+names(SURVEY)[] = "BAZ"
+names(SURVEY)[] = ""
+names(SURVEY)[] = ""
+
+```
+
+```{r Dependent Variable Calculations}
+#Derive WAZ/HAZ/BAZ for specific analysis
+#WAZ: Weight-relative-to-age Z-score
+#HAZ: Height-relative-to-age Z-score (WHO says unreliable for ages 11+, so ignore older kids)
+#BAZ: BMI-relative-to-age Z-score
+```
+
 # TRAIN/TEST SPLITS: Prepares train/test splits for use in feature selection and
 # classifier model training. Each dependent variable (Stunting and Thinness)
 # will be cloned; one clone will remain as-is (unbalanced), and the other will
@@ -184,7 +330,7 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
 # balanced datasets.
 #####
 ```{r ReliefF}
-#This one takes ~90 minutes to run. Have fun.
+#This one takes ~90 minutes to run. Have fun waiting.
 library(FSelectorRcpp)
 ################################################################################
 FS_RLF_Stunting = list()
@@ -255,7 +401,7 @@ for (i in 1:10){
     FS_MRMR_Stunting[[i]][[j]] = mRMR.classic("mRMRe.Filter",
                                               data = mrmr,
                                               target_indices = 98,
-                                              feature_count = 30
+                                              feature_count = 13
                                               )
   }
 }
@@ -268,7 +414,7 @@ for (i in 1:10){
     FS_MRMR_Thinness[[i]][[j]] = mRMR.classic("mRMRe.Filter",
                                               data = mrmr,
                                               target_indices = 98,
-                                              feature_count = 30
+                                              feature_count = 13
                                               )
   }
 }
@@ -284,7 +430,7 @@ for (i in 1:10){
   for (j in 1:10){
     FS_JMI_Stunting[[i]][[j]] = JMI(SMOTEStunting[[i]][[j]]$data[1:97], 
                                     SMOTEStunting[[i]][[j]]$data$Stunting,
-                                    k = 30
+                                    k = 13
                                     )
   }
 }
@@ -295,7 +441,7 @@ for (i in 1:10){
   for (j in 1:10){
     FS_JMI_Thinness[[i]][[j]] = JMI(SMOTEThinness[[i]][[j]]$data[1:97],
                                     SMOTEThinness[[i]][[j]]$data$Thinness,
-                                    k = 30
+                                    k = 13
                                     )
   }
 }
@@ -312,14 +458,24 @@ FS_LB_Thinness = FS_LB_Stunting
 # CLASSIFIER MODELS:
 #####
 ```{r Random Forest}
-
+RF_UB_Stunting
+RF_SMOTE_Stunting
+RF_UB_Thinness
+RF_SMOTE_Thinness
 ```
 
 ```{r Support Vector Machine}
-
+SVM_UB_Stunting
+SVM_SMOTE_Stunting
+SVM_UB_Thinness
+SVM_SMOTE_Thinness
 ```
 
 ```{r Extreme Gradient Boosting}
+XGB_UB_Stunting
+XGB_SMOTE_Stunting
+XGB_UB_Thinness
+XGB_SMOTE_Thinness
 ```
 
 ```{r Univariate Logistic Regression}
@@ -327,8 +483,24 @@ FS_LB_Thinness = FS_LB_Stunting
 
 ```
 
-```{r Multivariate Logistic Regression}
-#Classifier or FS?
+```{r Multivariate Logistic Regression, warning = FALSE}
+#First MVLoR is for Odds Ratios, uses entire dataset.
+#Second is for FS. Uses traditional train/test splits and 95% prevalence cutoff thresholds for choosing features.
+#library(devtools)
+library(broom)
+OR_Stunting = glm(Stunting~., data = stunting, family = "binomial")
+OR_Thinness = glm(Thinness~., data = thinness, family = "binomial")
+write.csv(cbind( 
+          tidy(OR_Stunting, exponentiate = TRUE, conf.level = 0.95),
+          exp(confint(OR_Stunting))),
+          "OR_Stunting.csv"
+          )
+write.csv(cbind( 
+          tidy(OR_Thinness, exponentiate = TRUE, conf.level = 0.95),
+          exp(confint(OR_Thinness))),
+          "OR_Thinness.csv"
+          )
+#write.csv(tidy(OR_Thinness, exponentiate = TRUE, conf.level = 0.95), "OR_Thinness.csv")
 
 ```
 
@@ -339,6 +511,12 @@ FS_LB_Thinness = FS_LB_Stunting
 library(arules)
 library(arulesViz)
 
-stuntingRules = apriori(stunting, parameter = list(support = 0.1, confidence = 0.8))
-thinnessRules = apriori(thinness, parameter = list(support = 0.1, confidence = 0.8))
+stuntingRules = apriori(stunting,
+                        parameter = list(support = 0.1, confidence = 0.8),
+                        maxlen = 3
+                        )
+thinnessRules = apriori(thinness,
+                        parameter = list(support = 0.1, confidence = 0.8),
+                        maxlen = 3
+                        )
 ```
