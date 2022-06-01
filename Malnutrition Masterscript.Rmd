@@ -7,15 +7,16 @@ output: pdf_document
 # PREPROCESSING: Preparing data from original survey for use in statistical/ML analysis.
 #####
 ```{r Import Data}
+#Reading and cleaning the original spreadsheet from the survey.
 library(readxl)
 library(dplyr)
 
 SURVEY = read_excel("SURVEY.xlsx")
-SURVEY = SURVEY[-1,] #First row is a misread of some kind, full of NAs - drop it
+SURVEY = SURVEY[-1,] #First row is a misread full of NAs - drop it
 SURVEY = SURVEY[,-c(35, 54, 115, 134)] #Empty columns
 
-#Now the fun part - manually rename anything that the reader did weird
-names(SURVEY)[13] = "Class" #Which class of the grade is the child in?
+#Now the fun part - manually rename any weird variable names
+names(SURVEY)[13] = "Class" #Which class in the grade is the child in?
 names(SURVEY)[17] = "FamilySize"
 names(SURVEY)[18] = "NumOldBros"
 names(SURVEY)[19] = "Bros<12?"
@@ -130,17 +131,24 @@ names(SURVEY)[127] = "RashEyesEars"
 names(SURVEY)[128] = "HayFever"
 names(SURVEY)[129] = "HayFever2Yrs"
 names(SURVEY)[130] = "HayFever1Yr"
+
+SURVEY = SURVEY[,-c(1, 7, 8, 9)] #Don't need these columns; I forgot to remove them earlier, and doing so now would mean I'd have to re-index the >100 variable renames I just did above. No way.
 ```
 
 ```{r Missing Value Imputation}
 #Fill in missing values in dataset
 library(VIM)
-names(SURVEY)[] = "WAZ"
-names(SURVEY)[] = "HAZ"
-names(SURVEY)[] = "BAZ"
-names(SURVEY)[] = ""
-names(SURVEY)[] = ""
+library(fastDummies)
 
+SURVEY = dummy_cols(.data = SURVEY, ignore_na = TRUE)
+
+#Convert categorical columns into factors
+catIndices = c()
+SURVEY[,catIndices] = lapply(SURVEY[,catIndices], factor)
+
+
+
+kNNSurvey = kNN(SURVEY, variable = colnames(SURVEY), k = 5, select = AL:HayFever1Yr)
 ```
 
 ```{r Dependent Variable Calculations}
@@ -148,6 +156,22 @@ names(SURVEY)[] = ""
 #WAZ: Weight-relative-to-age Z-score
 #HAZ: Height-relative-to-age Z-score (WHO says unreliable for ages 11+, so ignore older kids)
 #BAZ: BMI-relative-to-age Z-score
+
+library(anthroplus)
+
+with(
+  SURVEY,
+  anthroplus_zscores(sex = SURVEY["Sex"]+1,
+                              age_in_months = SURVEY["Age"]*12,
+                              weight_in_kg = Survey["weight"],
+                              height_in_cm = SURVEY["Height"]
+                              )
+)
+# names(SURVEY)[] = "WAZ"
+# names(SURVEY)[] = "HAZ"
+# names(SURVEY)[] = "BAZ"
+# names(SURVEY)[] = ""
+# names(SURVEY)[] = ""
 ```
 
 # TRAIN/TEST SPLITS: Prepares train/test splits for use in feature selection and
