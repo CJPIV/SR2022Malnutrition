@@ -141,18 +141,19 @@ reducedSurvey = SURVEY[,-c(44, 46, 48, 51, 64, 95, 101, 105, 107)] #Potential ca
 city = c("dilfire", "tesfatewahido", "setto-Yido", "amanuel", "jiren", "kito", "hermata mentina")
 rural = c()
 for (i in 1:1036){
-  cat(reducedSurvey[[47,i]])
+  cat(reducedSurvey[[i, 47]])
   cat("\n")
   for (suburb in city){
-    cat(suburb)
-    if (is.null(reducedSurvey[[47, i]])){
+    #cat(suburb)
+    if (is.na(reducedSurvey[[i, 47]])){
+      cat("stop")
       break
     }
-    else if(tolower(reducedSurvey[[47, i]]) == suburb){
-      append(rural, 0) 
+    else if(tolower(reducedSurvey[[i, 47]]) == suburb){
+      rural[[i]] = 0
       break
     }else{
-      append(rural, 1)
+      rural[[i]] = 1
     } 
   }
 }
