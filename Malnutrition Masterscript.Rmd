@@ -62,7 +62,7 @@ names(SURVEY)[58] = "KitchenSeparate"
 names(SURVEY)[59] = "SepKitchenMats"
 names(SURVEY)[60] = "SepKitchenRoof"
 names(SURVEY)[61] = "SepKitchenWall"
-names(SURVEY)[62] = "SepKitchenNone"
+names(SURVEY)[62] = "SepKitchenNeither" #Should be able to get removed in 1HE
 names(SURVEY)[63] = "CookWood"
 names(SURVEY)[64] = "CookGas"
 names(SURVEY)[65] = "CookCoal"
@@ -77,7 +77,7 @@ names(SURVEY)[73] = "Cattle"
 names(SURVEY)[74] = "Sheep/Goat"
 names(SURVEY)[75] = "Chicken"
 names(SURVEY)[76] = "HousePet"
-names(SURVEY)[77] = "None"
+names(SURVEY)[77] = "NoAnimal"
 names(SURVEY)[78] = "HouseHasWater"
 names(SURVEY)[79] = "WhereGetWater"
 names(SURVEY)[80] = "WaterTreated"
@@ -133,19 +133,38 @@ names(SURVEY)[129] = "HayFever2Yrs"
 names(SURVEY)[130] = "HayFever1Yr"
 
 SURVEY = SURVEY[,-c(1, 7, 8, 9)] #Don't need these columns; I forgot to remove them earlier, and doing so now would mean I'd have to re-index the >100 variable renames I just did above. No way.
+```
 
+
+
+```{r Handling "Na"s & Datatype Conversions, warning = FALSE}
 reducedSurvey = SURVEY[,-c(44, 46, 48, 51, 64, 95, 101, 105, 107)] #Potential candidates for removal from dataset; we'll work with this, as I think these changes will end up in the final iteration.
-
-#Char to booleans: 19, 21, 23, 31:42, 50:59, 64:68, 75 to "Tap water?", 75, 76, 82:95, 96 to numeric, 97:117
-#Want to split up "Address" into rural/urban - how do manage that?
+################################################################################
+#Convert "Where do you get your water from?" into "Tap water" b/c it's majority case
+tapWater = c()
+for (i in 1:1036){
+  if (is.na(reducedSurvey[[i, 70]])){
+    tapWater[[i]] = 0
+    next
+  }
+  if (tolower(reducedSurvey[[i, 70]]) == "tap water"){
+    tapWater[[i]] = 1
+  }else{
+    tapWater[[i]] = 0
+  }
+}
+tapWater = as.numeric(as.character(tapWater))
+reducedSurvey[[70]] = tapWater
+names(reducedSurvey)[[70]] = "TapWater"
+################################################################################
+#Turn categorical nominal "Address" column into binary rural/urban one; convert any addresses from within the city into 0s, else 1s
 city = c("dilfire", "tesfatewahido", "setto-Yido", "amanuel", "jiren", "kito", "hermata mentina")
 rural = c()
 for (i in 1:1036){
   for (suburb in city){
     if (is.na(reducedSurvey[[i, 47]])){
       break
-    }
-    else if(tolower(reducedSurvey[[i, 47]]) == suburb){
+    }else if(tolower(reducedSurvey[[i, 47]]) == suburb){
       rural[[i]] = 0
       break
     }else{
@@ -153,34 +172,117 @@ for (i in 1:1036){
     }
   }
 }
+rural = as.numeric(as.character(rural)) #Can't convert directly from double to numeric
+reducedSurvey[[47]] = rural# = replace(reducedSurvey, reducedSurvey$Address, rural)
+names(reducedSurvey)[[47]] = "Rural"
+################################################################################
+#Remove units from measurements so they can be converted to numerics
+for (i in 1:1036){
+  distance = reducedSurvey[[i, 75]]
+  reducedSurvey[[i, 75]] = substr(distance, 1, length(distance))
+  distance2 = reducedSurvey[[i, 76]]
+  reducedSurvey[[i, 76]] = substr(distance2, 1, length(distance2))
+  whenDeworm = reducedSurvey[[i, 96]]
+  reducedSurvey[[i, 96]] = substr(whenDeworm, 1, length(whenDeworm))
+
+}
+reducedSurvey[[75]] = as.numeric(reducedSurvey[[75]]) #Can typecast directly to numeric
+reducedSurvey[[76]] = as.numeric(reducedSurvey[[76]])
+reducedSurvey[[96]] = as.numeric(reducedSurvey[[96]])
+################################################################################
+#Convert "Others" disease presence factor from datatype "character" recording names of other present diseases to a binary recording presence of other diseases
+otherDisease = c()
+for (i in 1:1036){
+  if (is.na(reducedSurvey[[i, 5]])){
+      otherDisease[[i]] = 0
+      next
+  }
+  if (reducedSurvey[[i,5]] == "0"){
+    otherDisease[[i]] = 0
+  }else{
+    otherDisease[[i]] = 1
+  }
+}
+reducedSurvey[[5]] = as.numeric(as.character(otherDisease)) #Can't convert directly from double to numeric
+names(reducedSurvey)[[5]] = "OtherDisease"
+################################################################################
+#These factors have number measurements but are of datatype "character"; simple conversion to datatype "numeric"
+changeInds = c(19, 21, 23, 31:42, 50:59, 64:68, 72, 76, 77, 82:117)
+for (factor in changeInds){
+  reducedSurvey[[factor]] = as.numeric(reducedSurvey[[factor]])
+}
+################################################################################
+#Drop "Class"? Doesn't seem specific enough to be useful.
+reducedSurvey = reducedSurvey[, -9]
+################################################################################
+#Adjusting data values
+#Convert "99"s in numeric factors to "Na"s for later imputation under kNN algorithm
+for (sample in 1:1036){
+  for (factor in 11:116) #Columns where 99s indicate "I don't know" as a possible answer
+    if (is.na(reducedSurvey[[sample, factor]])){
+      next
+    }else if (reducedSurvey[[sample, factor]] == 99){
+      reducedSurvey[[sample, factor]] = NA
+    }
+}
+
+for (sample in 1:1036){
+  if (reducedSurvey[[sample, 10]] == 92.00){ #A sample's height was misinput as 92.00 meters.
+    reducedSurvey[[sample, 10]] = NA
+    break
+  }
+}
+
+for (sample in 1:1036){
+  for (factor in c(18, 20, 22, 31:41, 53, 55:58, 64:67, 71, 95, 109:113)){
+    if (is.na(reducedSurvey[[sample, factor]])){
+      reducedSurvey[[sample, factor]] = 0
+    }
+  }
+}
+
+for (sample in 1:1036){
+  for (factor in c(30, 54, 63)){ #These columns were input as "NA/0" instead of "0/1"
+    if (is.na(reducedSurvey[[sample, factor]])){
+      reducedSurvey[[sample, factor]] = 0
+    }else if (reducedSurvey[[sample, factor]] == 0){
+      reducedSurvey[[sample, factor]] = 1
+    }else{
+      reducedSurvey[[sample, factor]] = 0
+    }
+  }
+}
+#30, 54, 63 need to be increased by 1 I think
 ```
 
-```{r Preprocessing}
+
+
+```{r kNN, One Hot Encoding}
 library(VIM)
 library(fastDummies)
 ################################################################################
-#HANDLE NULLS
-
-
-
-
-################################################################################
 #DEAL WITH CATEGORICALS
 #impute ordinal categoricals
-imputed = kNN(SURVEY, variable = colnames(SURVEY), k = 5, impNA = TRUE)
+imputed = kNN(reducedSurvey, variable = colnames(reducedSurvey), k = 5, impNA = TRUE)
 imputed = subset(imputed, select = AL:HayFever1Yr)
 
 #1HE nominal categoricals
-oneHotEncoded = dummy_cols(.data = reducedSurvey,
+#I already encoded some of these by hand in the last code block, but the remainder can be handled by this imported function
+oneHotEncoded = dummy_cols(.data = imputed,
                      ignore_na = TRUE,
                      remove_first_dummy =  TRUE,
                      split = ",")
 oneHotEncoded = subset(oneHotEncoded, select = AL:HayFever1Yr)
+#REPLACE [[48]] with 
+#Iterate through and reduce some of the weird binaries (0/2 || 0/7 || 0/6) to 0/1
+
 
 #Convert categorical columns into factors
-catIndices = c()
-imputed[,catIndices] = lapply(imputed[,catIndices], factor)
+#catIndices = c()
+#imputed[,catIndices] = lapply(imputed[,catIndices], factor)
 ```
+
+
 
 ```{r Dependent Variable Calculations}
 #Derive WAZ/HAZ/BAZ for specific analysis
@@ -294,6 +396,8 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
 # write.csv(ForFS_UBStunting, "ForFS_UBStunting.csv")
 # write.csv(ForFS_SMOTEStunting, "ForFS_SMOTEStunting.csv")
 ```
+
+
 
 ```{r Thinness Train/Test Splits}
 library(caret)
@@ -413,6 +517,8 @@ for (i in 1:10){
 }
 ```
 
+
+
 ```{r InfoGain}
 #This one is pretty quick.
 library(FSelectorRcpp)
@@ -443,6 +549,8 @@ for (i in 1:10){
   }
 }
 ```
+
+
 
 ```{r mRMR}
 library(mRMRe)
@@ -475,6 +583,8 @@ for (i in 1:10){
 }
 ```
 
+
+
 ```{r JMI}
 #This one is pretty quick.
 library(praznik)
@@ -502,6 +612,8 @@ for (i in 1:10){
 }
 ```
 
+
+
 ```{r Literature-Based}
 #This one is pretty quick (it's almost like there's no computations...)
 FS_LB_Stunting = list(c('Age'), c('HouseholdNumb'), c('NumbOldSib'), c('Young12'),  c('DiarrheaPWeek'), c('Sex'), c('No.Vaccine'),c('NoTrimNails'), c('DirtyNails'), c('TrimOnce2Week'), c('TrimOnceMonth'), c('NoLatDoors'), c('Flies'), c('StoolFloor'), c('Suburban'), c('Rural'), c('NoLitMom'), c('PrimMom'), c('HSMom'), c('Radio'), c('TV'), c('Cattle'), c('SheepGoat'), c('Chicken'), c('Pet'), c('PotableWater'), c('DrinkDirect'), c('OwnLatrine'), c('Outside.Latrine'), c('Sewage'), c('Ditch'), c('River'), c('AlwaysSchoolLat'), c('SometimesSchoolLat'), c('SometimesTP'), c('NeverTP'), c('SometimesWashHands'), c('NeverWashHands'), c('WaterWashHands'), c('AlwaysSoil'), c('SometimesSoil'), c('NeverWashFruits'), c('SometimesWashFruits'), c('SometimesBarefoot'), c('AlwaysBarefoot'), c('NoShoes'), c('Sandals'), c('Deworm'), c('Antibiotic'), c('Drugs'), c('Rash'), c('Sneeze'), c('HayFever'), c('Colds')) 
@@ -519,12 +631,16 @@ RF_UB_Thinness
 RF_SMOTE_Thinness
 ```
 
+
+
 ```{r Support Vector Machine}
 SVM_UB_Stunting
 SVM_SMOTE_Stunting
 SVM_UB_Thinness
 SVM_SMOTE_Thinness
 ```
+
+
 
 ```{r Extreme Gradient Boosting}
 XGB_UB_Stunting
@@ -533,10 +649,14 @@ XGB_UB_Thinness
 XGB_SMOTE_Thinness
 ```
 
+
+
 ```{r Univariate Logistic Regression}
 #Classifier or FS?
 
 ```
+
+
 
 ```{r Multivariate Logistic Regression, warning = FALSE}
 #First MVLoR is for Odds Ratios, uses entire dataset.
@@ -563,6 +683,9 @@ write.csv(cbind(
 # ASSOCIATION RULE LEARNING:
 #####
 ```{r Association Rule Learning}
+#Takes a bit of time - couple minutes, maybe.
+#DO NOT manually exit if program is slow or frozen; the Apriori algorithm is written in C, and has no qualms with messing things up in your computer if you interrupt it.
+#Also, warning: do not increase maxlen above 3 unless you have a lot of free time and want your computer to be unresponsive.
 library(arules)
 library(arulesViz)
 
