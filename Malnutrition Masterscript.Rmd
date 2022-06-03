@@ -83,13 +83,13 @@ names(SURVEY)[79] = "WhereGetWater"
 names(SURVEY)[80] = "WaterTreated"
 names(SURVEY)[81] = "HowTreat"
 names(SURVEY)[82] = "FamLat"
-names(SURVEY)[83] = "LatOutside"
+names(SURVEY)[83] = "LatInside"
 names(SURVEY)[84] = "LatDistanceHouse"
 names(SURVEY)[85] = "LatDistanceKitchen"
 names(SURVEY)[86] = "LatConnectedTo"
 names(SURVEY)[87] = "RiverBathFrequency"
 names(SURVEY)[88] = "RiverLaundryFrequency"
-names(SURVEY)[89] = "DeficateField"
+names(SURVEY)[89] = "DefecateField"
 names(SURVEY)[90] = "UseSchoolLat"
 names(SURVEY)[91] = "UseTP"
 names(SURVEY)[92] = "WashHandsLat"
@@ -137,7 +137,7 @@ SURVEY = SURVEY[,-c(1, 7, 8, 9)] #Don't need these columns; I forgot to remove t
 
 
 
-```{r Handling "Na"s & Datatype Conversions, warning = FALSE}
+```{r Handling NAs & Datatype Conversions, warning = FALSE}
 reducedSurvey = SURVEY[,-c(44, 46, 48, 51, 64, 95, 101, 105, 107)] #Potential candidates for removal from dataset; we'll work with this, as I think these changes will end up in the final iteration.
 ################################################################################
 #Convert "Where do you get your water from?" into "Tap water" b/c it's majority case
@@ -157,21 +157,28 @@ tapWater = as.numeric(as.character(tapWater))
 reducedSurvey[[70]] = tapWater
 names(reducedSurvey)[[70]] = "TapWater"
 ################################################################################
-#Turn categorical nominal "Address" column into binary rural/urban one; convert any addresses from within the city into 0s, else 1s
-city = c("dilfire", "tesfatewahido", "setto-Yido", "amanuel", "jiren", "kito", "hermata mentina")
+#1HE Rural/Suburban/Urban split
 rural = c()
+suburban = c()
 for (i in 1:1036){
-  for (suburb in city){
-    if (is.na(reducedSurvey[[i, 47]])){
-      break
-    }else if(tolower(reducedSurvey[[i, 47]]) == suburb){
-      rural[[i]] = 0
-      break
-    }else{
-      rural[[i]] = 1
-    }
+  if (is.na(reducedSurvey[[i, 46]])){
+      next
   }
+  neighborhood = reducedSurvey[[i, 46]]
+  if(neighborhood == 0){
+      rural[[i]] = 0
+      suburban[[i]] = 0
+  }else if(neighborhood == 1){
+    rural[[i]] = 0
+    suburban[[i]] = 1
+  }else if (neighborhood == 2){
+      rural[[i]] = 1
+      suburban[[i]] = 0
+    }
 }
+suburban = as.numeric(as.character(suburban))
+reducedSurvey[[46]] = suburban
+names(reducedSurvey)[[46]] = "Suburban"
 rural = as.numeric(as.character(rural)) #Can't convert directly from double to numeric
 reducedSurvey[[47]] = rural# = replace(reducedSurvey, reducedSurvey$Address, rural)
 names(reducedSurvey)[[47]] = "Rural"
@@ -191,20 +198,20 @@ reducedSurvey[[76]] = as.numeric(reducedSurvey[[76]])
 reducedSurvey[[96]] = as.numeric(reducedSurvey[[96]])
 ################################################################################
 #Convert "Others" disease presence factor from datatype "character" recording names of other present diseases to a binary recording presence of other diseases
-otherDisease = c()
-for (i in 1:1036){
-  if (is.na(reducedSurvey[[i, 5]])){
-      otherDisease[[i]] = 0
-      next
-  }
-  if (reducedSurvey[[i,5]] == "0"){
-    otherDisease[[i]] = 0
-  }else{
-    otherDisease[[i]] = 1
-  }
-}
-reducedSurvey[[5]] = as.numeric(as.character(otherDisease)) #Can't convert directly from double to numeric
-names(reducedSurvey)[[5]] = "OtherDisease"
+# otherDisease = c()
+# for (i in 1:1036){
+#   if (is.na(reducedSurvey[[i, 5]])){
+#       otherDisease[[i]] = 0
+#       next
+#   }
+#   if (reducedSurvey[[i,5]] == "0"){
+#     otherDisease[[i]] = 0
+#   }else{
+#     otherDisease[[i]] = 1
+#   }
+# }
+# reducedSurvey[[5]] = as.numeric(as.character(otherDisease)) #Can't convert directly from double to numeric
+# names(reducedSurvey)[[5]] = "OtherDisease"
 ################################################################################
 #These factors have number measurements but are of datatype "character"; simple conversion to datatype "numeric"
 changeInds = c(19, 21, 23, 31:42, 50:59, 64:68, 72, 76, 77, 82:117)
@@ -226,13 +233,15 @@ for (sample in 1:1036){
     }
 }
 
+#A sample's height was misinput as 92.00 meters.
 for (sample in 1:1036){
-  if (reducedSurvey[[sample, 10]] == 92.00){ #A sample's height was misinput as 92.00 meters.
+  if (reducedSurvey[[sample, 10]] == 92.00){ 
     reducedSurvey[[sample, 10]] = NA
     break
   }
 }
 
+#Impute conditional responses where "NA" implies 0
 for (sample in 1:1036){
   for (factor in c(18, 20, 22, 31:41, 53, 55:58, 64:67, 71, 95, 109:113)){
     if (is.na(reducedSurvey[[sample, factor]])){
@@ -241,8 +250,9 @@ for (sample in 1:1036){
   }
 }
 
+#These columns were input as a different binary; as "NA/0" instead of "0/1"
 for (sample in 1:1036){
-  for (factor in c(30, 54, 63)){ #These columns were input as "NA/0" instead of "0/1"
+  for (factor in c(30, 54, 63)){ 
     if (is.na(reducedSurvey[[sample, factor]])){
       reducedSurvey[[sample, factor]] = 0
     }else if (reducedSurvey[[sample, factor]] == 0){
@@ -252,7 +262,77 @@ for (sample in 1:1036){
     }
   }
 }
-#30, 54, 63 need to be increased by 1 I think
+
+#Convert different numeric binaries 0/2 binaries into 0/1
+for (sample in 1:1036){
+  for (factor in c(49, 65)){
+    if (is.na(reducedSurvey[[sample, factor]])){
+      next
+    }else if (reducedSurvey[[sample, factor]] == 2){
+      reducedSurvey[[sample, factor]] = 1
+    }else if (reducedSurvey[[sample, factor]] != 0){
+      reducedSurvey[[sample, factor]] = NA
+    }
+  }
+}
+#CookElectric's binary is 0/4; converting into 0/1
+for (sample in 1:1036){{
+    if (is.na(reducedSurvey[[sample, 58]])){
+      next
+    }else if (reducedSurvey[[sample, 58]] == 4){
+      reducedSurvey[[sample, 58]] = 1
+    }else if (reducedSurvey[[sample, 58]] != 0){
+      reducedSurvey[[sample, 58]] = NA
+    }
+  }
+}
+#0/3 here
+for (sample in 1:1036){{
+    if (is.na(reducedSurvey[[sample, 66]])){
+      next
+    }else if (reducedSurvey[[sample, 66]] == 3){
+      reducedSurvey[[sample, 66]] = 1
+    }else if (reducedSurvey[[sample, 6]] != 0){
+      reducedSurvey[[sample, 66]] = NA
+    }
+  }
+}
+
+#copySet = reducedSurvey
+#reducedSurvey = copySet
+
+#Setting weird values in binary vectors (anything that's not 0/1) to NA for imputation
+for (sample in 1:1036){
+  for (factor in c(15, 16, 21, 23, 24, 49, 51, 58, 65, 68, 72:73)){
+    if (is.na(reducedSurvey[[sample, factor]])){
+      next
+    }else if ((reducedSurvey[[sample, factor]] != 0) & (reducedSurvey[[sample, factor]] != 1)){
+      reducedSurvey[[sample, factor]] = NA
+    }
+  }
+}
+
+reducedSurvey$HouseFloorMats = tolower(reducedSurvey$HouseFloorMats)
+
+#Getting rid of some more weird values
+for (sample in 1:1036){
+  for (factor in c(85:86))
+  if (is.na(reducedSurvey[[sample, factor]])){
+    next
+  }
+  else if (reducedSurvey[[sample, factor]] == 21 || reducedSurvey[[sample, factor]] == 10){
+    reducedSurvey[[sample, factor]] = NA
+  }
+}
+
+for (sample in 1:1036){
+  if (is.na(reducedSurvey[[sample, 10]])){
+    next
+  }
+  else if (reducedSurvey[[sample, 10]] == 1.79){
+    reducedSurvey[[sample, 10]] = 1.29
+  }
+}
 ```
 
 
@@ -272,17 +352,123 @@ oneHotEncoded = dummy_cols(.data = imputed,
                      ignore_na = TRUE,
                      remove_first_dummy =  TRUE,
                      split = ",")
-oneHotEncoded = subset(oneHotEncoded, select = AL:HayFever1Yr)
-#REPLACE [[48]] with 
-#Iterate through and reduce some of the weird binaries (0/2 || 0/7 || 0/6) to 0/1
+oneHotEncoded = oneHotEncoded[,-c(48, 123)] #One category got broken up and the other was created to account for a sample answer that got misinput as both
+oneHotEncoded[[843, 121]] = 1
 
-
-#Convert categorical columns into factors
-#catIndices = c()
-#imputed[,catIndices] = lapply(imputed[,catIndices], factor)
 ```
 
 
+
+```{r Final Layer of Data Handling}
+#Handle variables we decided to remove or calculate differently after I wrote 300 lines of code. I'm not mad - I'm not just rewriting everything above to account for new index values.
+processed = oneHotEncoded[, -c(1:5, 11, 13:14, 18, 20, 22, 25:26, 30:44, 49, 52:56, 61, 66, 70, 73:75, 83, 86, 92, 94, 99:104, 107:112, 114:119, 124)]
+
+#Encode mother's education
+for (i in 1:1036){
+  education = processed[[i, 19]]
+  processed$momFinishedPrimary[[i]] = 0
+  processed$momFinishedSecondary[[i]] = 0
+  processed$momFinishedTertiary[[i]] = 0
+  if (education == 1){
+    processed$momFinishedPrimary[[i]] = 1
+  }else if (education == 2){
+    processed$momFinishedSecondary[[i]] = 1
+  }else if (education == 3){
+    processed$momFinishedTertiary[[i]] = 1
+  }
+}
+
+processed$momFinishedPrimary = as.numeric(as.character(processed$momFinishedPrimary))
+processed$momFinishedSecondary = as.numeric(as.character(processed$momFinishedSecondary))
+processed$momFinishedTertiary = as.numeric(as.character(processed$momFinishedTertiary))
+processed = processed[, -19]
+
+#Convert house floor materials into a binary for whether that floor is dust or not
+for (i in 1:1036){
+  if (sum(processed[i,57:61]) > 0){
+    processed$houseDustFloor[[i]] = 0
+  }else{
+    processed$houseDustFloor[[i]] = 1
+  }
+}
+processed$houseDustFloor = as.numeric(as.character(processed$houseDustFloor))
+processed = processed[,-c(57:60)]
+
+#Converting 1/2 binaries to 0/1
+for (sample in 1:1036){
+  for (factor in 53:56){
+    if (processed[sample, factor] == 2){
+      processed[sample, factor] = 0
+    }
+  }
+}
+
+#Every sample has the same answer for this variable - it tells us nothing
+processed = processed[,-c(21)]
+processed = processed[,-3]
+
+#1HE washing hands after lat into "never", "with water", and "with soap" groups
+for (i in 1:1036){
+  if (processed[[i,38]] == 2){
+    processed$washHandsLatWater[[i]] = 0
+    processed$washHandsLatWaterSoap[[i]] = 0
+  }else{
+    if (processed[[i, 39]] == 0){
+      processed$washHandsLatWater[[i]] = 1
+      processed$washHandsLatWaterSoap[[i]] = 0
+    }else if (processed[[i, 39]] == 1){
+      processed$washHandsLatWater[[i]] = 0
+      processed$washHandsLatWaterSoap[[i]] = 1
+    }
+  }
+}
+processed$washHandsLatWater = as.numeric(as.character(processed$washHandsLatWater))
+processed$washHandsLatWaterSoap = as.numeric(as.character(processed$washHandsLatWaterSoap))
+processed = processed[, -c(38:39)]
+
+#1HE washing hands before eat into "never", "with water", "with soap" groups
+for (i in 1:1036){
+  if (processed[[i,38]] == 2){
+    processed$washHandsWaterB4Eat[[i]] = 0
+    processed$washHandsSoapB4Eat[[i]] = 0
+  }else{
+    if (processed[[i, 39]] == 0){
+      processed$washHandsWaterB4Eat[[i]] = 1
+      processed$washHandsSoapB4Eat[[i]] = 0
+    }else if (processed[[i, 39]] == 1){
+      processed$washHandsWaterB4Eat[[i]] = 0
+      processed$washHandsSoapB4Eat[[i]] = 1
+    }
+  }
+}
+processed$washHandsWaterB4Eat = as.numeric(as.character(processed$washHandsWaterB4Eat))
+processed$washHandsSoapB4Eat = as.numeric(as.character(processed$washHandsSoapB4Eat))
+processed = processed[, -c(38:39)]
+
+#Change ternary variables into binaries based on biological significance
+for (sample in 1:1036){
+  for (factor in c(33:39)){
+    if (processed[[sample, factor]] == 2){
+      processed[[sample, factor]] = 1
+    }else{
+      processed[[sample, factor]] = 0
+    }
+  }
+}
+names(processed)[[33]] = "RiverBathing"
+names(processed)[[34]] = "RiverLaundry"
+
+#More ternary variables, but split differently according to biological significance
+for (sample in 1:1036){
+  for (factor in c(40:42)){
+    if (processed[[sample, factor]] != 0){
+      processed[[sample, factor]] = 1
+    }else{
+      processed[[sample, factor]] = 0
+    }
+  }
+}
+```
 
 ```{r Dependent Variable Calculations}
 #Derive WAZ/HAZ/BAZ for specific analysis
@@ -292,19 +478,59 @@ oneHotEncoded = subset(oneHotEncoded, select = AL:HayFever1Yr)
 
 library(anthroplus)
 
-with(
-  SURVEY,
-  anthroplus_zscores(sex = imputed["Sex"]+1,
-                              age_in_months = imputed["Age"]*12,
-                              weight_in_kg = imputed["weight"],
-                              height_in_cm = imputed["Height"]
-                              )
-)
-# names(SURVEY)[] = "WAZ"
-# names(SURVEY)[] = "HAZ"
-# names(SURVEY)[] = "BAZ"
-# names(SURVEY)[] = ""
-# names(SURVEY)[] = ""
+depVars = anthroplus_zscores(sex = processed[["Sex"]]+1,
+                             age_in_months = processed[["Age"]]*12,
+                             weight_in_kg = processed[["weight"]],
+                             height_in_cm = processed[["Height"]]*100
+                             )
+
+for (i in 1:1036){
+  ZHeight = depVars$zhfa[[i]]
+  processed$HAZ[[i]] = ZHeight
+  processed$Stunting[[i]] = ifelse(ZHeight < -2, 1, 0 )
+  
+  ZBMI = depVars$zbfa[[i]]
+  processed$BAZ[[i]] = ZBMI
+  processed$Thinness[[i]] = ifelse (ZBMI < -2, 1, 0)
+  
+  if (processed[[i,"Age"]] < 11){ #scores not calculated for children 11 and up
+    ZWeight = depVars$zwfa[[i]]
+    processed$WAZ[[i]] = ZWeight
+    processed$Wasting[[i]] = ifelse (ZWeight < -2, 1, 0)
+  }else{
+    processed$WAZ[[i]] = NA
+    processed$Wasting[[i]] = NA
+  }
+}
+
+processed$HAZ = as.numeric(as.character(processed$HAZ))
+processed$Stunting = as.numeric(as.character(processed$Stunting))
+processed$BAZ = as.numeric(as.character(processed$BAZ))
+processed$Thinness = as.numeric(as.character(processed$Thinness))
+processed$WAZ = as.vector(as.character(processed$WAZ))
+processed$Wasting = as.vector(as.character(processed$Wasting))
+
+#badAges = c()
+for (i in 1:1036){
+  if (is.na(processed$Stunting[i])){
+    processed = processed[-i,]
+  }
+}
+#as.numeric(as.character(badAges))
+#processed = processed[[-badAges,]]
+```
+
+
+
+```{r Saving Preprocessing}
+stunting = processed[,-c(59, 61:64)]
+thinness = processed[,-c(59:61, 63:65)]
+wasting = processed[,-c(59:63)]
+wasting = subset(wasting, Age < 11)
+
+write.csv(stunting, "stunting.csv", row.names = FALSE)
+write.csv(thinness, "thinness.csv", row.names = FALSE)
+write.csv(wasting, "wasting.csv", row.names = FALSE)
 ```
 
 # TRAIN/TEST SPLITS: Prepares train/test splits for use in feature selection and
@@ -318,7 +544,7 @@ library(tidyverse)
 library(smotefamily)
 
 # stunting = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/stunting.csv")
-stunting = read.csv("stunting.csv")
+stunting = read.csv("stunting.csv", row.names = FALSE)
 
 set.seed(13)
 testFolds = createFolds(stunting$Stunting, k = 10) #Create k splits
@@ -405,7 +631,7 @@ library(tidyverse)
 library(smotefamily)
 
 # thinness = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/thinness.csv")
-thinness = read.csv("thinness.csv")
+thinness = read.csv("thinness.csv", row.names = FALSE)
 
 set.seed(13)
 testFolds = createFolds(thinness$Thinness, k = 10) #Create k splits
