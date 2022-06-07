@@ -585,10 +585,9 @@ write.csv(thinnessYoung, "thinnessUnder11.csv", row.names = FALSE)
 ```{r Read Data}
 stunting = read.csv("stunting.csv")
 thinness = read.csv("thinness.csv")
-stuntingYoung = read.csv("stuntingUnder11.csv")
+StuntingYoung = read.csv("stuntingUnder11.csv")
 thinnessYoung = read.csv("thinnessUnder11.csv")
-wastingYoung = read.csv("wastingUnder11.csv")
-
+WastingYoung = read.csv("wastingUnder11.csv")
 ```
 
 ```{r Stunting Train/Test Splits}
@@ -596,7 +595,6 @@ library(caret)
 library(tidyverse)
 library(smotefamily)
 
-# stunting = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/stunting.csv")
 set.seed(13)
 testFolds = createFolds(stunting$Stunting, k = 10) #Create k splits
 testSetsStunting = list(stunting[testFolds$Fold01, ], stunting[testFolds$Fold02, ],
@@ -634,7 +632,7 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
     SMOTEStunting[[i]][[j]] = SMOTE(X = as.data.frame(UBStunting[[i]][[j]]),
                               target = UBStunting[[i]][[j]]$Stunting,
                               K = 5,
-                              dup_size = 3
+                              dup_size = 2
                               )
      SMOTEStunting[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
@@ -681,9 +679,6 @@ library(caret)
 library(tidyverse)
 library(smotefamily)
 
-# thinness = read.csv("C:/Users/Carmen Perry/Desktop/Colgate Stuff/Summer Research 2022/MalnutritionProject-20220523T125732Z-001/MalnutritionProject/Code/SR2022Malnutrition/Data/thinness.csv")
-thinness = read.csv("thinness.csv", row.names = FALSE)
-
 set.seed(13)
 testFolds = createFolds(thinness$Thinness, k = 10) #Create k splits
 testSetsThinness = list(thinness[testFolds$Fold01, ], thinness[testFolds$Fold02, ],
@@ -721,7 +716,7 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
     SMOTEThinness[[i]][[j]] = SMOTE(X = as.data.frame(UBThinness[[i]][[j]]),
                               target = UBThinness[[i]][[j]]$Thinness,
                               K = 5,
-                              dup_size = 24
+                              dup_size = 20
                               )
     SMOTEThinness[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
@@ -760,13 +755,247 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
 # write.csv(ForFS_SMOTEThinness, "ForFS_SMOTEThinness.csv")
 ```
 
+```{r StuntingYoung Train/Test Splits}
+library(caret)
+library(tidyverse)
+library(smotefamily)
+
+set.seed(13)
+testFolds = createFolds(StuntingYoung$Stunting, k = 10) #Create k splits
+testSetsStuntingYoung = list(StuntingYoung[testFolds$Fold01, ],
+                             StuntingYoung[testFolds$Fold02, ],
+                        StuntingYoung[testFolds$Fold03, ], StuntingYoung[testFolds$Fold04, ],
+                        StuntingYoung[testFolds$Fold05, ], StuntingYoung[testFolds$Fold06, ],
+                        StuntingYoung[testFolds$Fold07, ], StuntingYoung[testFolds$Fold08, ],
+                        StuntingYoung[testFolds$Fold09, ], StuntingYoung[testFolds$Fold10, ]
+                        )
+sansTestStuntingYoung = list(StuntingYoung[-testFolds$Fold01, ], StuntingYoung[-testFolds$Fold02, ], StuntingYoung[-testFolds$Fold03, ], StuntingYoung[-testFolds$Fold04, ],StuntingYoung[-testFolds$Fold05, ], StuntingYoung[-testFolds$Fold06, ],StuntingYoung[-testFolds$Fold07, ], StuntingYoung[-testFolds$Fold08, ],StuntingYoung[-testFolds$Fold09, ], StuntingYoung[-testFolds$Fold10, ]
+                        )
+UBStuntingYoung = list()
+for (i in 1:10){
+  curSet = sansTestStuntingYoung[[i]]
+  validationFolds = createFolds(sansTestStuntingYoung[[i]]$Stunting, k = 10)
+  UBStuntingYoung[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+                         curSet[-validationFolds$Fold02, ],
+                         curSet[-validationFolds$Fold03, ],
+                         curSet[-validationFolds$Fold04, ],
+                         curSet[-validationFolds$Fold05, ],
+                         curSet[-validationFolds$Fold06, ],
+                         curSet[-validationFolds$Fold07, ],
+                         curSet[-validationFolds$Fold08, ],
+                         curSet[-validationFolds$Fold09, ],
+                         curSet[-validationFolds$Fold10, ]
+                         )
+}
+SMOTEStuntingYoung = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTEStuntingYoung[[i]] = list()
+  for (j in 1:10){
+    SMOTEStuntingYoung[[i]][[j]] = SMOTE(X = as.data.frame(UBStuntingYoung[[i]][[j]]),
+                              target = UBStuntingYoung[[i]][[j]]$Stunting,
+                              K = 5,
+                              dup_size = 3
+                              )
+    SMOTEStuntingYoung[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+  }
+}
+
+# Barplots for visualization of class imbalance
+#####
+# barplot(prop.table(table(UBStuntingYoung[[1]][[1]]$Stunting)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Stunting",
+#         names = c("No", "Yes"),
+#         main = 'StuntingYoung Training Set Class Distribution (Unbalanced)')
+# abline(h = 0)
+# 
+# barplot(prop.table(table(SMOTEStuntingYoung[[1]][[1]]$data$Stunting)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Stunting",
+#         names = c("No", "Yes"),
+#         main = 'StuntingYoung Training Set Class Distribution (SMOTE)')
+# abline(h = 0)
+
+# Following code writes each training set to its own .csv files if needed in other scripts.
+#####
+# ForFS_TestStuntingYoung = rbind(testSetsStuntingYoung[1:10])
+# ForFS_UBStuntingYoung = rbind(trainSetsUBStuntingYoung[1:10])
+# ForFS_SMOTEStuntingYoung = rbind(trainSetsSMOTEStuntingYoung[1:10])
+
+# write.csv(ForFS_TestStuntingYoung, "ForFS_TestStuntingYoung.csv")
+# write.csv(ForFS_UBStuntingYoung, "ForFS_UBStuntingYoung.csv")
+# write.csv(ForFS_SMOTEStuntingYoung, "ForFS_SMOTEStuntingYoung.csv")
+```
+
+```{r ThinnessYoung Train/Test Splits}
+library(caret)
+library(tidyverse)
+library(smotefamily)
+
+set.seed(13)
+testFolds = createFolds(thinnessYoung$Thinness, k = 10) #Create k splits
+testSetsThinnessYoung = list(thinnessYoung[testFolds$Fold01, ],
+                             thinnessYoung[testFolds$Fold02, ],
+                        thinnessYoung[testFolds$Fold03, ], thinnessYoung[testFolds$Fold04, ],
+                        thinnessYoung[testFolds$Fold05, ], thinnessYoung[testFolds$Fold06, ],
+                        thinnessYoung[testFolds$Fold07, ], thinnessYoung[testFolds$Fold08, ],
+                        thinnessYoung[testFolds$Fold09, ], thinnessYoung[testFolds$Fold10, ]
+                        )
+sansTestThinnessYoung = list(thinnessYoung[-testFolds$Fold01, ], thinnessYoung[-testFolds$Fold02, ], thinnessYoung[-testFolds$Fold03, ], thinnessYoung[-testFolds$Fold04, ],thinnessYoung[-testFolds$Fold05, ], thinnessYoung[-testFolds$Fold06, ],thinnessYoung[-testFolds$Fold07, ], thinnessYoung[-testFolds$Fold08, ],thinnessYoung[-testFolds$Fold09, ], thinnessYoung[-testFolds$Fold10, ]
+                        )
+UBThinnessYoung = list()
+for (i in 1:10){
+  curSet = sansTestThinnessYoung[[i]]
+  validationFolds = createFolds(sansTestThinnessYoung[[i]]$Thinness, k = 10)
+  UBThinnessYoung[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+                         curSet[-validationFolds$Fold02, ],
+                         curSet[-validationFolds$Fold03, ],
+                         curSet[-validationFolds$Fold04, ],
+                         curSet[-validationFolds$Fold05, ],
+                         curSet[-validationFolds$Fold06, ],
+                         curSet[-validationFolds$Fold07, ],
+                         curSet[-validationFolds$Fold08, ],
+                         curSet[-validationFolds$Fold09, ],
+                         curSet[-validationFolds$Fold10, ]
+                         )
+}
+SMOTEThinnessYoung = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTEThinnessYoung[[i]] = list()
+  for (j in 1:10){
+    SMOTEThinnessYoung[[i]][[j]] = SMOTE(X = as.data.frame(UBThinnessYoung[[i]][[j]]),
+                              target = UBThinnessYoung[[i]][[j]]$Thinness,
+                              K = 5,
+                              dup_size = 34
+                              )
+    SMOTEThinnessYoung[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+  }
+}
+
+# Barplots for visualization of class imbalance
+#####
+# barplot(prop.table(table(UBThinnessYoung[[1]][[1]]$Thinness)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Thinness",
+#         names = c("No", "Yes"),
+#         main = 'ThinnessYoung Training Set Class Distribution (Unbalanced)')
+# abline(h = 0)
+# 
+# barplot(prop.table(table(SMOTEThinnessYoung[[1]][[1]]$data$Thinness)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Thinness",
+#         names = c("No", "Yes"),
+#         main = 'ThinnessYoung Training Set Class Distribution (SMOTE)')
+# abline(h = 0)
+
+# Following code writes each training set to its own .csv files if needed in other scripts.
+#####
+# ForFS_TestThinnessYoung = rbind(testSetsThinnessYoung[1:10])
+# ForFS_UBThinnessYoung = rbind(trainSetsUBThinnessYoung[1:10])
+# ForFS_SMOTEThinnessYoung = rbind(trainSetsSMOTEThinnessYoung[1:10])
+
+# write.csv(ForFS_TestThinnessYoung, "ForFS_TestThinnessYoung.csv")
+# write.csv(ForFS_UBThinnessYoung, "ForFS_UBThinnessYoung.csv")
+# write.csv(ForFS_SMOTEThinnessYoung, "ForFS_SMOTEThinnessYoung.csv")
+```
+
+```{r WastingYoung Train/Test Splits}
+library(caret)
+library(tidyverse)
+library(smotefamily)
+
+set.seed(13)
+testFolds = createFolds(WastingYoung$Wasting, k = 10) #Create k splits
+testSetsWastingYoung = list(WastingYoung[testFolds$Fold01, ],
+                             WastingYoung[testFolds$Fold02, ],
+                        WastingYoung[testFolds$Fold03, ], WastingYoung[testFolds$Fold04, ],
+                        WastingYoung[testFolds$Fold05, ], WastingYoung[testFolds$Fold06, ],
+                        WastingYoung[testFolds$Fold07, ], WastingYoung[testFolds$Fold08, ],
+                        WastingYoung[testFolds$Fold09, ], WastingYoung[testFolds$Fold10, ]
+                        )
+sansTestWastingYoung = list(WastingYoung[-testFolds$Fold01, ], WastingYoung[-testFolds$Fold02, ], WastingYoung[-testFolds$Fold03, ], WastingYoung[-testFolds$Fold04, ],WastingYoung[-testFolds$Fold05, ], WastingYoung[-testFolds$Fold06, ],WastingYoung[-testFolds$Fold07, ], WastingYoung[-testFolds$Fold08, ],WastingYoung[-testFolds$Fold09, ], WastingYoung[-testFolds$Fold10, ]
+                        )
+UBWastingYoung = list()
+for (i in 1:10){
+  curSet = sansTestWastingYoung[[i]]
+  validationFolds = createFolds(sansTestWastingYoung[[i]]$Wasting, k = 10)
+  UBWastingYoung[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+                         curSet[-validationFolds$Fold02, ],
+                         curSet[-validationFolds$Fold03, ],
+                         curSet[-validationFolds$Fold04, ],
+                         curSet[-validationFolds$Fold05, ],
+                         curSet[-validationFolds$Fold06, ],
+                         curSet[-validationFolds$Fold07, ],
+                         curSet[-validationFolds$Fold08, ],
+                         curSet[-validationFolds$Fold09, ],
+                         curSet[-validationFolds$Fold10, ]
+                         )
+}
+SMOTEWastingYoung = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTEWastingYoung[[i]] = list()
+  for (j in 1:10){
+    SMOTEWastingYoung[[i]][[j]] = SMOTE(X = as.data.frame(UBWastingYoung[[i]][[j]]),
+                              target = UBWastingYoung[[i]][[j]]$Wasting,
+                              K = 5,
+                              dup_size = 10
+                              )
+    SMOTEWastingYoung[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+  }
+}
+
+# Barplots for visualization of class imbalance
+#####
+# barplot(prop.table(table(UBWastingYoung[[1]][[1]]$Wasting)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Wasting",
+#         names = c("No", "Yes"),
+#         main = 'WastingYoung Training Set Class Distribution (Unbalanced)')
+# abline(h = 0)
+# 
+# barplot(prop.table(table(SMOTEWastingYoung[[1]][[1]]$data$Wasting)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Wasting",
+#         names = c("No", "Yes"),
+#         main = 'WastingYoung Training Set Class Distribution (SMOTE)')
+# abline(h = 0)
+
+# Following code writes each training set to its own .csv files if needed in other scripts.
+#####
+# ForFS_TestWastingYoung = rbind(testSetsWastingYoung[1:10])
+# ForFS_UBWastingYoung = rbind(trainSetsUBWastingYoung[1:10])
+# ForFS_SMOTEWastingYoung = rbind(trainSetsSMOTEWastingYoung[1:10])
+
+# write.csv(ForFS_TestWastingYoung, "ForFS_TestWastingYoung.csv")
+# write.csv(ForFS_UBWastingYoung, "ForFS_UBWastingYoung.csv")
+# write.csv(ForFS_SMOTEWastingYoung, "ForFS_SMOTEWastingYoung.csv")
+```
+
 #####
 # FEATURE SELECTION: Selects important model features to reduce noise and help 
 # prevent overfitting. All feature selection methods should be run on SMOTE-
 # balanced datasets.
 #####
 ```{r ReliefF}
-#This one takes ~90 minutes to run. Have fun waiting.
+#This one takes ~3 hours to run. Have fun waiting.
 library(FSelectorRcpp)
 ################################################################################
 FS_RLF_Stunting = list()
@@ -792,6 +1021,43 @@ for (i in 1:10){
     FS_RLF_Thinness[[i]][[j]] = relF[order(relF$importance), ]
   }
 }
+################################################################################
+FS_RLF_StuntingYoung = list()
+for (i in 1:10){
+  FS_RLF_StuntingYoung[[i]] = list()
+  for (j in 1:10){
+    relF = relief(Stunting~.,
+                as.data.frame(SMOTEStuntingYoung[[i]][[j]]$data),
+                neighboursCount = 5
+                )
+    FS_RLF_StuntingYoung[[i]][[j]] = relF[order(relF$importance), ]
+  }
+}
+################################################################################
+FS_RLF_ThinnessYoung = list()
+for (i in 1:10){
+  FS_RLF_ThinnessYoung[[i]] = list()
+  for (j in 1:10){
+    relF = relief(Thinness~.,
+                as.data.frame(SMOTEThinnessYoung[[i]][[j]]$data),
+                neighboursCount = 5
+                )
+    FS_RLF_ThinnessYoung[[i]][[j]] = relF[order(relF$importance), ]
+  }
+}
+################################################################################
+FS_RLF_WastingYoung = list()
+for (i in 1:10){
+  FS_RLF_WastingYoung[[i]] = list()
+  for (j in 1:10){
+    relF = relief(Wasting~.,
+                as.data.frame(SMOTEWastingYoung[[i]][[j]]$data),
+                neighboursCount = 5
+                )
+    FS_RLF_WastingYoung[[i]][[j]] = relF[order(relF$importance), ]
+  }
+}
+################################################################################
 ```
 
 
@@ -825,6 +1091,46 @@ for (i in 1:10){
     FS_IG_Thinness[[i]][[j]] = infogain[order(infogain$importance), ]
   }
 }
+################################################################################
+FS_IG_StuntingYoung = list()
+for (i in 1:10){
+  FS_IG_StuntingYoung[[i]] = list()
+  for (j in 1:10){
+    infogain = information_gain(formula = Stunting~.,
+                              data = as.data.frame(SMOTEStuntingYoung[[i]][[j]]$data),
+                              type = 'infogain',
+                              equal = TRUE
+                              )
+    FS_IG_StuntingYoung[[i]][[j]] = infogain[order(infogain$importance), ]
+  }
+}
+################################################################################
+FS_IG_ThinnessYoung = list()
+for (i in 1:10){
+  FS_IG_ThinnessYoung[[i]] = list()
+  for (j in 1:10){
+    infogain = information_gain(formula = Thinness~.,
+                              data = as.data.frame(SMOTEThinnessYoung[[i]][[j]]$data),
+                              type = 'infogain',
+                              equal = TRUE
+                              )
+    FS_IG_ThinnessYoung[[i]][[j]] = infogain[order(infogain$importance), ]
+  }
+}
+################################################################################
+FS_IG_WastingYoung = list()
+for (i in 1:10){
+  FS_IG_WastingYoung[[i]] = list()
+  for (j in 1:10){
+    infogain = information_gain(formula = Wasting~.,
+                              data = as.data.frame(SMOTEWastingYoung[[i]][[j]]$data),
+                              type = 'infogain',
+                              equal = TRUE
+                              )
+    FS_IG_WastingYoung[[i]][[j]] = infogain[order(infogain$importance), ]
+  }
+}
+################################################################################
 ```
 
 
@@ -833,6 +1139,7 @@ for (i in 1:10){
 library(mRMRe)
 #In progress; mRMR finishes selecting, but results should be rewritten for legibility.
 #This one is pretty quick.
+################################################################################
 FS_MRMR_Stunting = list()
 for (i in 1:10){
   FS_MRMR_Stunting[[i]] = list()
@@ -840,7 +1147,7 @@ for (i in 1:10){
     mrmr = mRMR.data(data = SMOTEStunting[[i]][[j]]$data)
     FS_MRMR_Stunting[[i]][[j]] = mRMR.classic("mRMRe.Filter",
                                               data = mrmr,
-                                              target_indices = 98,
+                                              target_indices = 55,
                                               feature_count = 13
                                               )
   }
@@ -853,11 +1160,52 @@ for (i in 1:10){
     mrmr = mRMR.data(data = SMOTEThinness[[i]][[j]]$data)
     FS_MRMR_Thinness[[i]][[j]] = mRMR.classic("mRMRe.Filter",
                                               data = mrmr,
-                                              target_indices = 98,
+                                              target_indices = 55,
                                               feature_count = 13
                                               )
   }
 }
+################################################################################
+FS_MRMR_StuntingYoung = list()
+for (i in 1:10){
+  FS_MRMR_StuntingYoung[[i]] = list()
+  for (j in 1:10){
+    mrmr = mRMR.data(data = SMOTEStuntingYoung[[i]][[j]]$data)
+    FS_MRMR_StuntingYoung[[i]][[j]] = mRMR.classic("mRMRe.Filter",
+                                              data = mrmr,
+                                              target_indices = 55,
+                                              feature_count = 13
+                                              )
+  }
+}
+################################################################################
+FS_MRMR_ThinnessYoung = list()
+for (i in 1:10){
+  FS_MRMR_ThinnessYoung[[i]] = list()
+  for (j in 1:10){
+    mrmr = mRMR.data(data = SMOTEThinnessYoung[[i]][[j]]$data)
+    FS_MRMR_ThinnessYoung[[i]][[j]] = mRMR.classic("mRMRe.Filter",
+                                              data = mrmr,
+                                              target_indices = 55,
+                                              feature_count = 13
+                                              )
+  }
+}
+################################################################################
+FS_MRMR_WastingYoung = list()
+for (i in 1:10){
+  FS_MRMR_WastingYoung[[i]] = list()
+  for (j in 1:10){
+    mrmr = mRMR.data(data = SMOTEWastingYoung[[i]][[j]]$data)
+    FS_MRMR_WastingYoung[[i]][[j]] = mRMR.classic("mRMRe.Filter",
+                                              data = mrmr,
+                                              target_indices = 55,
+                                              feature_count = 13
+                                              )
+  }
+}
+################################################################################
+
 ```
 
 
@@ -870,7 +1218,7 @@ FS_JMI_Stunting = list()
 for (i in 1:10){
   FS_JMI_Stunting[[i]] = list()
   for (j in 1:10){
-    FS_JMI_Stunting[[i]][[j]] = JMI(SMOTEStunting[[i]][[j]]$data[1:97], 
+    FS_JMI_Stunting[[i]][[j]] = JMI(SMOTEStunting[[i]][[j]]$data, 
                                     SMOTEStunting[[i]][[j]]$data$Stunting,
                                     k = 13
                                     )
@@ -881,21 +1229,57 @@ FS_JMI_Thinness = list()
 for (i in 1:10){
   FS_JMI_Thinness[[i]] = list()
   for (j in 1:10){
-    FS_JMI_Thinness[[i]][[j]] = JMI(SMOTEThinness[[i]][[j]]$data[1:97],
+    FS_JMI_Thinness[[i]][[j]] = JMI(SMOTEThinness[[i]][[j]]$data,
                                     SMOTEThinness[[i]][[j]]$data$Thinness,
                                     k = 13
                                     )
   }
 }
+################################################################################
+FS_JMI_StuntingYoung = list()
+for (i in 1:10){
+  FS_JMI_StuntingYoung[[i]] = list()
+  for (j in 1:10){
+    FS_JMI_StuntingYoung[[i]][[j]] = JMI(SMOTEStuntingYoung[[i]][[j]]$data, 
+                                    SMOTEStuntingYoung[[i]][[j]]$data$Stunting,
+                                    k = 13
+                                    )
+  }
+}
+################################################################################
+FS_JMI_ThinnessYoung = list()
+for (i in 1:10){
+  FS_JMI_ThinnessYoung[[i]] = list()
+  for (j in 1:10){
+    FS_JMI_ThinnessYoung[[i]][[j]] = JMI(SMOTEThinnessYoung[[i]][[j]]$data, 
+                                    SMOTEThinnessYoung[[i]][[j]]$data$Thinness,
+                                    k = 13
+                                    )
+  }
+}
+################################################################################
+FS_JMI_WastingYoung = list()
+for (i in 1:10){
+  FS_JMI_WastingYoung[[i]] = list()
+  for (j in 1:10){
+    FS_JMI_WastingYoung[[i]][[j]] = JMI(SMOTEWastingYoung[[i]][[j]]$data[1:55], 
+                                    SMOTEWastingYoung[[i]][[j]]$data$Wasting,
+                                    k = 13
+                                    )
+  }
+}
+################################################################################
 ```
 
 
 
 ```{r Literature-Based}
 #This one is pretty quick (it's almost like there's no computations...)
-FS_LB_Stunting = list(c('Age'), c('HouseholdNumb'), c('NumbOldSib'), c('Young12'),  c('DiarrheaPWeek'), c('Sex'), c('No.Vaccine'),c('NoTrimNails'), c('DirtyNails'), c('TrimOnce2Week'), c('TrimOnceMonth'), c('NoLatDoors'), c('Flies'), c('StoolFloor'), c('Suburban'), c('Rural'), c('NoLitMom'), c('PrimMom'), c('HSMom'), c('Radio'), c('TV'), c('Cattle'), c('SheepGoat'), c('Chicken'), c('Pet'), c('PotableWater'), c('DrinkDirect'), c('OwnLatrine'), c('Outside.Latrine'), c('Sewage'), c('Ditch'), c('River'), c('AlwaysSchoolLat'), c('SometimesSchoolLat'), c('SometimesTP'), c('NeverTP'), c('SometimesWashHands'), c('NeverWashHands'), c('WaterWashHands'), c('AlwaysSoil'), c('SometimesSoil'), c('NeverWashFruits'), c('SometimesWashFruits'), c('SometimesBarefoot'), c('AlwaysBarefoot'), c('NoShoes'), c('Sandals'), c('Deworm'), c('Antibiotic'), c('Drugs'), c('Rash'), c('Sneeze'), c('HayFever'), c('Colds')) 
-
+FS_LB_Stunting = list(c(1, 2, 14, 4, 6:18, 19, 21:25, 28, 29, 33:36, 38, 47:54))
 FS_LB_Thinness = FS_LB_Stunting
+FS_LB_StuntingYoung = FS_LB_Stunting
+FS_LB_ThinnessYoung = FS_LB_Stunting
+FS_LB_WastingYoung = FS_LB_Stunting
 ```
 
 #####
@@ -1025,22 +1409,22 @@ library(arules)
 library(arulesViz)
 ARL_Stunting = apriori(stunting,
                         parameter = list(support = 0.1, confidence = 0.8),
-                        maxlen = 4
+                        maxlen = 3
                         )
 ARL_Thinness = apriori(thinness,
                         parameter = list(support = 0.1, confidence = 0.8),
-                        maxlen = 4
+                        maxlen = 3
                         )
 ARL_StuntingYoung = apriori(stuntingYoung,
                         parameter = list(support = 0.1, confidence = 0.8),
-                        maxlen = 4
+                        maxlen = 3
                         )
 ARL_ThinnessYoung = apriori(thinnessYoung,
                         parameter = list(support = 0.1, confidence = 0.8),
-                        maxlen = 4
+                        maxlen = 3
                         )
 ARL_WastingYoung = apriori(wastingYoung,
                         parameter = list(support = 0.1, confidence = 0.8),
-                        maxlen = 4
+                        maxlen = 3
                         )
 ```
