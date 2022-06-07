@@ -197,22 +197,6 @@ reducedSurvey[[75]] = as.numeric(reducedSurvey[[75]]) #Can typecast directly to 
 reducedSurvey[[76]] = as.numeric(reducedSurvey[[76]])
 reducedSurvey[[96]] = as.numeric(reducedSurvey[[96]])
 ################################################################################
-#Convert "Others" disease presence factor from datatype "character" recording names of other present diseases to a binary recording presence of other diseases
-# otherDisease = c()
-# for (i in 1:1036){
-#   if (is.na(reducedSurvey[[i, 5]])){
-#       otherDisease[[i]] = 0
-#       next
-#   }
-#   if (reducedSurvey[[i,5]] == "0"){
-#     otherDisease[[i]] = 0
-#   }else{
-#     otherDisease[[i]] = 1
-#   }
-# }
-# reducedSurvey[[5]] = as.numeric(as.character(otherDisease)) #Can't convert directly from double to numeric
-# names(reducedSurvey)[[5]] = "OtherDisease"
-################################################################################
 #These factors have number measurements but are of datatype "character"; simple conversion to datatype "numeric"
 changeInds = c(19, 21, 23, 31:42, 50:59, 64:68, 72, 76, 77, 82:117)
 for (factor in changeInds){
@@ -457,7 +441,7 @@ processed = processed[, -c(38:39)]
 
 #Change ternary variables into binaries based on biological significance
 for (sample in 1:1036){
-  for (factor in c(33:39)){
+  for (factor in c(33:37)){
     if (processed[[sample, factor]] == 2){
       processed[[sample, factor]] = 0
     }else{
@@ -467,6 +451,23 @@ for (sample in 1:1036){
 }
 names(processed)[[33]] = "RiverBathing"
 names(processed)[[34]] = "RiverLaundry"
+
+for (sample in 1:1036){
+ if (processed[[sample, 38]] == 1){
+   processed[[sample, 38]] = 0
+ }else{
+   processed[[sample, 38]] = 1
+ }
+}
+
+for (sample in 1:1036){
+  if (processed[[sample, 39]] != 0){
+    processed[[sample, 39]] = 0
+  }else if (processed[[sample, 39]] == 0){
+    processed[[sample, 39]] = 1
+  }
+}
+names(processed)[[39]] = "NeverWashFruit"
 
 #More ternary variables, but split differently according to biological significance
 for (sample in 1:1036){
@@ -478,6 +479,22 @@ for (sample in 1:1036){
     }
   }
 }
+
+#This loop below does two things: it re-formats data so 0 is false and 1 is true, OR turns already-correct but useless data into correctly-encoded data (i.e. "NoPhone" and "NoWaterInHouse")
+for (sample in 1:1036){
+  for (factor in c(23,28,30,31,36,37)){
+    if (processed[[sample, factor]] == 1){
+      processed[[sample, factor]] = 0
+    }else{
+      processed[[sample, factor]] = 1
+    }
+  }
+}
+names(processed)[[23]] = "NoPhone"
+names(processed)[[28]] = "NoWaterInHouse"
+names(processed)[[31]] = "NoFamLat"
+names(processed)[[36]] = "DontUseSchoolLat"
+names(processed)[[37]] = "DontUseTP"
 ```
 
 ```{r Dependent Variable Calculations}
@@ -953,8 +970,8 @@ write.csv(cbind(
           )
 OR_WastingYoung = glm(Wasting~., data = wastingYoung, family = "binomial")
 write.csv(cbind(
-          tidy(OR_WastingYoung, exponentiate = TRUE, conf.level = 0.95),
-          exp(confint(OR_WastingYoung))),
+          tidy(OR_WastingYoung, exponentiate = TRUE, conf.level = 0.95)),
+          #exp(confint(OR_WastingYoung))),
           "OR_WastingYoung.csv"
           )
 
