@@ -995,7 +995,7 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
 # balanced datasets.
 #####
 ```{r ReliefF}
-#This one takes ~3 hours to run. Have fun waiting.
+#This one takes ~90 minutes to run. Have fun waiting.
 library(FSelectorRcpp)
 ################################################################################
 FS_RLF_Stunting = list()
@@ -1057,6 +1057,101 @@ for (i in 1:10){
     FS_RLF_WastingYoung[[i]][[j]] = relF[order(relF$importance), ]
   }
 }
+################################################################################
+```
+
+```{r ReliefF Averaging}
+#Averaging
+################################################################################
+AVG_FS_RLF_Stunting = data.frame(Importance = double())
+COPY = FS_RLF_Stunting
+for (factor in names(stunting)[1:54]){
+  sum = 0
+  for (i in 1:10){
+    for (j in 1:10){
+      index = which(COPY[[i]][[j]]$attributes == factor)
+      if (is.na(COPY[[i]][[j]]$importance[[index]])){
+        next
+      }else{
+        sum = sum + COPY[[i]][[j]]$importance[[index]]
+      }
+    }
+  }
+  AVG_FS_RLF_Stunting[[factor, 1]] = sum/100
+}
+write.csv(AVG_FS_RLF_Stunting, "AVG_FS_RLF_Stunting.csv")
+################################################################################
+AVG_FS_RLF_Thinness = data.frame(Importance = double())
+COPY = FS_RLF_Thinness
+for (factor in names(thinness)[1:54]){
+  sum = 0
+  for (i in 1:10){
+    for (j in 1:10){
+      index = which(COPY[[i]][[j]]$attributes == factor)
+      if (is.na(COPY[[i]][[j]]$importance[[index]])){
+        next
+      }else{
+        sum = sum + COPY[[i]][[j]]$importance[[index]]
+      }
+    }
+  }
+  AVG_FS_RLF_Thinness[[factor, 1]] = sum/100
+}
+write.csv(AVG_FS_RLF_Thinness, "AVG_FS_RLF_Thinness.csv")
+################################################################################
+AVG_FS_RLF_StuntingYoung = data.frame(Importance = double())
+COPY = FS_RLF_StuntingYoung
+for (factor in names(StuntingYoung)[1:54]){
+  sum = 0
+  for (i in 1:10){
+    for (j in 1:10){
+      index = which(COPY[[i]][[j]]$attributes == factor)
+      if (is.na(COPY[[i]][[j]]$importance[[index]])){
+        next
+      }else{
+        sum = sum + COPY[[i]][[j]]$importance[[index]]
+      }
+    }
+  }
+  AVG_FS_RLF_StuntingYoung[[factor, 1]] = sum/100
+}
+write.csv(AVG_FS_RLF_StuntingYoung, "AVG_FS_RLF_StuntingYoung.csv")
+################################################################################
+AVG_FS_RLF_ThinnessYoung = data.frame(Importance = double())
+COPY = FS_RLF_ThinnessYoung
+for (factor in names(thinnessYoung)[1:54]){
+  sum = 0
+  for (i in 1:10){
+    for (j in 1:10){
+      index = which(COPY[[i]][[j]]$attributes == factor)
+      if (is.na(COPY[[i]][[j]]$importance[[index]])){
+        next
+      }else{
+        sum = sum + COPY[[i]][[j]]$importance[[index]]
+      }
+    }
+  }
+  AVG_FS_RLF_ThinnessYoung[[factor, 1]] = sum/100
+}
+write.csv(AVG_FS_RLF_ThinnessYoung, "AVG_FS_RLF_ThinnessYoung.csv")
+################################################################################
+AVG_FS_RLF_WastingYoung = data.frame(Importance = double())
+COPY = FS_RLF_WastingYoung
+for (factor in names(WastingYoung)[1:54]){
+  sum = 0
+  for (i in 1:10){
+    for (j in 1:10){
+      index = which(COPY[[i]][[j]]$attributes == factor)
+      if (is.na(COPY[[i]][[j]]$importance[[index]])){
+        next
+      }else{
+        sum = sum + COPY[[i]][[j]]$importance[[index]]
+      }
+    }
+  }
+  AVG_FS_RLF_WastingYoung[[factor, 1]] = sum/100
+}
+write.csv(AVG_FS_RLF_WastingYoung, "AVG_FS_RLF_WastingYoung.csv")
 ################################################################################
 ```
 
