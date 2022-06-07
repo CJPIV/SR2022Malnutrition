@@ -1065,7 +1065,11 @@ for (i in 1:10){
 ```{r ReliefF Averaging}
 #Averaging
 ################################################################################
-AVG_FS_RLF_Stunting = data.frame(Importance = double())
+AVG_FS_RLF = data.frame(Stunting = double(),
+                        Thinness = double(),
+                        StuntingYoung = double(),
+                        ThinnessYoung = double(),
+                        WastingYoung = double())
 COPY = FS_RLF_Stunting
 for (factor in names(stunting)[1:54]){
   sum = 0
@@ -1079,11 +1083,9 @@ for (factor in names(stunting)[1:54]){
       }
     }
   }
-  AVG_FS_RLF_Stunting[[factor, 1]] = sum/100
+  AVG_FS_RLF[[factor, 1]] = sum/100
 }
-write.csv(AVG_FS_RLF_Stunting, "AVG_FS_RLF_Stunting.csv")
 ################################################################################
-AVG_FS_RLF_Thinness = data.frame(Importance = double())
 COPY = FS_RLF_Thinness
 for (factor in names(thinness)[1:54]){
   sum = 0
@@ -1097,11 +1099,9 @@ for (factor in names(thinness)[1:54]){
       }
     }
   }
-  AVG_FS_RLF_Thinness[[factor, 1]] = sum/100
+  AVG_FS_RLF[[factor, 2]] = sum/100
 }
-write.csv(AVG_FS_RLF_Thinness, "AVG_FS_RLF_Thinness.csv")
 ################################################################################
-AVG_FS_RLF_StuntingYoung = data.frame(Importance = double())
 COPY = FS_RLF_StuntingYoung
 for (factor in names(StuntingYoung)[1:54]){
   sum = 0
@@ -1115,11 +1115,9 @@ for (factor in names(StuntingYoung)[1:54]){
       }
     }
   }
-  AVG_FS_RLF_StuntingYoung[[factor, 1]] = sum/100
+  AVG_FS_RLF[[factor, 3]] = sum/100
 }
-write.csv(AVG_FS_RLF_StuntingYoung, "AVG_FS_RLF_StuntingYoung.csv")
 ################################################################################
-AVG_FS_RLF_ThinnessYoung = data.frame(Importance = double())
 COPY = FS_RLF_ThinnessYoung
 for (factor in names(thinnessYoung)[1:54]){
   sum = 0
@@ -1133,11 +1131,9 @@ for (factor in names(thinnessYoung)[1:54]){
       }
     }
   }
-  AVG_FS_RLF_ThinnessYoung[[factor, 1]] = sum/100
+  AVG_FS_RLF[[factor, 4]] = sum/100
 }
-write.csv(AVG_FS_RLF_ThinnessYoung, "AVG_FS_RLF_ThinnessYoung.csv")
 ################################################################################
-AVG_FS_RLF_WastingYoung = data.frame(Importance = double())
 COPY = FS_RLF_WastingYoung
 for (factor in names(WastingYoung)[1:54]){
   sum = 0
@@ -1151,9 +1147,9 @@ for (factor in names(WastingYoung)[1:54]){
       }
     }
   }
-  AVG_FS_RLF_WastingYoung[[factor, 1]] = sum/100
+  AVG_FS_RLF[[factor, 5]] = sum/100
 }
-write.csv(AVG_FS_RLF_WastingYoung, "AVG_FS_RLF_WastingYoung.csv")
+write.csv(AVG_FS_RLF, "AVG_FS_RLF.csv")
 ################################################################################
 ```
 
@@ -1234,7 +1230,12 @@ for (i in 1:10){
 
 ```{r InfoGain Averaging}
 ################################################################################
-AVG_FS_IG_Stunting = data.frame(Importance = double())
+AVG_FS_IG = data.frame(Stunting = double(),
+                       Thinness = double(),
+                       StuntingYoung = double(),
+                       ThinnessYoung = double(),
+                       WastingYoung = double()
+                       )
 COPY = FS_IG_Stunting
 for (factor in names(stunting)[1:54]){
   sum = 0
@@ -1248,11 +1249,9 @@ for (factor in names(stunting)[1:54]){
       }
     }
   }
-  AVG_FS_IG_Stunting[[factor, 1]] = sum/100
+  AVG_FS_IG[[factor, 1]] = sum/100
 }
-write.csv(AVG_FS_IG_Stunting, "AVG_IG_IG_Stunting.csv")
 ################################################################################
-AVG_FS_IG_Thinness = data.frame(Importance = double())
 COPY = FS_IG_Thinness
 for (factor in names(thinness)[1:54]){
   sum = 0
@@ -1266,11 +1265,9 @@ for (factor in names(thinness)[1:54]){
       }
     }
   }
-  AVG_FS_IG_Thinness[[factor, 1]] = sum/100
+  AVG_FS_IG[[factor, 2]] = sum/100
 }
-write.csv(AVG_FS_IG_Thinness, "AVG_IG_IG_Thinness.csv")
 ################################################################################
-AVG_FS_IG_StuntingYoung = data.frame(Importance = double())
 COPY = FS_IG_StuntingYoung
 for (factor in names(StuntingYoung)[1:54]){
   sum = 0
@@ -1284,11 +1281,9 @@ for (factor in names(StuntingYoung)[1:54]){
       }
     }
   }
-  AVG_FS_IG_StuntingYoung[[factor, 1]] = sum/100
+  AVG_FS_IG[[factor, 3]] = sum/100
 }
-write.csv(AVG_FS_IG_StuntingYoung, "AVG_IG_IG_StuntingYoung.csv")
 ################################################################################
-AVG_FS_IG_ThinnessYoung = data.frame(Importance = double())
 COPY = FS_IG_ThinnessYoung
 for (factor in names(thinnessYoung)[1:54]){
   sum = 0
@@ -1302,11 +1297,9 @@ for (factor in names(thinnessYoung)[1:54]){
       }
     }
   }
-  AVG_FS_IG_ThinnessYoung[[factor, 1]] = sum/100
+  AVG_FS_IG[[factor, 4]] = sum/100
 }
-write.csv(AVG_FS_IG_ThinnessYoung, "AVG_IG_IG_ThinnessYoung.csv")
 ################################################################################
-AVG_FS_IG_WastingYoung = data.frame(Importance = double())
 COPY = FS_IG_WastingYoung
 for (factor in names(WastingYoung)[1:54]){
   sum = 0
@@ -1320,9 +1313,9 @@ for (factor in names(WastingYoung)[1:54]){
       }
     }
   }
-  AVG_FS_IG_WastingYoung[[factor, 1]] = sum/100
+  AVG_FS_IG[[factor, 5]] = sum/100
 }
-write.csv(AVG_FS_IG_WastingYoung, "AVG_IG_IG_WastingYoung.csv")
+write.csv(AVG_FS_IG, "AVG_FS_IG.csv")
 ################################################################################
 ```
 
@@ -1341,7 +1334,7 @@ for (i in 1:10){
     FS_MRMR_Stunting[[i]][[j]] = mRMR.classic("mRMRe.Filter",
                                               data = mrmr,
                                               target_indices = 55,
-                                              feature_count = 13
+                                              feature_count = 15
                                               )
   }
 }
@@ -1354,7 +1347,7 @@ for (i in 1:10){
     FS_MRMR_Thinness[[i]][[j]] = mRMR.classic("mRMRe.Filter",
                                               data = mrmr,
                                               target_indices = 55,
-                                              feature_count = 13
+                                              feature_count = 15
                                               )
   }
 }
@@ -1367,7 +1360,7 @@ for (i in 1:10){
     FS_MRMR_StuntingYoung[[i]][[j]] = mRMR.classic("mRMRe.Filter",
                                               data = mrmr,
                                               target_indices = 55,
-                                              feature_count = 13
+                                              feature_count = 15
                                               )
   }
 }
@@ -1380,7 +1373,7 @@ for (i in 1:10){
     FS_MRMR_ThinnessYoung[[i]][[j]] = mRMR.classic("mRMRe.Filter",
                                               data = mrmr,
                                               target_indices = 55,
-                                              feature_count = 13
+                                              feature_count = 15
                                               )
   }
 }
@@ -1393,7 +1386,7 @@ for (i in 1:10){
     FS_MRMR_WastingYoung[[i]][[j]] = mRMR.classic("mRMRe.Filter",
                                               data = mrmr,
                                               target_indices = 55,
-                                              feature_count = 13
+                                              feature_count = 15
                                               )
   }
 }
