@@ -1461,11 +1461,7 @@ for (i in 1:10){
 
 ```{r Literature-Based}
 #This one is pretty quick (it's almost like there's no computations...)
-FS_LB_Stunting = list(c(1, 2, 14, 4, 6:18, 19, 21:25, 28, 29, 33:36, 38, 47:54))
-FS_LB_Thinness = FS_LB_Stunting
-FS_LB_StuntingYoung = FS_LB_Stunting
-FS_LB_ThinnessYoung = FS_LB_Stunting
-FS_LB_WastingYoung = FS_LB_Stunting
+FS_LB = list(c(1, 2, 14, 4, 6:18, 19, 21:25, 28, 29, 33:36, 38, 47:54))
 ```
 
 #####
@@ -1590,26 +1586,34 @@ write.csv(cbind(
 #Takes a bit of time - couple minutes, maybe.
 #DO NOT manually exit if program is slow or frozen; the Apriori algorithm is written in C, and has no qualms with messing things up in your computer if you interrupt it.
 #Also, warning: do not increase maxlen above 3 unless you have a lot of free time and want your computer to be unresponsive.
+
+#https://www.geeksforgeeks.org/apriori-algorithm-in-r-programming/
 library(arules)
 library(arulesViz)
 ARL_Stunting = apriori(stunting,
-                        parameter = list(support = 0.1, confidence = 0.8),
-                        maxlen = 3
+                        parameter = list(support = 0.01, confidence = 0.33),
+                        maxlen = 3,
+                        minlen = 2
                         )
+inspect(ARL_Stunting)[1:10]
 ARL_Thinness = apriori(thinness,
-                        parameter = list(support = 0.1, confidence = 0.8),
-                        maxlen = 3
+                        parameter = list(support = 0.01, confidence = 0.33),
+                        maxlen = 3,
+                        minlen = 2
                         )
-ARL_StuntingYoung = apriori(stuntingYoung,
-                        parameter = list(support = 0.1, confidence = 0.8),
-                        maxlen = 3
+ARL_StuntingYoung = apriori(StuntingYoung,
+                        parameter = list(support = 0.01, confidence = 0.33),
+                        maxlen = 3,
+                        minlen = 2
                         )
 ARL_ThinnessYoung = apriori(thinnessYoung,
-                        parameter = list(support = 0.1, confidence = 0.8),
-                        maxlen = 3
+                        parameter = list(support = 0.01, confidence = 0.33),
+                        maxlen = 3,
+                        minlen = 2
                         )
-ARL_WastingYoung = apriori(wastingYoung,
-                        parameter = list(support = 0.1, confidence = 0.8),
-                        maxlen = 3
+ARL_WastingYoung = apriori(WastingYoung,
+                        parameter = list(support = 0.01, confidence = 0.33),
+                        maxlen = 3,
+                        minlen = 2
                         )
 ```
