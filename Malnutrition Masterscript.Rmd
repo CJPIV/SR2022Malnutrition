@@ -1060,6 +1060,8 @@ for (i in 1:10){
 ################################################################################
 ```
 
+
+
 ```{r ReliefF Averaging}
 #Averaging
 ################################################################################
@@ -1225,6 +1227,102 @@ for (i in 1:10){
     FS_IG_WastingYoung[[i]][[j]] = infogain[order(infogain$importance), ]
   }
 }
+################################################################################
+```
+
+
+
+```{r InfoGain Averaging}
+################################################################################
+AVG_FS_IG_Stunting = data.frame(Importance = double())
+COPY = FS_IG_Stunting
+for (factor in names(stunting)[1:54]){
+  sum = 0
+  for (i in 1:10){
+    for (j in 1:10){
+      index = which(COPY[[i]][[j]]$attributes == factor)
+      if (is.na(COPY[[i]][[j]]$importance[[index]])){
+        next
+      }else{
+        sum = sum + COPY[[i]][[j]]$importance[[index]]
+      }
+    }
+  }
+  AVG_FS_IG_Stunting[[factor, 1]] = sum/100
+}
+write.csv(AVG_FS_IG_Stunting, "AVG_IG_IG_Stunting.csv")
+################################################################################
+AVG_FS_IG_Thinness = data.frame(Importance = double())
+COPY = FS_IG_Thinness
+for (factor in names(thinness)[1:54]){
+  sum = 0
+  for (i in 1:10){
+    for (j in 1:10){
+      index = which(COPY[[i]][[j]]$attributes == factor)
+      if (is.na(COPY[[i]][[j]]$importance[[index]])){
+        next
+      }else{
+        sum = sum + COPY[[i]][[j]]$importance[[index]]
+      }
+    }
+  }
+  AVG_FS_IG_Thinness[[factor, 1]] = sum/100
+}
+write.csv(AVG_FS_IG_Thinness, "AVG_IG_IG_Thinness.csv")
+################################################################################
+AVG_FS_IG_StuntingYoung = data.frame(Importance = double())
+COPY = FS_IG_StuntingYoung
+for (factor in names(StuntingYoung)[1:54]){
+  sum = 0
+  for (i in 1:10){
+    for (j in 1:10){
+      index = which(COPY[[i]][[j]]$attributes == factor)
+      if (is.na(COPY[[i]][[j]]$importance[[index]])){
+        next
+      }else{
+        sum = sum + COPY[[i]][[j]]$importance[[index]]
+      }
+    }
+  }
+  AVG_FS_IG_StuntingYoung[[factor, 1]] = sum/100
+}
+write.csv(AVG_FS_IG_StuntingYoung, "AVG_IG_IG_StuntingYoung.csv")
+################################################################################
+AVG_FS_IG_ThinnessYoung = data.frame(Importance = double())
+COPY = FS_IG_ThinnessYoung
+for (factor in names(thinnessYoung)[1:54]){
+  sum = 0
+  for (i in 1:10){
+    for (j in 1:10){
+      index = which(COPY[[i]][[j]]$attributes == factor)
+      if (is.na(COPY[[i]][[j]]$importance[[index]])){
+        next
+      }else{
+        sum = sum + COPY[[i]][[j]]$importance[[index]]
+      }
+    }
+  }
+  AVG_FS_IG_ThinnessYoung[[factor, 1]] = sum/100
+}
+write.csv(AVG_FS_IG_ThinnessYoung, "AVG_IG_IG_ThinnessYoung.csv")
+################################################################################
+AVG_FS_IG_WastingYoung = data.frame(Importance = double())
+COPY = FS_IG_WastingYoung
+for (factor in names(WastingYoung)[1:54]){
+  sum = 0
+  for (i in 1:10){
+    for (j in 1:10){
+      index = which(COPY[[i]][[j]]$attributes == factor)
+      if (is.na(COPY[[i]][[j]]$importance[[index]])){
+        next
+      }else{
+        sum = sum + COPY[[i]][[j]]$importance[[index]]
+      }
+    }
+  }
+  AVG_FS_IG_WastingYoung[[factor, 1]] = sum/100
+}
+write.csv(AVG_FS_IG_WastingYoung, "AVG_IG_IG_WastingYoung.csv")
 ################################################################################
 ```
 
@@ -1415,8 +1513,7 @@ XGB_SMOTE_Thinness
 
 
 ```{r Multivariate Logistic Regression, warnings = FALSE}
-#First MVLoR is for Odds Ratios, uses entire dataset.
-#Second is for FS. Uses traditional train/test splits and 95% prevalence cutoff thresholds for choosing features.
+#This MVLoR is for Odds Ratios, uses entire dataset.
 #library(devtools)
 library(broom)
 library(car)
