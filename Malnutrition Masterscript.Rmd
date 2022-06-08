@@ -1149,7 +1149,7 @@ for (factor in names(WastingYoung)[1:54]){
   }
   AVG_FS_RLF[[factor, 5]] = sum/100
 }
-write.csv(AVG_FS_RLF, "AVG_FS_RLF.csv")
+write.csv(AVG_FS_RLF, "FS_RLF_Avg.csv")
 ################################################################################
 ```
 
@@ -1315,7 +1315,7 @@ for (factor in names(WastingYoung)[1:54]){
   }
   AVG_FS_IG[[factor, 5]] = sum/100
 }
-write.csv(AVG_FS_IG, "AVG_FS_IG.csv")
+write.csv(AVG_FS_IG, "FS_IG_Avg.csv")
 ################################################################################
 ```
 
@@ -1459,42 +1459,10 @@ for (i in 1:10){
 
 
 
-```{r Literature-Based}
-#This one is pretty quick (it's almost like there's no computations...)
-FS_LB = list(c(1, 2, 14, 4, 6:18, 19, 21:25, 28, 29, 33:36, 38, 47:54))
-```
+```{r Repeated Univariate Logistic Regression (FS)}
+#This one takes ~5 minutes.
+#Repeated Univariate Logistic Regression for FS in training models
 
-#####
-# CLASSIFIER MODELS:
-#####
-```{r Random Forest}
-RF_UB_Stunting
-RF_SMOTE_Stunting
-RF_UB_Thinness
-RF_SMOTE_Thinness
-```
-
-
-
-```{r Support Vector Machine}
-SVM_UB_Stunting
-SVM_SMOTE_Stunting
-SVM_UB_Thinness
-SVM_SMOTE_Thinness
-```
-
-
-
-```{r Extreme Gradient Boosting}
-XGB_UB_Stunting
-XGB_SMOTE_Stunting
-XGB_UB_Thinness
-XGB_SMOTE_Thinness
-```
-
-
-
-```{r Univariate Logistic Regression}
 library(broom)
 library(car)
 library(performance)
@@ -1607,12 +1575,210 @@ for (factor in names(stunting)[1:54]){
   results[[factor, 10]] = CORSum/100
 }
 ################################################################################
+write.csv(results, "FS_R-UVLoR.csv")
 ```
 
 
 
-```{r Multivariate Logistic Regression, warnings = FALSE}
+```{r Repeated Multivariate Logistic Regression (FS), warning = FALSE}
+results = data.frame(StuntingRejects = double(), StuntingAOR = double(),
+                     ThinnessRejects = double(), ThinnessAOR = double(),
+                     StuntingYoungRejects = double(), StuntingYoungAOR = double(),
+                     ThinnessYoungRejects = double(), ThinnessYoungAOR = double(),
+                     WastingYoungRejects = double(), WastingYoungAOR = double()
+                     )
+################################################################################
+#Stunting PV-based feature selection & average crude odds ratios
+for (factor in names(stunting)[1:54]){
+  results[[factor, 1]] = 0 #Must instantiate columns or next lines can't access them
+      results[[factor, 2]] = 0 # ^
+}
+
+for (i in 1:10){
+  for (j in 1:10){
+    index = 0
+    UVLoR = glm(Stunting~.,
+                data = SMOTEStunting[[i]][[j]][["data"]],
+                family = "binomial"
+                )
+    regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+    for (factor in names(stunting)[1:54]){
+      index = index + 1
+      if (!is.na(regSummary[[index, 5]]) && regSummary[[index, 5]] < 0.05){
+        results[[factor, 1]] = results[[factor, 1]] + 1
+      }
+      if (!is.na(regSummary[[index, 2]]) && regSummary[[index, 5]] < 0.05){ #Explained below
+        results[[factor, 2]] = results[[factor, 2]] + regSummary[[index, 2]]
+      }
+    }
+  }
+}
+#Dividing AOR by # of times we reject H0; had issue before where a factor couldn't be rejected but had a very high p-value and thus generated an absurd OR.
+#Now we're only incrementing a factor's OR when it is significant, and dividing it by the # of times it is significant.
+#We lose data every time a factor isn't significant, but in exchange get reliable AOR for use in describing the effect of significant factors
+for (factor in names(stunting)[1:54]){
+  results[[factor, 2]] = results[[factor, 2]]/results[[factor, 1]] 
+}
+################################################################################
+#Thinness PV-based feature selection & average crude odds ratios
+for (factor in names(stunting)[1:54]){
+  results[[factor, 3]] = 0 #Must instantiate columns or next lines can't access them
+      results[[factor, 4]] = 0 # ^
+}
+
+for (i in 1:10){
+  for (j in 1:10){
+    index = 0
+    UVLoR = glm(Thinness~.,
+                data = SMOTEThinness[[i]][[j]][["data"]],
+                family = "binomial"
+                )
+    regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+    for (factor in names(stunting)[1:54]){
+      index = index + 1
+      if (!is.na(regSummary[[index, 5]]) && regSummary[[index, 5]] < 0.05){
+        results[[factor, 3]] = results[[factor, 3]] + 1
+      }
+      if (!is.na(regSummary[[index, 2]]) && regSummary[[index, 5]] < 0.05){
+        results[[factor, 4]] = results[[factor, 4]] + regSummary[[index, 4]]
+      }
+    }
+  }
+}
+for (factor in names(stunting)[1:54]){
+  results[[factor, 4]] = results[[factor, 4]]/results[[factor, 3]] 
+}
+################################################################################
+#StuntingYoung PV-based feature selection & average crude odds ratios
+for (factor in names(stunting)[1:54]){
+  results[[factor, 5]] = 0 #Must instantiate columns or next lines can't access them
+      results[[factor, 6]] = 0 # ^
+}
+
+for (i in 1:10){
+  for (j in 1:10){
+    index = 0
+    UVLoR = glm(Stunting~.,
+                data = SMOTEStuntingYoung[[i]][[j]][["data"]],
+                family = "binomial"
+                )
+    regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+    for (factor in names(stunting)[1:54]){
+      index = index + 1
+      if (!is.na(regSummary[[index, 5]]) && regSummary[[index, 5]] < 0.05){
+        results[[factor, 5]] = results[[factor, 5]] + 1
+      }
+      if (!is.na(regSummary[[index, 2]]) && regSummary[[index, 5]] < 0.05){
+        results[[factor, 6]] = results[[factor, 6]] + regSummary[[index, 6]]
+      }
+    }
+  }
+}
+for (factor in names(stunting)[1:54]){
+  results[[factor, 6]] = results[[factor, 6]]/results[[factor, 5]] 
+}
+################################################################################
+#ThinnessYoung PV-based feature selection & average crude odds ratios
+for (factor in names(stunting)[1:54]){
+  results[[factor, 7]] = 0 #Must instantiate columns or next lines can't access them
+      results[[factor, 8]] = 0 # ^
+}
+
+for (i in 1:10){
+  for (j in 1:10){
+    index = 0
+    UVLoR = glm(Thinness~.,
+                data = SMOTEThinnessYoung[[i]][[j]][["data"]],
+                family = "binomial"
+                )
+    regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+    for (factor in names(stunting)[1:54]){
+      index = index + 1
+      if (!is.na(regSummary[[index, 5]]) && regSummary[[index, 5]] < 0.05){
+        results[[factor, 7]] = results[[factor, 7]] + 1
+      }
+      if (!is.na(regSummary[[index, 2]]) && regSummary[[index, 5]] < 0.05){
+        results[[factor, 8]] = results[[factor, 8]] + regSummary[[index, 8]]
+      }
+    }
+  }
+}
+for (factor in names(stunting)[1:54]){
+  results[[factor, 8]] = results[[factor, 8]]/results[[factor, 7]] 
+}
+################################################################################
+#WastingYoung PV-based feature selection & average crude odds ratios
+for (factor in names(stunting)[1:54]){
+  results[[factor, 9]] = 0 #Must instantiate columns or next lines can't access them
+      results[[factor, 10]] = 0 # ^
+}
+
+for (i in 1:10){
+  for (j in 1:10){
+    index = 0
+    UVLoR = glm(Wasting~.,
+                data = SMOTEWastingYoung[[i]][[j]][["data"]],
+                family = "binomial"
+                )
+    regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+    for (factor in names(stunting)[1:54]){
+      index = index + 1
+      if (!is.na(regSummary[[index, 5]]) && regSummary[[index, 5]] < 0.05){
+        results[[factor, 9]] = results[[factor, 9]] + 1
+      }
+      if (!is.na(regSummary[[index, 2]]) && regSummary[[index, 5]] < 0.05){
+        results[[factor, 10]] = results[[factor, 10]] + regSummary[[index, 10]]
+      }
+    }
+  }
+}
+for (factor in names(stunting)[1:54]){
+  results[[factor, 10]] = results[[factor, 10]]/results[[factor, 9]] 
+}
+################################################################################
+write.csv(results, "FS_R-MVLoR.csv")
+```
+
+
+
+```{r Literature-Based}
+#This one is pretty quick (it's almost like there's no computations...)
+FS_LB = list(c(1, 2, 14, 4, 6:18, 19, 21:25, 28, 29, 33:36, 38, 47:54))
+```
+
+#####
+# CLASSIFIER MODELS:
+#####
+```{r Random Forest}
+RF_UB_Stunting
+RF_SMOTE_Stunting
+RF_UB_Thinness
+RF_SMOTE_Thinness
+```
+
+
+
+```{r Support Vector Machine}
+SVM_UB_Stunting
+SVM_SMOTE_Stunting
+SVM_UB_Thinness
+SVM_SMOTE_Thinness
+```
+
+
+
+```{r Extreme Gradient Boosting}
+XGB_UB_Stunting
+XGB_SMOTE_Stunting
+XGB_UB_Thinness
+XGB_SMOTE_Thinness
+```
+
+
+
+```{r Multivariate Logistic Regression (OR), warning = FALSE}
 #This MVLoR is for Odds Ratios, uses entire dataset.
+#NOT used for feature selection for classifier models; do not mistake this data for the training/test set-derived repeated multivariate logistic regression above.
 #library(devtools)
 library(broom)
 library(car)
