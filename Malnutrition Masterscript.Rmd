@@ -1495,8 +1495,118 @@ XGB_SMOTE_Thinness
 
 
 ```{r Univariate Logistic Regression}
-#Classifier or FS?
+library(broom)
+library(car)
+library(performance)
+library(MASS)
 
+results = data.frame(StuntingRejects = double(), StuntingOR = double(),
+                     ThinnessRejects = double(), ThinnessOR = double(),
+                     StuntingYoungRejects = double(), StuntingYoungOR = double(),
+                     ThinnessYoungRejects = double(), ThinnessYoungOR = double(),
+                     WastingYoungRejects = double(), WastingYoungOR = double()
+                     )
+################################################################################
+#Stunting PV-based feature selection & average crude odds ratios
+for (factor in names(stunting)[1:54]){
+  results[[factor, 1]] = 0
+  CORSum = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Stunting","~",factor),
+                    data = SMOTEStunting[[i]][[j]][["data"]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 1]] = results[[factor, 1]] + 1
+        }
+        CORSum = CORSum + regSummary[[2, 2]] #COR
+    }
+  }
+  results[[factor, 2]] = CORSum/100
+}
+################################################################################
+#Thinness PV-based feature selection & average crude odds ratios
+for (factor in names(stunting)[1:54]){
+  results[[factor, 3]] = 0
+  CORSum = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Thinness","~",factor),
+                    data = SMOTEThinness[[i]][[j]][["data"]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 3]] = results[[factor, 3]] + 1
+        }
+        CORSum = CORSum + regSummary[[2, 2]] #COR
+    }
+  }
+  results[[factor, 4]] = CORSum/100
+}
+################################################################################
+#StuntingYoung PV-based feature selection & average crude odds ratios
+for (factor in names(stunting)[1:54]){
+  results[[factor, 5]] = 0
+  CORSum = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Stunting","~",factor),
+                    data = SMOTEStuntingYoung[[i]][[j]][["data"]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 5]] = results[[factor, 5]] + 1
+        }
+        CORSum = CORSum + regSummary[[2, 2]] #COR
+    }
+  }
+  results[[factor, 6]] = CORSum/100
+}
+################################################################################
+#ThinnessYoung PV-based feature selection & average crude odds ratios
+for (factor in names(stunting)[1:54]){
+  results[[factor, 7]] = 0
+  CORSum = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Thinness","~",factor),
+                    data = SMOTEThinnessYoung[[i]][[j]][["data"]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 7]] = results[[factor, 7]] + 1
+        }
+        CORSum = CORSum + regSummary[[2, 2]] #COR
+    }
+  }
+  results[[factor, 8]] = CORSum/100
+}
+################################################################################
+#WastingYoung PV-based feature selection & average crude odds ratios
+for (factor in names(stunting)[1:54]){
+  results[[factor, 9]] = 0
+  CORSum = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Wasting","~",factor),
+                    data = SMOTEWastingYoung[[i]][[j]][["data"]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 9]] = results[[factor, 9]] + 1
+        }
+        CORSum = CORSum + regSummary[[2, 2]] #COR
+    }
+  }
+  results[[factor, 10]] = CORSum/100
+}
+################################################################################
 ```
 
 
@@ -1588,14 +1698,15 @@ write.csv(cbind(
 #Also, warning: do not increase maxlen above 3 unless you have a lot of free time and want your computer to be unresponsive.
 
 #https://www.geeksforgeeks.org/apriori-algorithm-in-r-programming/
+#Should I be doing this on SMOTEd data and averaging??
 library(arules)
 library(arulesViz)
 ARL_Stunting = apriori(stunting,
-                        parameter = list(support = 0.01, confidence = 0.33),
-                        maxlen = 3,
-                        minlen = 2
+                        parameter = list(support = 0.01, confidence = 0.1),
+                        maxlen = 3
                         )
-inspect(ARL_Stunting)[1:10]
+summary(ARL_Stunting)
+inspect(ARL_Stunting)[1:5]
 ARL_Thinness = apriori(thinness,
                         parameter = list(support = 0.01, confidence = 0.33),
                         maxlen = 3,
