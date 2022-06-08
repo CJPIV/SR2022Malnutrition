@@ -1640,7 +1640,7 @@ for (i in 1:10){
         results[[factor, 3]] = results[[factor, 3]] + 1
       }
       if (!is.na(regSummary[[index, 2]]) && regSummary[[index, 5]] < 0.05){
-        results[[factor, 4]] = results[[factor, 4]] + regSummary[[index, 4]]
+        results[[factor, 4]] = results[[factor, 4]] + regSummary[[index, 2]]
       }
     }
   }
@@ -1669,7 +1669,7 @@ for (i in 1:10){
         results[[factor, 5]] = results[[factor, 5]] + 1
       }
       if (!is.na(regSummary[[index, 2]]) && regSummary[[index, 5]] < 0.05){
-        results[[factor, 6]] = results[[factor, 6]] + regSummary[[index, 6]]
+        results[[factor, 6]] = results[[factor, 6]] + regSummary[[index, 2]]
       }
     }
   }
@@ -1698,7 +1698,7 @@ for (i in 1:10){
         results[[factor, 7]] = results[[factor, 7]] + 1
       }
       if (!is.na(regSummary[[index, 2]]) && regSummary[[index, 5]] < 0.05){
-        results[[factor, 8]] = results[[factor, 8]] + regSummary[[index, 8]]
+        results[[factor, 8]] = results[[factor, 8]] + regSummary[[index, 2]]
       }
     }
   }
@@ -1727,7 +1727,7 @@ for (i in 1:10){
         results[[factor, 9]] = results[[factor, 9]] + 1
       }
       if (!is.na(regSummary[[index, 2]]) && regSummary[[index, 5]] < 0.05){
-        results[[factor, 10]] = results[[factor, 10]] + regSummary[[index, 10]]
+        results[[factor, 10]] = results[[factor, 10]] + regSummary[[index, 2]]
       }
     }
   }
