@@ -994,9 +994,10 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
 # prevent overfitting. All feature selection methods should be run on SMOTE-
 # balanced datasets.
 #####
-```{r ReliefF}
+```{r ReliefF Computations}
 #This one takes ~90 minutes to run. Have fun waiting.
 library(FSelectorRcpp)
+
 ################################################################################
 FS_RLF_Stunting = list()
 for (i in 1:10){
@@ -1062,14 +1063,20 @@ for (i in 1:10){
 
 
 
-```{r ReliefF Averaging}
-#Averaging
+```{r ReliefF Results}
+#Separated from computations so I don't have to wait an hour and a half to see if my new code can parse the results correctly
 ################################################################################
-AVG_FS_RLF = data.frame(Stunting = double(),
-                        Thinness = double(),
-                        StuntingYoung = double(),
-                        ThinnessYoung = double(),
-                        WastingYoung = double())
+FS_RLF = data.frame(Stunting = double(),
+                       Thinness = double(),
+                       StuntingYoung = double(),
+                       ThinnessYoung = double(),
+                       WastingYoung = double()
+                       )
+for (i in 1:54){
+ FS_RLF[i,] = 0
+}
+row.names(FS_RLF) = names(stunting)[1:54]
+################################################################################
 COPY = FS_RLF_Stunting
 for (factor in names(stunting)[1:54]){
   sum = 0
@@ -1158,165 +1165,103 @@ write.csv(AVG_FS_RLF, "FS_RLF_Avg.csv")
 ```{r InfoGain}
 #This one is pretty quick.
 library(FSelectorRcpp)
+
+FS_IG = data.frame(Stunting = double(),
+                       Thinness = double(),
+                       StuntingYoung = double(),
+                       ThinnessYoung = double(),
+                       WastingYoung = double()
+                       )
+for (i in 1:54){
+ FS_IG[i,] = 0
+}
+row.names(FS_IG) = names(stunting)[1:54]
 ################################################################################
-FS_IG_Stunting = list()
 for (i in 1:10){
-  FS_IG_Stunting[[i]] = list()
   for (j in 1:10){
     infogain = information_gain(formula = Stunting~.,
                               data = as.data.frame(SMOTEStunting[[i]][[j]]$data),
                               type = 'infogain',
                               equal = TRUE
                               )
-    FS_IG_Stunting[[i]][[j]] = infogain[order(infogain$importance), ]
+    infogain$importance = sort(infogain$importance, decreasing = TRUE)
+    for (k in 1:20){
+      factor = infogain[[k, 1]]
+      if (infogain[[k, 2]] > 0){
+        FS_IG[[factor, 1]] = FS_IG[[factor, 1]] + 1
+      }
+    }
   }
 }
 ################################################################################
-FS_IG_Thinness = list()
 for (i in 1:10){
-  FS_IG_Thinness[[i]] = list()
   for (j in 1:10){
     infogain = information_gain(formula = Thinness~.,
                               data = as.data.frame(SMOTEThinness[[i]][[j]]$data),
                               type = 'infogain',
                               equal = TRUE
                               )
-    FS_IG_Thinness[[i]][[j]] = infogain[order(infogain$importance), ]
+    infogain$importance = sort(infogain$importance, decreasing = TRUE)
+    for (k in 1:20){
+      factor = infogain[[k, 1]]
+      if (infogain[[k, 2]] > 0){
+        FS_IG[[factor, 2]] = FS_IG[[factor, 2]] + 1
+      }
+    }
   }
-}
-################################################################################
-FS_IG_StuntingYoung = list()
+}#########################################################################
 for (i in 1:10){
-  FS_IG_StuntingYoung[[i]] = list()
   for (j in 1:10){
     infogain = information_gain(formula = Stunting~.,
                               data = as.data.frame(SMOTEStuntingYoung[[i]][[j]]$data),
                               type = 'infogain',
                               equal = TRUE
                               )
-    FS_IG_StuntingYoung[[i]][[j]] = infogain[order(infogain$importance), ]
+    infogain$importance = sort(infogain$importance, decreasing = TRUE)
+    for (k in 1:20){
+      factor = infogain[[k, 1]]
+      if (infogain[[k, 2]] > 0){
+        FS_IG[[factor, 3]] = FS_IG[[factor, 3]] + 1
+      }
+    }
   }
 }
 ################################################################################
-FS_IG_ThinnessYoung = list()
 for (i in 1:10){
-  FS_IG_ThinnessYoung[[i]] = list()
   for (j in 1:10){
     infogain = information_gain(formula = Thinness~.,
                               data = as.data.frame(SMOTEThinnessYoung[[i]][[j]]$data),
                               type = 'infogain',
                               equal = TRUE
                               )
-    FS_IG_ThinnessYoung[[i]][[j]] = infogain[order(infogain$importance), ]
+    infogain$importance = sort(infogain$importance, decreasing = TRUE)
+    for (k in 1:20){
+      factor = infogain[[k, 1]]
+      if (infogain[[k, 2]] > 0){
+        FS_IG[[factor, 4]] = FS_IG[[factor, 4]] + 1
+      }
+    }
   }
 }
 ################################################################################
-FS_IG_WastingYoung = list()
 for (i in 1:10){
-  FS_IG_WastingYoung[[i]] = list()
   for (j in 1:10){
     infogain = information_gain(formula = Wasting~.,
                               data = as.data.frame(SMOTEWastingYoung[[i]][[j]]$data),
                               type = 'infogain',
                               equal = TRUE
                               )
-    FS_IG_WastingYoung[[i]][[j]] = infogain[order(infogain$importance), ]
-  }
-}
-################################################################################
-```
-
-
-
-```{r InfoGain Averaging}
-################################################################################
-AVG_FS_IG = data.frame(Stunting = double(),
-                       Thinness = double(),
-                       StuntingYoung = double(),
-                       ThinnessYoung = double(),
-                       WastingYoung = double()
-                       )
-COPY = FS_IG_Stunting
-for (factor in names(stunting)[1:54]){
-  sum = 0
-  for (i in 1:10){
-    for (j in 1:10){
-      index = which(COPY[[i]][[j]]$attributes == factor)
-      if (is.na(COPY[[i]][[j]]$importance[[index]])){
-        next
-      }else{
-        sum = sum + COPY[[i]][[j]]$importance[[index]]
+    infogain$importance = sort(infogain$importance, decreasing = TRUE)
+    for (k in 1:20){
+      factor = infogain[[k, 1]]
+      if (infogain[[k, 2]] > 0){
+        FS_IG[[factor, 5]] = FS_IG[[factor, 5]] + 1
       }
     }
   }
-  AVG_FS_IG[[factor, 1]] = sum/100
 }
 ################################################################################
-COPY = FS_IG_Thinness
-for (factor in names(thinness)[1:54]){
-  sum = 0
-  for (i in 1:10){
-    for (j in 1:10){
-      index = which(COPY[[i]][[j]]$attributes == factor)
-      if (is.na(COPY[[i]][[j]]$importance[[index]])){
-        next
-      }else{
-        sum = sum + COPY[[i]][[j]]$importance[[index]]
-      }
-    }
-  }
-  AVG_FS_IG[[factor, 2]] = sum/100
-}
-################################################################################
-COPY = FS_IG_StuntingYoung
-for (factor in names(StuntingYoung)[1:54]){
-  sum = 0
-  for (i in 1:10){
-    for (j in 1:10){
-      index = which(COPY[[i]][[j]]$attributes == factor)
-      if (is.na(COPY[[i]][[j]]$importance[[index]])){
-        next
-      }else{
-        sum = sum + COPY[[i]][[j]]$importance[[index]]
-      }
-    }
-  }
-  AVG_FS_IG[[factor, 3]] = sum/100
-}
-################################################################################
-COPY = FS_IG_ThinnessYoung
-for (factor in names(thinnessYoung)[1:54]){
-  sum = 0
-  for (i in 1:10){
-    for (j in 1:10){
-      index = which(COPY[[i]][[j]]$attributes == factor)
-      if (is.na(COPY[[i]][[j]]$importance[[index]])){
-        next
-      }else{
-        sum = sum + COPY[[i]][[j]]$importance[[index]]
-      }
-    }
-  }
-  AVG_FS_IG[[factor, 4]] = sum/100
-}
-################################################################################
-COPY = FS_IG_WastingYoung
-for (factor in names(WastingYoung)[1:54]){
-  sum = 0
-  for (i in 1:10){
-    for (j in 1:10){
-      index = which(COPY[[i]][[j]]$attributes == factor)
-      if (is.na(COPY[[i]][[j]]$importance[[index]])){
-        next
-      }else{
-        sum = sum + COPY[[i]][[j]]$importance[[index]]
-      }
-    }
-  }
-  AVG_FS_IG[[factor, 5]] = sum/100
-}
-write.csv(AVG_FS_IG, "FS_IG_Avg.csv")
-################################################################################
+write.csv(FS_IG, "FS_IG.csv")
 ```
 
 
@@ -1399,62 +1344,84 @@ for (i in 1:10){
 ```{r JMI}
 #This one is pretty quick.
 library(praznik)
+
+FS_JMI = data.frame(Stunting = double(),
+                       Thinness = double(),
+                       StuntingYoung = double(),
+                       ThinnessYoung = double(),
+                       WastingYoung = double()
+                       )
+for (i in 1:54){
+ FS_JMI[i,] = 0
+}
+row.names(FS_JMI) = names(stunting)[1:54]
 ################################################################################
-FS_JMI_Stunting = list()
 for (i in 1:10){
-  FS_JMI_Stunting[[i]] = list()
   for (j in 1:10){
-    FS_JMI_Stunting[[i]][[j]] = JMI(SMOTEStunting[[i]][[j]]$data, 
+    FS_JMI_Stunting = JMI(SMOTEStunting[[i]][[j]]$data[1:54], 
                                     SMOTEStunting[[i]][[j]]$data$Stunting,
-                                    k = 13
+                                    k = 20
                                     )
+    for (k in 1:20){
+      factor = names(stunting)[FS_JMI_Stunting$selection[[k]]]
+      FS_JMI[[factor, 1]] = FS_JMI[[factor, 1]] + 1
+    }
   }
 }
 ################################################################################
-FS_JMI_Thinness = list()
 for (i in 1:10){
-  FS_JMI_Thinness[[i]] = list()
   for (j in 1:10){
-    FS_JMI_Thinness[[i]][[j]] = JMI(SMOTEThinness[[i]][[j]]$data,
+    FS_JMI_Thinness = JMI(SMOTEThinness[[i]][[j]]$data[1:54],
                                     SMOTEThinness[[i]][[j]]$data$Thinness,
-                                    k = 13
+                                    k = 20
                                     )
+    for (k in 1:20){
+      factor = names(stunting)[FS_JMI_Thinness$selection[[k]]]
+      FS_JMI[[factor, 2]] = FS_JMI[[factor, 2]] + 1
+    }
   }
 }
 ################################################################################
-FS_JMI_StuntingYoung = list()
 for (i in 1:10){
-  FS_JMI_StuntingYoung[[i]] = list()
   for (j in 1:10){
-    FS_JMI_StuntingYoung[[i]][[j]] = JMI(SMOTEStuntingYoung[[i]][[j]]$data, 
+    FS_JMI_StuntingYoung = JMI(SMOTEStuntingYoung[[i]][[j]]$data[1:54], 
                                     SMOTEStuntingYoung[[i]][[j]]$data$Stunting,
-                                    k = 13
+                                    k = 20
                                     )
+    for (k in 1:20){
+      factor = names(stunting)[FS_JMI_StuntingYoung$selection[[k]]]
+      FS_JMI[[factor, 3]] = FS_JMI[[factor, 3]] + 1
+    }
   }
 }
 ################################################################################
-FS_JMI_ThinnessYoung = list()
 for (i in 1:10){
-  FS_JMI_ThinnessYoung[[i]] = list()
   for (j in 1:10){
-    FS_JMI_ThinnessYoung[[i]][[j]] = JMI(SMOTEThinnessYoung[[i]][[j]]$data, 
+    FS_JMI_ThinnessYoung = JMI(SMOTEThinnessYoung[[i]][[j]]$data[1:54], 
                                     SMOTEThinnessYoung[[i]][[j]]$data$Thinness,
-                                    k = 13
+                                    k = 20
                                     )
+    for (k in 1:20){
+      factor = names(stunting)[FS_JMI_ThinnessYoung$selection[[k]]]
+      FS_JMI[[factor, 4]] = FS_JMI[[factor, 4]] + 1
+    }
   }
 }
 ################################################################################
-FS_JMI_WastingYoung = list()
 for (i in 1:10){
-  FS_JMI_WastingYoung[[i]] = list()
   for (j in 1:10){
-    FS_JMI_WastingYoung[[i]][[j]] = JMI(SMOTEWastingYoung[[i]][[j]]$data[1:55], 
+    FS_JMI_WastingYoung = JMI(SMOTEWastingYoung[[i]][[j]]$data[1:54], 
                                     SMOTEWastingYoung[[i]][[j]]$data$Wasting,
-                                    k = 13
+                                    k = 20
                                     )
+    for (k in 1:20){
+      factor = names(stunting)[FS_JMI_WastingYoung$selection[[k]]]
+      FS_JMI[[factor, 5]] = FS_JMI[[factor, 5]] + 1
+    }
   }
 }
 ################################################################################
+write.csv(FS_JMI, "FS_JMI.csv")
 ```
 
 
@@ -1581,6 +1548,7 @@ write.csv(results, "FS_R-UVLoR.csv")
 
 
 ```{r Repeated Multivariate Logistic Regression (FS), warning = FALSE}
+#Takes ~2 minutes.
 results = data.frame(StuntingRejects = double(), StuntingAOR = double(),
                      ThinnessRejects = double(), ThinnessAOR = double(),
                      StuntingYoungRejects = double(), StuntingYoungAOR = double(),
@@ -1868,8 +1836,9 @@ write.csv(cbind(
 library(arules)
 library(arulesViz)
 ARL_Stunting = apriori(stunting,
-                        parameter = list(support = 0.01, confidence = 0.1),
-                        maxlen = 3
+                        parameter = list(support = 0.01, confidence = 0.2),
+                        maxlen = 3,
+                        minlen = 2
                         )
 summary(ARL_Stunting)
 inspect(ARL_Stunting)[1:5]
