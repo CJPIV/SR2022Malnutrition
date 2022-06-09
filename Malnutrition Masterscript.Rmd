@@ -1913,23 +1913,25 @@ rules = apriori(male,
 inspect(rules[1:10])
 ################################################################################
 #Rural vs. suburban vs. urban rules on Stunting
-rural = subset(data, Rural == TRUE)
-rural = rural[,-c(14,15)]
-rules = apriori(rural, 
-                parameter = list(support = 0.15,
-                                 confidence = 0.35,
-                                 maxlen = 10,
-                                 target = "rules"),
-                appearance = list(default = "lhs", rhs = c("Stunting")
-                                  )
-                )
-inspect(rules[1:10])
+# rural = subset(data, Rural == TRUE)
+# rural = rural[,-c(14,15)]
+# rules = apriori(rural, 
+#                 parameter = list(support = 0.165,
+#                                  confidence = 0.35,
+#                                  maxlen = 10,
+#                                  target = "rules"),
+#                 appearance = list(default = "lhs", rhs = c("Stunting")
+#                                   )
+#                 )
+# inspect(rules[1:10])
+
+# Rural has too few samples to narrow selection of rules down to ~10 (smallest possible is 23,260)
 
 suburban = subset(data, Suburban == TRUE)
 suburban = suburban[,-c(14,15)]
 rules = apriori(suburban, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.35,
+                parameter = list(support = 0.10,
+                                 confidence = 0.5,
                                  maxlen = 10,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
@@ -1941,13 +1943,13 @@ urban = subset(data, (Rural == FALSE && Suburban == FALSE))
 urban = urban[,-c(14,15)]
 rules = apriori(urban, 
                 parameter = list(support = 0.05,
-                                 confidence = 0.35,
+                                 confidence = 0.45,
                                  maxlen = 10,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
                 )
-inspect(rules[1:10])
+inspect(rules[1:8])
 ################################################################################
 data = data.frame(lapply(StuntingYoung, as.logical))
 #Male vs. Female associations on StuntingYoung
@@ -1956,7 +1958,7 @@ female = subset(data, Sex == TRUE)
 female = female[,-2]
 rules = apriori(female, 
                 parameter = list(support = 0.05,
-                                 confidence = 0.35,
+                                 confidence = 0.30,
                                  maxlen = 10,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
@@ -1968,7 +1970,7 @@ male = subset(data, Sex == FALSE)
 male = male[,-2]
 rules = apriori(male, 
                 parameter = list(support = 0.05,
-                                 confidence = 0.35,
+                                 confidence = 0.42,
                                  maxlen = 10,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
@@ -1977,23 +1979,25 @@ rules = apriori(male,
 inspect(rules[1:10])
 ################################################################################
 #Rural vs. suburban vs. urban rules on StuntingYoung
-rural = subset(data, Rural == TRUE)
-rural = rural[,-c(14,15)]
-rules = apriori(rural, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.35,
-                                 maxlen = 10,
-                                 target = "rules"),
-                appearance = list(default = "lhs", rhs = c("Stunting")
-                                  )
-                )
-inspect(rules[1:10])
+# rural = subset(data, Rural == TRUE)
+# rural = rural[,-c(14,15)]
+# rules = apriori(rural, 
+#                 parameter = list(support = 0.14, #Anything above 0.14 returns nothing
+#                                  confidence = 1, #This data is very strange
+#                                  maxlen = 10,
+#                                  target = "rules"),
+#                 appearance = list(default = "lhs", rhs = c("Stunting")
+#                                   )
+#                 )
+# inspect(rules[1:10])
+
+#Much like Stunting's Rural data, I think there's too few samples for accurate analysis. 250k rules is absurd, especially considering the other Rural data had nothing.
 
 suburban = subset(data, Suburban == TRUE)
 suburban = suburban[,-c(14,15)]
 rules = apriori(suburban, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.35,
+                parameter = list(support = 0.10,
+                                 confidence = 0.42,
                                  maxlen = 10,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
@@ -2097,38 +2101,41 @@ rules = apriori(suburban,
                 )
 inspect(rules[1:10])
 
-urban = subset(data, (Rural == FALSE && Suburban == FALSE))
+urban = subset(data, Rural == FALSE)
+urban = subset(urban, Suburban == FALSE) #I don't know why this requires 2 lines; I had originally coded it as one line, but it would just copy everything from "data" into "urban". Coding is magic.
 urban = urban[,-c(14,15)]
 rules = apriori(urban, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.35,
+                parameter = list(support = 0.028,
+                                 confidence = 0.05,
                                  maxlen = 10,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
                 )
 inspect(rules[1:10])
+#Why is this performing so poorly? Thinness => Urban's rules suck, but it has tons of data.
 ################################################################################
-data = data.frame(lapply(ThinnessYoung, as.logical))
+data = data.frame(lapply(thinnessYoung, as.logical))
 #Male vs. Female associations on ThinnessYoung
 
 female = subset(data, Sex == TRUE)
 female = female[,-2]
 rules = apriori(female, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.35,
+                parameter = list(support = 0.02,
+                                 confidence = 0.10,
                                  maxlen = 10,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
                 )
 inspect(rules[1:10])
+#This also performs poorly.
 
 male = subset(data, Sex == FALSE)
 male = male[,-2]
 rules = apriori(male, 
                 parameter = list(support = 0.05,
-                                 confidence = 0.35,
+                                 confidence = 0.10,
                                  maxlen = 10,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
