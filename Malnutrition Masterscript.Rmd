@@ -640,25 +640,25 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
 
 # Barplots for visualization of class imbalance
 #####
-# barplot(prop.table(table(UBStunting[[1]][[1]]$Stunting)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Stunting",
-#         names = c("No", "Yes"),
-#         main = 'Stunting Training Set Class Distribution (Unbalanced)')
-# abline(h = 0)
-# 
-# barplot(prop.table(table(SMOTEStunting[[1]][[1]]$data$Stunting)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Stunting",
-#         names = c("No", "Yes"),
-#         main = 'Stunting Training Set Class Distribution (SMOTE)')
-# abline(h = 0)
+barplot(prop.table(table(UBStunting[[1]][[1]]$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'Stunting Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEStunting[[1]][[1]]$data$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'Stunting Training Set Class Distribution (SMOTE)')
+abline(h = 0)
 
 
 # Following code writes each training set to its own .csv files if needed in other scripts.
@@ -724,25 +724,25 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
 
 # Barplots for visualization of class imbalance
 #####
-# barplot(prop.table(table(UBThinness[[1]][[1]]$Thinness)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Thinness",
-#         names = c("No", "Yes"),
-#         main = 'Thinness Training Set Class Distribution (Unbalanced)')
-# abline(h = 0)
-# 
-# barplot(prop.table(table(SMOTEThinness[[1]][[1]]$data$Thinness)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Thinness",
-#         names = c("No", "Yes"),
-#         main = 'Thinness Training Set Class Distribution (SMOTE)')
-# abline(h = 0)
+barplot(prop.table(table(UBThinness[[1]][[1]]$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Thinness",
+        names = c("No", "Yes"),
+        main = 'Thinness Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEThinness[[1]][[1]]$data$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Thinness",
+        names = c("No", "Yes"),
+        main = 'Thinness Training Set Class Distribution (SMOTE)')
+abline(h = 0)
 
 # Following code writes each training set to its own .csv files if needed in other scripts.
 #####
@@ -802,25 +802,25 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
 
 # Barplots for visualization of class imbalance
 #####
-# barplot(prop.table(table(UBStuntingYoung[[1]][[1]]$Stunting)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Stunting",
-#         names = c("No", "Yes"),
-#         main = 'StuntingYoung Training Set Class Distribution (Unbalanced)')
-# abline(h = 0)
-# 
-# barplot(prop.table(table(SMOTEStuntingYoung[[1]][[1]]$data$Stunting)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Stunting",
-#         names = c("No", "Yes"),
-#         main = 'StuntingYoung Training Set Class Distribution (SMOTE)')
-# abline(h = 0)
+barplot(prop.table(table(UBStuntingYoung[[1]][[1]]$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'StuntingYoung Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEStuntingYoung[[1]][[1]]$data$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'StuntingYoung Training Set Class Distribution (SMOTE)')
+abline(h = 0)
 
 # Following code writes each training set to its own .csv files if needed in other scripts.
 #####
@@ -880,25 +880,25 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
 
 # Barplots for visualization of class imbalance
 #####
-# barplot(prop.table(table(UBThinnessYoung[[1]][[1]]$Thinness)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Thinness",
-#         names = c("No", "Yes"),
-#         main = 'ThinnessYoung Training Set Class Distribution (Unbalanced)')
-# abline(h = 0)
-# 
-# barplot(prop.table(table(SMOTEThinnessYoung[[1]][[1]]$data$Thinness)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Thinness",
-#         names = c("No", "Yes"),
-#         main = 'ThinnessYoung Training Set Class Distribution (SMOTE)')
-# abline(h = 0)
+barplot(prop.table(table(UBThinnessYoung[[1]][[1]]$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Thinness",
+        names = c("No", "Yes"),
+        main = 'ThinnessYoung Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEThinnessYoung[[1]][[1]]$data$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Thinness",
+        names = c("No", "Yes"),
+        main = 'ThinnessYoung Training Set Class Distribution (SMOTE)')
+abline(h = 0)
 
 # Following code writes each training set to its own .csv files if needed in other scripts.
 #####
@@ -958,25 +958,25 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
 
 # Barplots for visualization of class imbalance
 #####
-# barplot(prop.table(table(UBWastingYoung[[1]][[1]]$Wasting)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Wasting",
-#         names = c("No", "Yes"),
-#         main = 'WastingYoung Training Set Class Distribution (Unbalanced)')
-# abline(h = 0)
-# 
-# barplot(prop.table(table(SMOTEWastingYoung[[1]][[1]]$data$Wasting)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Wasting",
-#         names = c("No", "Yes"),
-#         main = 'WastingYoung Training Set Class Distribution (SMOTE)')
-# abline(h = 0)
+barplot(prop.table(table(UBWastingYoung[[1]][[1]]$Wasting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Wasting",
+        names = c("No", "Yes"),
+        main = 'WastingYoung Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEWastingYoung[[1]][[1]]$data$Wasting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Wasting",
+        names = c("No", "Yes"),
+        main = 'WastingYoung Training Set Class Distribution (SMOTE)')
+abline(h = 0)
 
 # Following code writes each training set to its own .csv files if needed in other scripts.
 #####
@@ -1268,75 +1268,113 @@ write.csv(FS_IG, "FS_IG.csv")
 
 ```{r mRMR}
 library(mRMRe)
-#In progress; mRMR finishes selecting, but results should be rewritten for legibility.
 #This one is pretty quick.
+
+FS_MRMR = data.frame(Stunting = double(),
+                       Thinness = double(),
+                       StuntingYoung = double(),
+                       ThinnessYoung = double(),
+                       WastingYoung = double()
+                       )
+for (i in 1:54){
+ FS_MRMR[i,] = 0
+}
+row.names(FS_MRMR) = names(stunting)[1:54]
 ################################################################################
-FS_MRMR_Stunting = list()
 for (i in 1:10){
-  FS_MRMR_Stunting[[i]] = list()
   for (j in 1:10){
     mrmr = mRMR.data(data = SMOTEStunting[[i]][[j]]$data)
-    FS_MRMR_Stunting[[i]][[j]] = mRMR.classic("mRMRe.Filter",
-                                              data = mrmr,
-                                              target_indices = 55,
-                                              feature_count = 15
-                                              )
+    results = mRMR.classic("mRMRe.Filter",
+                           data = mrmr,
+                           target_indices = 55,
+                           feature_count = 20,
+                           method = "exhaustive"
+                           )
+    # results = mRMR.ensemble(#"mRMRe.Filter",
+    #                        data = mrmr,#SMOTEStunting[[i]][[j]]$data,
+    #                        target_indices = 55,
+    #                        solution_count = 20,
+    #                        feature_count  = 20,
+    #                        method = "exhaustive"
+    #                        )
+    #featureNames(results)
+    for (k in 1:20){
+      factorInd = results@filters[["55"]][[k,1]]
+      factor = names(stunting)[[factorInd]]
+      FS_MRMR[[factor, 1]] = FS_MRMR[[factor, 1]] + 1
+    }
   }
 }
 ################################################################################
-FS_MRMR_Thinness = list()
 for (i in 1:10){
-  FS_MRMR_Thinness[[i]] = list()
   for (j in 1:10){
     mrmr = mRMR.data(data = SMOTEThinness[[i]][[j]]$data)
-    FS_MRMR_Thinness[[i]][[j]] = mRMR.classic("mRMRe.Filter",
-                                              data = mrmr,
-                                              target_indices = 55,
-                                              feature_count = 15
-                                              )
+    results = mRMR.classic("mRMRe.Filter",
+                           data = mrmr,
+                           target_indices = 55,
+                           feature_count = 20,
+                           method = "exhaustive"
+                           )
+    for (k in 1:20){
+      factorInd = results@filters[["55"]][[k]]
+      factor = names(stunting)[[factorInd]]
+      FS_MRMR[[factor, 2]] = FS_MRMR[[factor, 2]] + 1
+    }
   }
 }
 ################################################################################
-FS_MRMR_StuntingYoung = list()
 for (i in 1:10){
-  FS_MRMR_StuntingYoung[[i]] = list()
   for (j in 1:10){
     mrmr = mRMR.data(data = SMOTEStuntingYoung[[i]][[j]]$data)
-    FS_MRMR_StuntingYoung[[i]][[j]] = mRMR.classic("mRMRe.Filter",
-                                              data = mrmr,
-                                              target_indices = 55,
-                                              feature_count = 15
-                                              )
+    results = mRMR.classic("mRMRe.Filter",
+                           data = mrmr,
+                           target_indices = 55,
+                           feature_count = 20,
+                           method = "exhaustive"
+                           )
+    for (k in 1:20){
+      factorInd = results@filters[["55"]][[k]]
+      factor = names(stunting)[[factorInd]]
+      FS_MRMR[[factor, 3]] = FS_MRMR[[factor, 3]] + 1
+    }
   }
 }
 ################################################################################
-FS_MRMR_ThinnessYoung = list()
 for (i in 1:10){
-  FS_MRMR_ThinnessYoung[[i]] = list()
   for (j in 1:10){
     mrmr = mRMR.data(data = SMOTEThinnessYoung[[i]][[j]]$data)
-    FS_MRMR_ThinnessYoung[[i]][[j]] = mRMR.classic("mRMRe.Filter",
-                                              data = mrmr,
-                                              target_indices = 55,
-                                              feature_count = 15
-                                              )
+    results = mRMR.classic("mRMRe.Filter",
+                           data = mrmr,
+                           target_indices = 55,
+                           feature_count = 20,
+                           method = "exhaustive"
+                           )
+    for (k in 1:20){
+      factorInd = results@filters[["55"]][[k]]
+      factor = names(stunting)[[factorInd]]
+      FS_MRMR[[factor, 4]] = FS_MRMR[[factor, 4]] + 1
+    }
   }
 }
 ################################################################################
-FS_MRMR_WastingYoung = list()
 for (i in 1:10){
-  FS_MRMR_WastingYoung[[i]] = list()
   for (j in 1:10){
     mrmr = mRMR.data(data = SMOTEWastingYoung[[i]][[j]]$data)
-    FS_MRMR_WastingYoung[[i]][[j]] = mRMR.classic("mRMRe.Filter",
-                                              data = mrmr,
-                                              target_indices = 55,
-                                              feature_count = 15
-                                              )
+    results = mRMR.classic("mRMRe.Filter",
+                           data = mrmr,
+                           target_indices = 55,
+                           feature_count = 20,
+                           method = "exhaustive"
+                           )
+    for (k in 1:20){
+      factorInd = results@filters[["55"]][[k]]
+      factor = names(stunting)[[factorInd]]
+      FS_MRMR[[factor, 5]] = FS_MRMR[[factor, 5]] + 1
+    }
   }
 }
 ################################################################################
-
+write.csv(FS_MRMR, "FS_MRMR.csv")
 ```
 
 
@@ -1426,7 +1464,7 @@ write.csv(FS_JMI, "FS_JMI.csv")
 
 
 
-```{r Repeated Univariate Logistic Regression (FS)}
+```{r Repeated Univariate Logistic Regression (FS), warning = FALSE}
 #This one takes ~5 minutes.
 #Repeated Univariate Logistic Regression for FS in training models
 
@@ -1442,7 +1480,7 @@ results = data.frame(StuntingRejects = double(), StuntingOR = double(),
                      WastingYoungRejects = double(), WastingYoungOR = double()
                      )
 ################################################################################
-#Stunting PV-based feature selection & average crude odds ratios
+#Stunting PV-based feature selection & crude odds ratios
 for (factor in names(stunting)[1:54]){
   results[[factor, 1]] = 0
   CORSum = 0
@@ -1462,7 +1500,7 @@ for (factor in names(stunting)[1:54]){
   results[[factor, 2]] = CORSum/100
 }
 ################################################################################
-#Thinness PV-based feature selection & average crude odds ratios
+#Thinness PV-based feature selection & crude odds ratios
 for (factor in names(stunting)[1:54]){
   results[[factor, 3]] = 0
   CORSum = 0
@@ -1482,7 +1520,7 @@ for (factor in names(stunting)[1:54]){
   results[[factor, 4]] = CORSum/100
 }
 ################################################################################
-#StuntingYoung PV-based feature selection & average crude odds ratios
+#StuntingYoung PV-based feature selection & crude odds ratios
 for (factor in names(stunting)[1:54]){
   results[[factor, 5]] = 0
   CORSum = 0
@@ -1502,7 +1540,7 @@ for (factor in names(stunting)[1:54]){
   results[[factor, 6]] = CORSum/100
 }
 ################################################################################
-#ThinnessYoung PV-based feature selection & average crude odds ratios
+#ThinnessYoung PV-based feature selection & crude odds ratios
 for (factor in names(stunting)[1:54]){
   results[[factor, 7]] = 0
   CORSum = 0
@@ -1522,7 +1560,7 @@ for (factor in names(stunting)[1:54]){
   results[[factor, 8]] = CORSum/100
 }
 ################################################################################
-#WastingYoung PV-based feature selection & average crude odds ratios
+#WastingYoung PV-based feature selection & crude odds ratios
 for (factor in names(stunting)[1:54]){
   results[[factor, 9]] = 0
   CORSum = 0
