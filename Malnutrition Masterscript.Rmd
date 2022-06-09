@@ -989,6 +989,7 @@ abline(h = 0)
 # write.csv(ForFS_SMOTEWastingYoung, "ForFS_SMOTEWastingYoung.csv")
 ```
 
+
 #####
 # FEATURE SELECTION: Selects important model features to reduce noise and help 
 # prevent overfitting. All feature selection methods should be run on SMOTE-
@@ -1594,7 +1595,7 @@ results = data.frame(StuntingRejects = double(), StuntingAOR = double(),
                      WastingYoungRejects = double(), WastingYoungAOR = double()
                      )
 ################################################################################
-#Stunting PV-based feature selection & average crude odds ratios
+#Stunting PV-based feature selection & approximate odds ratios
 for (factor in names(stunting)[1:54]){
   results[[factor, 1]] = 0 #Must instantiate columns or next lines can't access them
       results[[factor, 2]] = 0 # ^
@@ -1626,7 +1627,7 @@ for (factor in names(stunting)[1:54]){
   results[[factor, 2]] = results[[factor, 2]]/results[[factor, 1]] 
 }
 ################################################################################
-#Thinness PV-based feature selection & average crude odds ratios
+#Thinness PV-based feature selection & approximate odds ratios
 for (factor in names(stunting)[1:54]){
   results[[factor, 3]] = 0 #Must instantiate columns or next lines can't access them
       results[[factor, 4]] = 0 # ^
@@ -1655,7 +1656,7 @@ for (factor in names(stunting)[1:54]){
   results[[factor, 4]] = results[[factor, 4]]/results[[factor, 3]] 
 }
 ################################################################################
-#StuntingYoung PV-based feature selection & average crude odds ratios
+#StuntingYoung PV-based feature selection & approximate odds ratios
 for (factor in names(stunting)[1:54]){
   results[[factor, 5]] = 0 #Must instantiate columns or next lines can't access them
       results[[factor, 6]] = 0 # ^
@@ -1684,7 +1685,7 @@ for (factor in names(stunting)[1:54]){
   results[[factor, 6]] = results[[factor, 6]]/results[[factor, 5]] 
 }
 ################################################################################
-#ThinnessYoung PV-based feature selection & average crude odds ratios
+#ThinnessYoung PV-based feature selection & approximate odds ratios
 for (factor in names(stunting)[1:54]){
   results[[factor, 7]] = 0 #Must instantiate columns or next lines can't access them
       results[[factor, 8]] = 0 # ^
@@ -1713,7 +1714,7 @@ for (factor in names(stunting)[1:54]){
   results[[factor, 8]] = results[[factor, 8]]/results[[factor, 7]] 
 }
 ################################################################################
-#WastingYoung PV-based feature selection & average crude odds ratios
+#WastingYoung PV-based feature selection & approximate odds ratios
 for (factor in names(stunting)[1:54]){
   results[[factor, 9]] = 0 #Must instantiate columns or next lines can't access them
       results[[factor, 10]] = 0 # ^
@@ -1749,35 +1750,46 @@ write.csv(results, "FS_R-MVLoR.csv")
 
 ```{r Literature-Based}
 #This one is pretty quick (it's almost like there's no computations...)
-FS_LB = list(c(1, 2, 14, 4, 6:18, 19, 21:25, 28, 29, 33:36, 38, 47:54))
+FS_LB = c(1:3, 4, 6:15, 17:19, 20:25, 27:29, 32:36, 38, 47:54)
+FS_LB = sort(FS_LB)
+for (i in FS_LB){
+  cat(names(stunting)[i],"\n")
+}
 ```
 
+
+
 #####
-# CLASSIFIER MODELS:
+# CLASSIFIER MODELLING:
 #####
+```{r Model Data Preparation}
+#Creating train/test sets of selected features from original datasets for use in classifier modelling.
+
+```
+
+
+
 ```{r Random Forest}
-RF_UB_Stunting
-RF_SMOTE_Stunting
-RF_UB_Thinness
-RF_SMOTE_Thinness
+library(randomForest)
+library(datasets)
+library(caret)
+
 ```
 
 
 
 ```{r Support Vector Machine}
-SVM_UB_Stunting
-SVM_SMOTE_Stunting
-SVM_UB_Thinness
-SVM_SMOTE_Thinness
+
 ```
 
 
 
 ```{r Extreme Gradient Boosting}
-XGB_UB_Stunting
-XGB_SMOTE_Stunting
-XGB_UB_Thinness
-XGB_SMOTE_Thinness
+library(xgboost)
+library(caret)
+library(tidyverse)
+
+
 ```
 
 
@@ -1864,40 +1876,394 @@ write.csv(cbind(
 #####
 # ASSOCIATION RULE LEARNING:
 #####
-```{r Association Rule Learning}
-#Takes a bit of time - couple minutes, maybe.
-#DO NOT manually exit if program is slow or frozen; the Apriori algorithm is written in C, and has no qualms with messing things up in your computer if you interrupt it.
-#Also, warning: do not increase maxlen above 3 unless you have a lot of free time and want your computer to be unresponsive.
+```{r Association Rule Learning: Stunting & StuntingYoung}
+#Pretty quick.
+#I played around with support and confidence values until I got ~10 rules per iteration of the Apriori algorithm. 
 
 #https://www.geeksforgeeks.org/apriori-algorithm-in-r-programming/
-#Should I be doing this on SMOTEd data and averaging??
+
 library(arules)
 library(arulesViz)
-ARL_Stunting = apriori(stunting,
-                        parameter = list(support = 0.01, confidence = 0.2),
-                        maxlen = 3,
-                        minlen = 2
-                        )
-summary(ARL_Stunting)
-inspect(ARL_Stunting)[1:5]
-ARL_Thinness = apriori(thinness,
-                        parameter = list(support = 0.01, confidence = 0.33),
-                        maxlen = 3,
-                        minlen = 2
-                        )
-ARL_StuntingYoung = apriori(StuntingYoung,
-                        parameter = list(support = 0.01, confidence = 0.33),
-                        maxlen = 3,
-                        minlen = 2
-                        )
-ARL_ThinnessYoung = apriori(thinnessYoung,
-                        parameter = list(support = 0.01, confidence = 0.33),
-                        maxlen = 3,
-                        minlen = 2
-                        )
-ARL_WastingYoung = apriori(WastingYoung,
-                        parameter = list(support = 0.01, confidence = 0.33),
-                        maxlen = 3,
-                        minlen = 2
-                        )
+################################################################################
+data = data.frame(lapply(stunting, as.logical))
+#Male vs. Female associations on Stunting
+
+female = subset(data, Sex == TRUE)
+female = female[,-2]
+rules = apriori(female, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.38,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Stunting")
+                                  )
+                )
+inspect(rules[1:10])
+
+male = subset(data, Sex == FALSE)
+male = male[,-2]
+rules = apriori(male, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.71,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Stunting")
+                                  )
+                )
+inspect(rules[1:10])
+################################################################################
+#Rural vs. suburban vs. urban rules on Stunting
+rural = subset(data, Rural == TRUE)
+rural = rural[,-c(14,15)]
+rules = apriori(rural, 
+                parameter = list(support = 0.15,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Stunting")
+                                  )
+                )
+inspect(rules[1:10])
+
+suburban = subset(data, Suburban == TRUE)
+suburban = suburban[,-c(14,15)]
+rules = apriori(suburban, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Stunting")
+                                  )
+                )
+inspect(rules[1:10])
+
+urban = subset(data, (Rural == FALSE && Suburban == FALSE))
+urban = urban[,-c(14,15)]
+rules = apriori(urban, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Stunting")
+                                  )
+                )
+inspect(rules[1:10])
+################################################################################
+data = data.frame(lapply(StuntingYoung, as.logical))
+#Male vs. Female associations on StuntingYoung
+
+female = subset(data, Sex == TRUE)
+female = female[,-2]
+rules = apriori(female, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Stunting")
+                                  )
+                )
+inspect(rules[1:10])
+
+male = subset(data, Sex == FALSE)
+male = male[,-2]
+rules = apriori(male, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Stunting")
+                                  )
+                )
+inspect(rules[1:10])
+################################################################################
+#Rural vs. suburban vs. urban rules on StuntingYoung
+rural = subset(data, Rural == TRUE)
+rural = rural[,-c(14,15)]
+rules = apriori(rural, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Stunting")
+                                  )
+                )
+inspect(rules[1:10])
+
+suburban = subset(data, Suburban == TRUE)
+suburban = suburban[,-c(14,15)]
+rules = apriori(suburban, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Stunting")
+                                  )
+                )
+inspect(rules[1:10])
+
+urban = subset(data, (Rural == FALSE && Suburban == FALSE))
+urban = urban[,-c(14,15)]
+rules = apriori(urban, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Stunting")
+                                  )
+                )
+inspect(rules[1:10])
+################################################################################
+#Young (<11) vs adolescent (11+) rules on Stunting & StuntingYouth
+
+rules = apriori(data.frame(lapply(stunting, as.logical)), 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Stunting")
+                                  )
+                )
+inspect(rules[1:10])
+
+rules = apriori(data.frame(lapply(StuntingYoung, as.logical)), 
+                parameter = list(support = 0.05,
+                                 confidence = 0.25,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Stunting")
+                                  )
+                )
+inspect(rules[1:10])
+```
+
+
+
+```{r Association Rule Learning: Thinness & ThinnessYoung}
+#Pretty quick.
+#Identical to the above block of code, but running ARL on both Thinness datasets instead of both Stunting ones.
+
+library(arules)
+library(arulesViz)
+################################################################################
+data = data.frame(lapply(thinness, as.logical))
+#Male vs. Female associations on Thinness
+
+female = subset(data, Sex == TRUE)
+female = female[,-2]
+rules = apriori(female, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.01,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Thinness")
+                                  )
+                )
+inspect(rules[1:10])
+
+male = subset(data, Sex == FALSE)
+male = male[,-2]
+rules = apriori(male, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.71,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Thinness")
+                                  )
+                )
+inspect(rules[1:10])
+################################################################################
+#Rural vs. suburban vs. urban rules on Thinness
+rural = subset(data, Rural == TRUE)
+rural = rural[,-c(14,15)]
+rules = apriori(rural, 
+                parameter = list(support = 0.15,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Thinness")
+                                  )
+                )
+inspect(rules[1:10])
+
+suburban = subset(data, Suburban == TRUE)
+suburban = suburban[,-c(14,15)]
+rules = apriori(suburban, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Thinness")
+                                  )
+                )
+inspect(rules[1:10])
+
+urban = subset(data, (Rural == FALSE && Suburban == FALSE))
+urban = urban[,-c(14,15)]
+rules = apriori(urban, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Thinness")
+                                  )
+                )
+inspect(rules[1:10])
+################################################################################
+data = data.frame(lapply(ThinnessYoung, as.logical))
+#Male vs. Female associations on ThinnessYoung
+
+female = subset(data, Sex == TRUE)
+female = female[,-2]
+rules = apriori(female, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Thinness")
+                                  )
+                )
+inspect(rules[1:10])
+
+male = subset(data, Sex == FALSE)
+male = male[,-2]
+rules = apriori(male, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Thinness")
+                                  )
+                )
+inspect(rules[1:10])
+################################################################################
+#Rural vs. suburban vs. urban rules on ThinnessYoung
+rural = subset(data, Rural == TRUE)
+rural = rural[,-c(14,15)]
+rules = apriori(rural, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Thinness")
+                                  )
+                )
+inspect(rules[1:10])
+
+suburban = subset(data, Suburban == TRUE)
+suburban = suburban[,-c(14,15)]
+rules = apriori(suburban, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Thinness")
+                                  )
+                )
+inspect(rules[1:10])
+
+urban = subset(data, (Rural == FALSE && Suburban == FALSE))
+urban = urban[,-c(14,15)]
+rules = apriori(urban, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Thinness")
+                                  )
+                )
+inspect(rules[1:10])
+################################################################################
+#Young (<11) vs adolescent (11+) rules on Thinness & ThinnessYouth
+
+rules = apriori(data.frame(lapply(thinness, as.logical)), 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Thinness")
+                                  )
+                )
+inspect(rules[1:10])
+
+rules = apriori(data.frame(lapply(ThinnessYoung, as.logical)), 
+                parameter = list(support = 0.05,
+                                 confidence = 0.25,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Thinness")
+                                  )
+                )
+inspect(rules[1:10])
+```
+
+
+
+```{r Association Rule Learning: WastingYoung}
+#Pretty quick.
+#Again, same as above two blocks except only conducted on WastingYoung data.
+################################################################################
+data = data.frame(lapply(WastingYoung, as.logical))
+#Male vs. Female associations on WastingYoung
+
+female = subset(data, Sex == TRUE)
+female = female[,-2]
+rules = apriori(female, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Wasting")
+                                  )
+                )
+inspect(rules[1:10])
+
+male = subset(data, Sex == FALSE)
+male = male[,-2]
+rules = apriori(male, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Wasting")
+                                  )
+                )
+inspect(rules[1:10])
+################################################################################
+#Rural vs. suburban vs. urban rules on WastingYoung
+rural = subset(data, Rural == TRUE)
+rural = rural[,-c(14,15)]
+rules = apriori(rural, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Wasting")
+                                  )
+                )
+inspect(rules[1:10])
+
+suburban = subset(data, Suburban == TRUE)
+suburban = suburban[,-c(14,15)]
+rules = apriori(suburban, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Wasting")
+                                  )
+                )
+inspect(rules[1:10])
+
+urban = subset(data, (Rural == FALSE && Suburban == FALSE))
+urban = urban[,-c(14,15)]
+rules = apriori(urban, 
+                parameter = list(support = 0.05,
+                                 confidence = 0.35,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Wasting")
+                                  )
+                )
+inspect(rules[1:10])
+################################################################################
 ```
