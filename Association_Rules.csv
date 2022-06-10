@@ -1,110 +1,212 @@
-"","rules","support","confidence","coverage","lift","count"
-"1","STUNTING:",NA,NA,NA,NA,NA
-"2","FEMALE:",NA,NA,NA,NA,NA
-"3","{NailsDirty,SchoolLatFlies,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
-"4","{NailsDirty,SchoolLatVisibleStool,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
-"5","{NailsDirty,SchoolLatFlies,SchoolLatVisibleStool,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
-"6","{FamilySize,NailsDirty,SchoolLatFlies,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
-"7","{Age,NailsDirty,SchoolLatFlies,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
-"8","{FamilySize,NailsDirty,SchoolLatVisibleStool,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
-"9","{Age,NailsDirty,SchoolLatVisibleStool,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
-"10","{FamilySize,NailsDirty,SchoolLatFlies,SchoolLatVisibleStool,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
-"11","{Age,NailsDirty,SchoolLatFlies,SchoolLatVisibleStool,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
-"12","{Age,FamilySize,NailsDirty,SchoolLatFlies,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
-"13","MALE:",NA,NA,NA,NA,NA
-"14","{BCGScar,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
-"15","{BCGScar,KitchenSeparate,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
-"16","{BCGScar,SchoolLatVisibleStool,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
-"17","{FamilySize,BCGScar,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
-"18","{Age,BCGScar,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
-"19","{BCGScar,SchoolLatVisibleStool,KitchenSeparate,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
-"20","{FamilySize,BCGScar,KitchenSeparate,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
-"21","{Age,BCGScar,KitchenSeparate,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
-"22","{FamilySize,BCGScar,SchoolLatVisibleStool,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
-"23","{Age,BCGScar,SchoolLatVisibleStool,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
-"24","RURAL:",NA,NA,NA,NA,NA
-"25","SUBURBAN:",NA,NA,NA,NA,NA
-"26","{KitchenSeparate,NoWaterInHouse,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.1,0.5,0.2,2.25,9
-"27","{SchoolLatVisibleStool,NoWaterInHouse,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.1,0.5,0.2,2.25,9
-"28","{KitchenSeparate,NoWaterInHouse,RiverLaundry,EatRawVeg,washHandsLatWaterSoap} => {Stunting}",0.1,0.5,0.2,2.25,9
-"29","{KitchenSeparate,NoWaterInHouse,EatRawVeg,DewormPill,washHandsLatWaterSoap,washHandsSoapB4Eat} => {Stunting}",0.1,0.5,0.2,2.25,9
-"30","{SchoolLatVisibleStool,KitchenSeparate,NoWaterInHouse,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.1,0.5,0.2,2.25,9
-"31","{FamilySize,KitchenSeparate,NoWaterInHouse,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.1,0.5,0.2,2.25,9
-"32","{Age,KitchenSeparate,NoWaterInHouse,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.1,0.5,0.2,2.25,9
-"33","{SchoolLatVisibleStool,NoWaterInHouse,EatRawVeg,DewormPill,washHandsLatWaterSoap,washHandsSoapB4Eat} => {Stunting}",0.1,0.5,0.2,2.25,9
-"34","{FamilySize,SchoolLatVisibleStool,NoWaterInHouse,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.1,0.5,0.2,2.25,9
-"35","{Age,SchoolLatVisibleStool,NoWaterInHouse,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.1,0.5,0.2,2.25,9
-"36","URBAN:",NA,NA,NA,NA,NA
-"37","{SchoolLatDoors,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0573951434878587,0.456140350877193,0.125827814569536,1.81255771006464,26
-"38","{SchoolLatDoors,SchoolLatVisibleStool,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0573951434878587,0.456140350877193,0.125827814569536,1.81255771006464,26
-"39","{Age,SchoolLatDoors,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0573951434878587,0.456140350877193,0.125827814569536,1.81255771006464,26
-"40","{FamilySize,SchoolLatDoors,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0573951434878587,0.456140350877193,0.125827814569536,1.81255771006464,26
-"41","{Age,SchoolLatDoors,SchoolLatVisibleStool,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0573951434878587,0.456140350877193,0.125827814569536,1.81255771006464,26
-"42","{FamilySize,SchoolLatDoors,SchoolLatVisibleStool,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0573951434878587,0.456140350877193,0.125827814569536,1.81255771006464,26
-"43","{Age,FamilySize,SchoolLatDoors,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0573951434878587,0.456140350877193,0.125827814569536,1.81255771006464,26
-"44","{Age,FamilySize,SchoolLatDoors,SchoolLatVisibleStool,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0573951434878587,0.456140350877193,0.125827814569536,1.81255771006464,26
-"45","STUNTINGYOUNG:",NA,NA,NA,NA,NA
-"46","FEMALE:",NA,NA,NA,NA,NA
-"47","{Vaccine,BCGScar,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.3125,0.172661870503597,1.97443181818182,15
-"48","{BCGScar,SchoolLatVisibleStool,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.3125,0.172661870503597,1.97443181818182,15
-"49","{BCGScar,SchoolLatFlies,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.3125,0.172661870503597,1.97443181818182,15
-"50","{Vaccine,BCGScar,SchoolLatVisibleStool,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.319148936170213,0.169064748201439,2.01644100580271,15
-"51","{Vaccine,BCGScar,SchoolLatFlies,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.319148936170213,0.169064748201439,2.01644100580271,15
-"52","{FamilySize,Vaccine,BCGScar,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.3125,0.172661870503597,1.97443181818182,15
-"53","{Age,Vaccine,BCGScar,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.3125,0.172661870503597,1.97443181818182,15
-"54","{BCGScar,SchoolLatFlies,SchoolLatVisibleStool,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.3125,0.172661870503597,1.97443181818182,15
-"55","{FamilySize,BCGScar,SchoolLatVisibleStool,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.3125,0.172661870503597,1.97443181818182,15
-"56","{Age,BCGScar,SchoolLatVisibleStool,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.3125,0.172661870503597,1.97443181818182,15
-"57","MALE:",NA,NA,NA,NA,NA
-"58","{NailsDirty,SchoolLatFlies,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
-"59","{NailsDirty,SchoolLatFlies,KitchenSeparate,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
-"60","{NailsDirty,SchoolLatFlies,SchoolLatVisibleStool,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
-"61","{FamilySize,NailsDirty,SchoolLatFlies,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
-"62","{Age,NailsDirty,SchoolLatFlies,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
-"63","{NailsDirty,SchoolLatFlies,SchoolLatVisibleStool,KitchenSeparate,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
-"64","{FamilySize,NailsDirty,SchoolLatFlies,KitchenSeparate,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
-"65","{Age,NailsDirty,SchoolLatFlies,KitchenSeparate,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
-"66","{FamilySize,NailsDirty,SchoolLatFlies,SchoolLatVisibleStool,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
-"67","{Age,NailsDirty,SchoolLatFlies,SchoolLatVisibleStool,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
-"68","RURAL:",NA,NA,NA,NA,NA
-"69","SUBURBAN:",NA,NA,NA,NA,NA
-"70","{NailsDirty,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
-"71","{FamilySize,NailsDirty,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
-"72","{Age,NailsDirty,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
-"73","{NailsDirty,SchoolLatFlies,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
-"74","{NailsDirty,SchoolLatVisibleStool,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
-"75","{Age,FamilySize,NailsDirty,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
-"76","{FamilySize,NailsDirty,SchoolLatFlies,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
-"77","{FamilySize,NailsDirty,SchoolLatVisibleStool,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
-"78","{Age,NailsDirty,SchoolLatFlies,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
-"79","{Age,NailsDirty,SchoolLatVisibleStool,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
-"80","URBAN:",NA,NA,NA,NA,NA
-"81","{SchoolLatFlies,HousePet,WalkBarefoot} => {Stunting}",0.0526315789473684,0.304878048780488,0.172631578947368,1.52439024390244,25
-"82","{SchoolLatFlies,SchoolLatVisibleStool,HousePet,WalkBarefoot} => {Stunting}",0.0526315789473684,0.304878048780488,0.172631578947368,1.52439024390244,25
-"83","{FamilySize,SchoolLatFlies,HousePet,WalkBarefoot} => {Stunting}",0.0526315789473684,0.304878048780488,0.172631578947368,1.52439024390244,25
-"84","{Age,SchoolLatFlies,HousePet,WalkBarefoot} => {Stunting}",0.0526315789473684,0.304878048780488,0.172631578947368,1.52439024390244,25
-"85","{FamilySize,SchoolLatFlies,SchoolLatVisibleStool,HousePet,WalkBarefoot} => {Stunting}",0.0526315789473684,0.304878048780488,0.172631578947368,1.52439024390244,25
-"86","{Age,SchoolLatFlies,SchoolLatVisibleStool,HousePet,WalkBarefoot} => {Stunting}",0.0526315789473684,0.304878048780488,0.172631578947368,1.52439024390244,25
-"87","{Age,FamilySize,SchoolLatFlies,HousePet,WalkBarefoot} => {Stunting}",0.0526315789473684,0.304878048780488,0.172631578947368,1.52439024390244,25
-"88","{Age,FamilySize,SchoolLatFlies,SchoolLatVisibleStool,HousePet,WalkBarefoot} => {Stunting}",0.0526315789473684,0.304878048780488,0.172631578947368,1.52439024390244,25
-"89","STUNTING v. STUNTINGYOUNG:",NA,NA,NA,NA,NA
-"90","STUNTING OVERALL:",NA,NA,NA,NA,NA
-"91","{SchoolLatDoors,SchoolLatVisibleStool,NoWaterInHouse} => {Stunting}",0.0706401766004415,0.355555555555556,0.198675496688742,1.41286549707602,32
-"92","{Age,SchoolLatDoors,SchoolLatVisibleStool,NoWaterInHouse} => {Stunting}",0.0706401766004415,0.355555555555556,0.198675496688742,1.41286549707602,32
-"93","{FamilySize,SchoolLatDoors,SchoolLatVisibleStool,NoWaterInHouse} => {Stunting}",0.0706401766004415,0.355555555555556,0.198675496688742,1.41286549707602,32
-"94","{KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0728476821192053,0.358695652173913,0.203090507726269,1.42534324942792,33
-"95","{Age,FamilySize,SchoolLatDoors,SchoolLatVisibleStool,NoWaterInHouse} => {Stunting}",0.0706401766004415,0.355555555555556,0.198675496688742,1.41286549707602,32
-"96","{SchoolLatVisibleStool,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0728476821192053,0.358695652173913,0.203090507726269,1.42534324942792,33
-"97","{Age,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0728476821192053,0.358695652173913,0.203090507726269,1.42534324942792,33
-"98","{FamilySize,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0728476821192053,0.358695652173913,0.203090507726269,1.42534324942792,33
-"99","{Age,SchoolLatVisibleStool,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0728476821192053,0.358695652173913,0.203090507726269,1.42534324942792,33
-"100","{FamilySize,SchoolLatVisibleStool,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0728476821192053,0.358695652173913,0.203090507726269,1.42534324942792,33
-"101","STUNTINGYOUNG OVERALL:",NA,NA,NA,NA,NA
-"102","{SchoolLatFlies,HousePet} => {Stunting}",0.0932642487046632,0.258373205741627,0.360967184801382,1.26778039088476,54
-"103","{SchoolLatFlies,SchoolLatVisibleStool,HousePet} => {Stunting}",0.0932642487046632,0.258373205741627,0.360967184801382,1.26778039088476,54
-"104","{FamilySize,SchoolLatFlies,HousePet} => {Stunting}",0.0932642487046632,0.258373205741627,0.360967184801382,1.26778039088476,54
-"105","{Age,SchoolLatFlies,HousePet} => {Stunting}",0.0932642487046632,0.258373205741627,0.360967184801382,1.26778039088476,54
-"106","{FamilySize,SchoolLatFlies,SchoolLatVisibleStool,HousePet} => {Stunting}",0.0932642487046632,0.258373205741627,0.360967184801382,1.26778039088476,54
-"107","{Age,SchoolLatFlies,SchoolLatVisibleStool,HousePet} => {Stunting}",0.0932642487046632,0.258373205741627,0.360967184801382,1.26778039088476,54
-"108","{Age,FamilySize,SchoolLatFlies,HousePet} => {Stunting}",0.0932642487046632,0.258373205741627,0.360967184801382,1.26778039088476,54
-"109","{Age,FamilySize,SchoolLatFlies,SchoolLatVisibleStool,HousePet} => {Stunting}",0.0932642487046632,0.258373205741627,0.360967184801382,1.26778039088476,54
+"rules","support","confidence","coverage","lift","count"
+"STUNTING:",NA,NA,NA,NA,NA
+"FEMALE:",NA,NA,NA,NA,NA
+"{NailsDirty,SchoolLatFlies,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
+"{NailsDirty,SchoolLatVisibleStool,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
+"{NailsDirty,SchoolLatFlies,SchoolLatVisibleStool,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
+"{FamilySize,NailsDirty,SchoolLatFlies,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
+"{Age,NailsDirty,SchoolLatFlies,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
+"{FamilySize,NailsDirty,SchoolLatVisibleStool,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
+"{Age,NailsDirty,SchoolLatVisibleStool,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
+"{FamilySize,NailsDirty,SchoolLatFlies,SchoolLatVisibleStool,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
+"{Age,NailsDirty,SchoolLatFlies,SchoolLatVisibleStool,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
+"{Age,FamilySize,NailsDirty,SchoolLatFlies,EatRawVeg,WalkBarefoot,washHandsSoapB4Eat} => {Stunting}",0.0501930501930502,0.382352941176471,0.131274131274131,1.70740365111562,13
+"MALE:",NA,NA,NA,NA,NA
+"{BCGScar,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
+"{BCGScar,KitchenSeparate,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
+"{BCGScar,SchoolLatVisibleStool,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
+"{FamilySize,BCGScar,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
+"{Age,BCGScar,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
+"{BCGScar,SchoolLatVisibleStool,KitchenSeparate,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
+"{FamilySize,BCGScar,KitchenSeparate,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
+"{Age,BCGScar,KitchenSeparate,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
+"{FamilySize,BCGScar,SchoolLatVisibleStool,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
+"{Age,BCGScar,SchoolLatVisibleStool,Chicken,NoWaterInHouse,EatRawVeg} => {Stunting}",0.0515463917525773,0.714285714285714,0.0721649484536082,2.47448979591837,10
+"RURAL:",NA,NA,NA,NA,NA
+"SUBURBAN:",NA,NA,NA,NA,NA
+"{KitchenSeparate,NoWaterInHouse,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.1,0.5,0.2,2.25,9
+"{SchoolLatVisibleStool,NoWaterInHouse,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.1,0.5,0.2,2.25,9
+"{KitchenSeparate,NoWaterInHouse,RiverLaundry,EatRawVeg,washHandsLatWaterSoap} => {Stunting}",0.1,0.5,0.2,2.25,9
+"{KitchenSeparate,NoWaterInHouse,EatRawVeg,DewormPill,washHandsLatWaterSoap,washHandsSoapB4Eat} => {Stunting}",0.1,0.5,0.2,2.25,9
+"{SchoolLatVisibleStool,KitchenSeparate,NoWaterInHouse,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.1,0.5,0.2,2.25,9
+"{FamilySize,KitchenSeparate,NoWaterInHouse,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.1,0.5,0.2,2.25,9
+"{Age,KitchenSeparate,NoWaterInHouse,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.1,0.5,0.2,2.25,9
+"{SchoolLatVisibleStool,NoWaterInHouse,EatRawVeg,DewormPill,washHandsLatWaterSoap,washHandsSoapB4Eat} => {Stunting}",0.1,0.5,0.2,2.25,9
+"{FamilySize,SchoolLatVisibleStool,NoWaterInHouse,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.1,0.5,0.2,2.25,9
+"{Age,SchoolLatVisibleStool,NoWaterInHouse,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.1,0.5,0.2,2.25,9
+"URBAN:",NA,NA,NA,NA,NA
+"{SchoolLatDoors,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0573951434878587,0.456140350877193,0.125827814569536,1.81255771006464,26
+"{SchoolLatDoors,SchoolLatVisibleStool,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0573951434878587,0.456140350877193,0.125827814569536,1.81255771006464,26
+"{Age,SchoolLatDoors,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0573951434878587,0.456140350877193,0.125827814569536,1.81255771006464,26
+"{FamilySize,SchoolLatDoors,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0573951434878587,0.456140350877193,0.125827814569536,1.81255771006464,26
+"{Age,SchoolLatDoors,SchoolLatVisibleStool,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0573951434878587,0.456140350877193,0.125827814569536,1.81255771006464,26
+"{FamilySize,SchoolLatDoors,SchoolLatVisibleStool,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0573951434878587,0.456140350877193,0.125827814569536,1.81255771006464,26
+"{Age,FamilySize,SchoolLatDoors,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0573951434878587,0.456140350877193,0.125827814569536,1.81255771006464,26
+"{Age,FamilySize,SchoolLatDoors,SchoolLatVisibleStool,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0573951434878587,0.456140350877193,0.125827814569536,1.81255771006464,26
+"STUNTINGYOUNG:",NA,NA,NA,NA,NA
+"FEMALE:",NA,NA,NA,NA,NA
+"{Vaccine,BCGScar,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.3125,0.172661870503597,1.97443181818182,15
+"{BCGScar,SchoolLatVisibleStool,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.3125,0.172661870503597,1.97443181818182,15
+"{BCGScar,SchoolLatFlies,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.3125,0.172661870503597,1.97443181818182,15
+"{Vaccine,BCGScar,SchoolLatVisibleStool,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.319148936170213,0.169064748201439,2.01644100580271,15
+"{Vaccine,BCGScar,SchoolLatFlies,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.319148936170213,0.169064748201439,2.01644100580271,15
+"{FamilySize,Vaccine,BCGScar,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.3125,0.172661870503597,1.97443181818182,15
+"{Age,Vaccine,BCGScar,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.3125,0.172661870503597,1.97443181818182,15
+"{BCGScar,SchoolLatFlies,SchoolLatVisibleStool,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.3125,0.172661870503597,1.97443181818182,15
+"{FamilySize,BCGScar,SchoolLatVisibleStool,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.3125,0.172661870503597,1.97443181818182,15
+"{Age,BCGScar,SchoolLatVisibleStool,HousePet,washHandsSoapB4Eat} => {Stunting}",0.0539568345323741,0.3125,0.172661870503597,1.97443181818182,15
+"MALE:",NA,NA,NA,NA,NA
+"{NailsDirty,SchoolLatFlies,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
+"{NailsDirty,SchoolLatFlies,KitchenSeparate,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
+"{NailsDirty,SchoolLatFlies,SchoolLatVisibleStool,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
+"{FamilySize,NailsDirty,SchoolLatFlies,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
+"{Age,NailsDirty,SchoolLatFlies,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
+"{NailsDirty,SchoolLatFlies,SchoolLatVisibleStool,KitchenSeparate,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
+"{FamilySize,NailsDirty,SchoolLatFlies,KitchenSeparate,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
+"{Age,NailsDirty,SchoolLatFlies,KitchenSeparate,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
+"{FamilySize,NailsDirty,SchoolLatFlies,SchoolLatVisibleStool,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
+"{Age,NailsDirty,SchoolLatFlies,SchoolLatVisibleStool,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Stunting}",0.053156146179402,0.421052631578947,0.12624584717608,1.7126600284495,16
+"RURAL:",NA,NA,NA,NA,NA
+"SUBURBAN:",NA,NA,NA,NA,NA
+"{NailsDirty,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
+"{FamilySize,NailsDirty,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
+"{Age,NailsDirty,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
+"{NailsDirty,SchoolLatFlies,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
+"{NailsDirty,SchoolLatVisibleStool,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
+"{Age,FamilySize,NailsDirty,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
+"{FamilySize,NailsDirty,SchoolLatFlies,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
+"{FamilySize,NailsDirty,SchoolLatVisibleStool,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
+"{Age,NailsDirty,SchoolLatFlies,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
+"{Age,NailsDirty,SchoolLatVisibleStool,DewormPill,washHandsSoapB4Eat} => {Stunting}",0.105769230769231,0.423076923076923,0.25,1.91304347826087,11
+"URBAN:",NA,NA,NA,NA,NA
+"{SchoolLatFlies,HousePet,WalkBarefoot} => {Stunting}",0.0526315789473684,0.304878048780488,0.172631578947368,1.52439024390244,25
+"{SchoolLatFlies,SchoolLatVisibleStool,HousePet,WalkBarefoot} => {Stunting}",0.0526315789473684,0.304878048780488,0.172631578947368,1.52439024390244,25
+"{FamilySize,SchoolLatFlies,HousePet,WalkBarefoot} => {Stunting}",0.0526315789473684,0.304878048780488,0.172631578947368,1.52439024390244,25
+"{Age,SchoolLatFlies,HousePet,WalkBarefoot} => {Stunting}",0.0526315789473684,0.304878048780488,0.172631578947368,1.52439024390244,25
+"{FamilySize,SchoolLatFlies,SchoolLatVisibleStool,HousePet,WalkBarefoot} => {Stunting}",0.0526315789473684,0.304878048780488,0.172631578947368,1.52439024390244,25
+"{Age,SchoolLatFlies,SchoolLatVisibleStool,HousePet,WalkBarefoot} => {Stunting}",0.0526315789473684,0.304878048780488,0.172631578947368,1.52439024390244,25
+"{Age,FamilySize,SchoolLatFlies,HousePet,WalkBarefoot} => {Stunting}",0.0526315789473684,0.304878048780488,0.172631578947368,1.52439024390244,25
+"{Age,FamilySize,SchoolLatFlies,SchoolLatVisibleStool,HousePet,WalkBarefoot} => {Stunting}",0.0526315789473684,0.304878048780488,0.172631578947368,1.52439024390244,25
+"STUNTING v. STUNTINGYOUNG:",NA,NA,NA,NA,NA
+"STUNTING OVERALL:",NA,NA,NA,NA,NA
+"{SchoolLatDoors,SchoolLatVisibleStool,NoWaterInHouse} => {Stunting}",0.0706401766004415,0.355555555555556,0.198675496688742,1.41286549707602,32
+"{Age,SchoolLatDoors,SchoolLatVisibleStool,NoWaterInHouse} => {Stunting}",0.0706401766004415,0.355555555555556,0.198675496688742,1.41286549707602,32
+"{FamilySize,SchoolLatDoors,SchoolLatVisibleStool,NoWaterInHouse} => {Stunting}",0.0706401766004415,0.355555555555556,0.198675496688742,1.41286549707602,32
+"{KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0728476821192053,0.358695652173913,0.203090507726269,1.42534324942792,33
+"{Age,FamilySize,SchoolLatDoors,SchoolLatVisibleStool,NoWaterInHouse} => {Stunting}",0.0706401766004415,0.355555555555556,0.198675496688742,1.41286549707602,32
+"{SchoolLatVisibleStool,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0728476821192053,0.358695652173913,0.203090507726269,1.42534324942792,33
+"{Age,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0728476821192053,0.358695652173913,0.203090507726269,1.42534324942792,33
+"{FamilySize,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0728476821192053,0.358695652173913,0.203090507726269,1.42534324942792,33
+"{Age,SchoolLatVisibleStool,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0728476821192053,0.358695652173913,0.203090507726269,1.42534324942792,33
+"{FamilySize,SchoolLatVisibleStool,KitchenSeparate,NoWaterInHouse,EatRawVeg,washHandsSoapB4Eat} => {Stunting}",0.0728476821192053,0.358695652173913,0.203090507726269,1.42534324942792,33
+"STUNTINGYOUNG OVERALL:",NA,NA,NA,NA,NA
+"{SchoolLatFlies,HousePet} => {Stunting}",0.0932642487046632,0.258373205741627,0.360967184801382,1.26778039088476,54
+"{SchoolLatFlies,SchoolLatVisibleStool,HousePet} => {Stunting}",0.0932642487046632,0.258373205741627,0.360967184801382,1.26778039088476,54
+"{FamilySize,SchoolLatFlies,HousePet} => {Stunting}",0.0932642487046632,0.258373205741627,0.360967184801382,1.26778039088476,54
+"{Age,SchoolLatFlies,HousePet} => {Stunting}",0.0932642487046632,0.258373205741627,0.360967184801382,1.26778039088476,54
+"{FamilySize,SchoolLatFlies,SchoolLatVisibleStool,HousePet} => {Stunting}",0.0932642487046632,0.258373205741627,0.360967184801382,1.26778039088476,54
+"{Age,SchoolLatFlies,SchoolLatVisibleStool,HousePet} => {Stunting}",0.0932642487046632,0.258373205741627,0.360967184801382,1.26778039088476,54
+"{Age,FamilySize,SchoolLatFlies,HousePet} => {Stunting}",0.0932642487046632,0.258373205741627,0.360967184801382,1.26778039088476,54
+"{Age,FamilySize,SchoolLatFlies,SchoolLatVisibleStool,HousePet} => {Stunting}",0.0932642487046632,0.258373205741627,0.360967184801382,1.26778039088476,54
+"THINNESS:",NA,NA,NA,NA,NA
+"FEMALE:",NA,NA,NA,NA,NA
+"MALE:",NA,NA,NA,NA,NA
+"{NoWaterInHouse,RiverBathing,RiverLaundry,EatRawVeg,washHandsSoapB4Eat} => {Thinness}",0.0309278350515464,0.2,0.154639175257732,3.52727272727273,6
+"{KitchenSeparate,NoWaterInHouse,RiverBathing,RiverLaundry,EatRawVeg,washHandsSoapB4Eat} => {Thinness}",0.0309278350515464,0.2,0.154639175257732,3.52727272727273,6
+"{SchoolLatFlies,NoWaterInHouse,RiverBathing,RiverLaundry,EatRawVeg,washHandsSoapB4Eat} => {Thinness}",0.0309278350515464,0.2,0.154639175257732,3.52727272727273,6
+"{SchoolLatVisibleStool,NoWaterInHouse,RiverBathing,RiverLaundry,EatRawVeg,washHandsSoapB4Eat} => {Thinness}",0.0309278350515464,0.2,0.154639175257732,3.52727272727273,6
+"{FamilySize,NoWaterInHouse,RiverBathing,RiverLaundry,EatRawVeg,washHandsSoapB4Eat} => {Thinness}",0.0309278350515464,0.2,0.154639175257732,3.52727272727273,6
+"{Age,NoWaterInHouse,RiverBathing,RiverLaundry,EatRawVeg,washHandsSoapB4Eat} => {Thinness}",0.0309278350515464,0.2,0.154639175257732,3.52727272727273,6
+"{SchoolLatFlies,KitchenSeparate,NoWaterInHouse,RiverLaundry,EatRawVeg,washHandsSoapB4Eat} => {Thinness}",0.0309278350515464,0.2,0.154639175257732,3.52727272727273,6
+"{SchoolLatFlies,KitchenSeparate,NoWaterInHouse,RiverBathing,RiverLaundry,EatRawVeg,washHandsSoapB4Eat} => {Thinness}",0.0309278350515464,0.2,0.154639175257732,3.52727272727273,6
+"{SchoolLatVisibleStool,KitchenSeparate,NoWaterInHouse,RiverBathing,RiverLaundry,EatRawVeg,washHandsSoapB4Eat} => {Thinness}",0.0309278350515464,0.2,0.154639175257732,3.52727272727273,6
+"{FamilySize,KitchenSeparate,NoWaterInHouse,RiverBathing,RiverLaundry,EatRawVeg,washHandsSoapB4Eat} => {Thinness}",0.0309278350515464,0.2,0.154639175257732,3.52727272727273,6
+"RURAL:",NA,NA,NA,NA,NA
+"SUBURBAN:",NA,NA,NA,NA,NA
+"{BCGScar,TV,HousePet,RiverBathing,washHandsLatWaterSoap} => {Thinness}",0.0222222222222222,0.5,0.0444444444444444,15,2
+"{Vaccine,TV,HousePet,RiverBathing,washHandsLatWaterSoap} => {Thinness}",0.0222222222222222,0.5,0.0444444444444444,15,2
+"{Vaccine,BCGScar,TV,HousePet,RiverBathing,washHandsLatWaterSoap} => {Thinness}",0.0222222222222222,0.5,0.0444444444444444,15,2
+"{BCGScar,TV,HousePet,RiverBathing,RiverLaundry,washHandsLatWaterSoap} => {Thinness}",0.0222222222222222,0.5,0.0444444444444444,15,2
+"{BCGScar,TV,HousePet,RiverBathing,EatRawVeg,washHandsLatWaterSoap} => {Thinness}",0.0222222222222222,0.5,0.0444444444444444,15,2
+"{BCGScar,KitchenSeparate,TV,HousePet,RiverBathing,washHandsLatWaterSoap} => {Thinness}",0.0222222222222222,0.5,0.0444444444444444,15,2
+"{BCGScar,TV,HousePet,RiverBathing,washHandsLatWaterSoap,washHandsSoapB4Eat} => {Thinness}",0.0222222222222222,0.5,0.0444444444444444,15,2
+"{BCGScar,SchoolLatFlies,TV,HousePet,RiverBathing,washHandsLatWaterSoap} => {Thinness}",0.0222222222222222,0.5,0.0444444444444444,15,2
+"{BCGScar,SchoolLatVisibleStool,TV,HousePet,RiverBathing,washHandsLatWaterSoap} => {Thinness}",0.0222222222222222,0.5,0.0444444444444444,15,2
+"{FamilySize,BCGScar,TV,HousePet,RiverBathing,washHandsLatWaterSoap} => {Thinness}",0.0222222222222222,0.5,0.0444444444444444,15,2
+"URBAN:",NA,NA,NA,NA,NA
+"THINNESSYOUNG:",NA,NA,NA,NA,NA
+"FEMALE:",NA,NA,NA,NA,NA
+"{Vaccine,BCGScar,CookElectric} => {Thinness}",0.0215827338129496,0.109090909090909,0.197841726618705,2.52727272727273,6
+"{BCGScar,CookElectric,washHandsSoapB4Eat} => {Thinness}",0.0215827338129496,0.109090909090909,0.197841726618705,2.52727272727273,6
+"{Vaccine,BCGScar,CookElectric,washHandsSoapB4Eat} => {Thinness}",0.0215827338129496,0.111111111111111,0.194244604316547,2.57407407407407,6
+"{FamilySize,Vaccine,BCGScar,CookElectric} => {Thinness}",0.0215827338129496,0.109090909090909,0.197841726618705,2.52727272727273,6
+"{Age,Vaccine,BCGScar,CookElectric} => {Thinness}",0.0215827338129496,0.109090909090909,0.197841726618705,2.52727272727273,6
+"{FamilySize,BCGScar,CookElectric,washHandsSoapB4Eat} => {Thinness}",0.0215827338129496,0.109090909090909,0.197841726618705,2.52727272727273,6
+"{Age,BCGScar,CookElectric,washHandsSoapB4Eat} => {Thinness}",0.0215827338129496,0.109090909090909,0.197841726618705,2.52727272727273,6
+"{FamilySize,Vaccine,BCGScar,CookElectric,washHandsSoapB4Eat} => {Thinness}",0.0215827338129496,0.111111111111111,0.194244604316547,2.57407407407407,6
+"{Age,Vaccine,BCGScar,CookElectric,washHandsSoapB4Eat} => {Thinness}",0.0215827338129496,0.111111111111111,0.194244604316547,2.57407407407407,6
+"{Age,FamilySize,Vaccine,BCGScar,CookElectric} => {Thinness}",0.0215827338129496,0.109090909090909,0.197841726618705,2.52727272727273,6
+"MALE:",NA,NA,NA,NA,NA
+"RURAL:",NA,NA,NA,NA,NA
+"NO RURAL ARE THIN",NA,NA,NA,NA,NA
+"SUBURBAN:",NA,NA,NA,NA,NA
+"URBAN:",NA,NA,NA,NA,NA
+"THINNESS v. THINNESSYOUNG:",NA,NA,NA,NA,NA
+"{Vaccine,RiverBathing,RiverLaundry,momFinishedSecondary,washHandsSoapB4Eat} => {Thinness}",0.011037527593819,0.357142857142857,0.0309050772626932,8.51503759398496,5
+"{Vaccine,KitchenSeparate,RiverBathing,RiverLaundry,momFinishedSecondary,washHandsSoapB4Eat} => {Thinness}",0.011037527593819,0.357142857142857,0.0309050772626932,8.51503759398496,5
+"{Vaccine,SchoolLatFlies,RiverBathing,RiverLaundry,momFinishedSecondary,washHandsSoapB4Eat} => {Thinness}",0.011037527593819,0.357142857142857,0.0309050772626932,8.51503759398496,5
+"{Vaccine,SchoolLatVisibleStool,RiverBathing,RiverLaundry,momFinishedSecondary,washHandsSoapB4Eat} => {Thinness}",0.011037527593819,0.357142857142857,0.0309050772626932,8.51503759398496,5
+"{FamilySize,Vaccine,RiverBathing,RiverLaundry,momFinishedSecondary,washHandsSoapB4Eat} => {Thinness}",0.011037527593819,0.357142857142857,0.0309050772626932,8.51503759398496,5
+"{Age,Vaccine,RiverBathing,RiverLaundry,momFinishedSecondary,washHandsSoapB4Eat} => {Thinness}",0.011037527593819,0.357142857142857,0.0309050772626932,8.51503759398496,5
+"{Vaccine,SchoolLatFlies,KitchenSeparate,RiverBathing,RiverLaundry,momFinishedSecondary,washHandsSoapB4Eat} => {Thinness}",0.011037527593819,0.357142857142857,0.0309050772626932,8.51503759398496,5
+"{Vaccine,SchoolLatVisibleStool,KitchenSeparate,RiverBathing,RiverLaundry,momFinishedSecondary,washHandsSoapB4Eat} => {Thinness}",0.011037527593819,0.357142857142857,0.0309050772626932,8.51503759398496,5
+"{FamilySize,Vaccine,KitchenSeparate,RiverBathing,RiverLaundry,momFinishedSecondary,washHandsSoapB4Eat} => {Thinness}",0.011037527593819,0.357142857142857,0.0309050772626932,8.51503759398496,5
+"{Age,Vaccine,KitchenSeparate,RiverBathing,RiverLaundry,momFinishedSecondary,washHandsSoapB4Eat} => {Thinness}",0.011037527593819,0.357142857142857,0.0309050772626932,8.51503759398496,5
+"THINNESSYOUNG OVERALL:",NA,NA,NA,NA,NA
+"WASTINGYOUNG:",NA,NA,NA,NA,NA
+"FEMALE:",NA,NA,NA,NA,NA
+"{Vaccine,BCGScar,SchoolLatVisibleStool,CookElectric,HousePet} => {Wasting}",0.0215827338129496,0.333333333333333,0.0647482014388489,4.41269841269841,6
+"{Vaccine,BCGScar,SchoolLatFlies,CookElectric,HousePet} => {Wasting}",0.0215827338129496,0.333333333333333,0.0647482014388489,4.41269841269841,6
+"{Vaccine,BCGScar,SchoolLatVisibleStool,CookElectric,HousePet,washHandsSoapB4Eat} => {Wasting}",0.0215827338129496,0.333333333333333,0.0647482014388489,4.41269841269841,6
+"{Vaccine,BCGScar,SchoolLatFlies,CookElectric,HousePet,washHandsSoapB4Eat} => {Wasting}",0.0215827338129496,0.333333333333333,0.0647482014388489,4.41269841269841,6
+"{Vaccine,BCGScar,SchoolLatFlies,SchoolLatVisibleStool,CookElectric,HousePet} => {Wasting}",0.0215827338129496,0.333333333333333,0.0647482014388489,4.41269841269841,6
+"{FamilySize,Vaccine,BCGScar,SchoolLatVisibleStool,CookElectric,HousePet} => {Wasting}",0.0215827338129496,0.333333333333333,0.0647482014388489,4.41269841269841,6
+"{Sex,Vaccine,BCGScar,SchoolLatVisibleStool,CookElectric,HousePet} => {Wasting}",0.0215827338129496,0.333333333333333,0.0647482014388489,4.41269841269841,6
+"{Age,Vaccine,BCGScar,SchoolLatVisibleStool,CookElectric,HousePet} => {Wasting}",0.0215827338129496,0.333333333333333,0.0647482014388489,4.41269841269841,6
+"{FamilySize,Vaccine,BCGScar,SchoolLatFlies,CookElectric,HousePet} => {Wasting}",0.0215827338129496,0.333333333333333,0.0647482014388489,4.41269841269841,6
+"{Sex,Vaccine,BCGScar,SchoolLatFlies,CookElectric,HousePet} => {Wasting}",0.0215827338129496,0.333333333333333,0.0647482014388489,4.41269841269841,6
+"MALE:",NA,NA,NA,NA,NA
+"{SchoolLatDoors,SchoolLatFlies,Radio,RiverBathing,WalkBarefoot} => {Wasting}",0.0232558139534884,0.368421052631579,0.0631229235880399,3.46546052631579,7
+"{SchoolLatDoors,SchoolLatVisibleStool,Radio,RiverBathing,WalkBarefoot} => {Wasting}",0.0232558139534884,0.368421052631579,0.0631229235880399,3.46546052631579,7
+"{BCGScar,NailsDirty,SchoolLatDoors,Radio,washHandsLatWaterSoap} => {Wasting}",0.0232558139534884,0.368421052631579,0.0631229235880399,3.46546052631579,7
+"{SchoolLatDoors,SchoolLatFlies,Radio,RiverBathing,RiverLaundry,WalkBarefoot} => {Wasting}",0.0232558139534884,0.368421052631579,0.0631229235880399,3.46546052631579,7
+"{SchoolLatDoors,SchoolLatVisibleStool,Radio,RiverBathing,RiverLaundry,WalkBarefoot} => {Wasting}",0.0232558139534884,0.368421052631579,0.0631229235880399,3.46546052631579,7
+"{SchoolLatDoors,SchoolLatFlies,SchoolLatVisibleStool,Radio,RiverLaundry,WalkBarefoot} => {Wasting}",0.0232558139534884,0.368421052631579,0.0631229235880399,3.46546052631579,7
+"{SchoolLatDoors,SchoolLatFlies,SchoolLatVisibleStool,Radio,RiverBathing,WalkBarefoot} => {Wasting}",0.0232558139534884,0.388888888888889,0.0598006644518272,3.65798611111111,7
+"{FamilySize,SchoolLatDoors,SchoolLatFlies,Radio,RiverBathing,WalkBarefoot} => {Wasting}",0.0232558139534884,0.368421052631579,0.0631229235880399,3.46546052631579,7
+"{Age,SchoolLatDoors,SchoolLatFlies,Radio,RiverBathing,WalkBarefoot} => {Wasting}",0.0232558139534884,0.368421052631579,0.0631229235880399,3.46546052631579,7
+"{FamilySize,SchoolLatDoors,SchoolLatVisibleStool,Radio,RiverBathing,WalkBarefoot} => {Wasting}",0.0232558139534884,0.368421052631579,0.0631229235880399,3.46546052631579,7
+"RURAL:",NA,NA,NA,NA,NA
+"NO RURAL ARE WASTED",NA,NA,NA,NA,NA
+"SUBURBAN:",NA,NA,NA,NA,NA
+"{DiarrheaLast2Weeks,RiverBathing,EatRawVeg,DewormPill,washHandsSoapB4Eat} => {Wasting}",0.0384615384615385,0.5,0.0769230769230769,5.2,4
+"{DiarrheaLast2Weeks,RiverBathing,RiverLaundry,EatRawVeg,DewormPill,washHandsSoapB4Eat} => {Wasting}",0.0384615384615385,0.5,0.0769230769230769,5.2,4
+"{DiarrheaLast2Weeks,TV,RiverBathing,EatRawVeg,DewormPill,washHandsSoapB4Eat} => {Wasting}",0.0384615384615385,0.5,0.0769230769230769,5.2,4
+"{DiarrheaLast2Weeks,TV,RiverBathing,EatRawVeg,DewormPill,washHandsLatWaterSoap} => {Wasting}",0.0384615384615385,0.5,0.0769230769230769,5.2,4
+"{DiarrheaLast2Weeks,RiverBathing,EatRawVeg,DewormPill,washHandsLatWaterSoap,washHandsSoapB4Eat} => {Wasting}",0.0384615384615385,0.5,0.0769230769230769,5.2,4
+"{DiarrheaLast2Weeks,KitchenSeparate,RiverBathing,EatRawVeg,DewormPill,washHandsSoapB4Eat} => {Wasting}",0.0384615384615385,0.5,0.0769230769230769,5.2,4
+"{DiarrheaLast2Weeks,SchoolLatVisibleStool,RiverBathing,EatRawVeg,DewormPill,washHandsSoapB4Eat} => {Wasting}",0.0384615384615385,0.5,0.0769230769230769,5.2,4
+"{DiarrheaLast2Weeks,SchoolLatFlies,RiverBathing,EatRawVeg,DewormPill,washHandsSoapB4Eat} => {Wasting}",0.0384615384615385,0.5,0.0769230769230769,5.2,4
+"{FamilySize,DiarrheaLast2Weeks,RiverBathing,EatRawVeg,DewormPill,washHandsSoapB4Eat} => {Wasting}",0.0384615384615385,0.5,0.0769230769230769,5.2,4
+"{Age,DiarrheaLast2Weeks,RiverBathing,EatRawVeg,DewormPill,washHandsSoapB4Eat} => {Wasting}",0.0384615384615385,0.5,0.0769230769230769,5.2,4
+"URBAN:",NA,NA,NA,NA,NA
+"{Sex,Vaccine,BCGScar,SchoolLatFlies,HousePet,washHandsSoapB4Eat} => {Wasting}",0.0210526315789474,0.263157894736842,0.08,2.90697674418605,10
+"{Sex,Vaccine,BCGScar,SchoolLatVisibleStool,HousePet,washHandsSoapB4Eat} => {Wasting}",0.0210526315789474,0.263157894736842,0.08,2.90697674418605,10
+"{Sex,Vaccine,BCGScar,SchoolLatFlies,SchoolLatVisibleStool,HousePet,washHandsSoapB4Eat} => {Wasting}",0.0210526315789474,0.263157894736842,0.08,2.90697674418605,10
+"{Sex,FamilySize,Vaccine,BCGScar,SchoolLatFlies,HousePet,washHandsSoapB4Eat} => {Wasting}",0.0210526315789474,0.263157894736842,0.08,2.90697674418605,10
+"{Age,Sex,Vaccine,BCGScar,SchoolLatFlies,HousePet,washHandsSoapB4Eat} => {Wasting}",0.0210526315789474,0.263157894736842,0.08,2.90697674418605,10
+"{Sex,FamilySize,Vaccine,BCGScar,SchoolLatVisibleStool,HousePet,washHandsSoapB4Eat} => {Wasting}",0.0210526315789474,0.263157894736842,0.08,2.90697674418605,10
+"{Age,Sex,Vaccine,BCGScar,SchoolLatVisibleStool,HousePet,washHandsSoapB4Eat} => {Wasting}",0.0210526315789474,0.263157894736842,0.08,2.90697674418605,10
+"{Sex,FamilySize,Vaccine,BCGScar,SchoolLatFlies,SchoolLatVisibleStool,HousePet,washHandsSoapB4Eat} => {Wasting}",0.0210526315789474,0.263157894736842,0.08,2.90697674418605,10
+"{Age,Sex,Vaccine,BCGScar,SchoolLatFlies,SchoolLatVisibleStool,HousePet,washHandsSoapB4Eat} => {Wasting}",0.0210526315789474,0.263157894736842,0.08,2.90697674418605,10
+"{Age,Sex,FamilySize,Vaccine,BCGScar,SchoolLatFlies,HousePet,washHandsSoapB4Eat} => {Wasting}",0.0210526315789474,0.263157894736842,0.08,2.90697674418605,10

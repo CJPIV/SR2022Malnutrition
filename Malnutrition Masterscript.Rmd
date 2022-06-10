@@ -552,10 +552,16 @@ stunting = processed[,-c(3, 4, 19, 41, 59, 61:64)]
 thinness = processed[,-c(3, 4, 19, 41, 59:61, 63:65)]
 wasting = processed[,-c(3, 4, 19, 41, 59:63)]
 
+#These will be used in Association Rule Learning (last several blocks of code at bottom of this script)
+StuntingFull = stunting 
+ThinnessFull = thinness
+#Wasting 6 lines below
 ################################################################################
 wastingYoung = subset(wasting, Age < 11)
 wastingYoung$Wasting = as.numeric(as.character(wastingYoung$Wasting))
 #wastingYoung = wastingYoung[,-27] #All values for row 27 were the same
+
+WastingFull = wastingYoung #Can only determine wasting for "Young" samples (age < 11)
 
 stuntingYoung = subset(stunting, Age < 11)
 #stuntingYoung = stuntingYoung[,-c(19)]
@@ -1876,6 +1882,315 @@ write.csv(cbind(
 #####
 # ASSOCIATION RULE LEARNING:
 #####
+```{r ARL Data Preparation, warning = FALSE}
+#Preparing SMOTE-balancing of entire datasets for use in association rule learning. Datasets previously balanced with SMOTE were only training data for use in Feature Selection, and thus were subsets of ~81% of the original data. Ours will use the remaining 19% for ARL.
+#I.e. The SMOTE balancing we did before didn't include everything, but we want everything for ARL. So now we have to make new balanced datasets with everything in them.
+
+ARL_Stunting_Older = SMOTE(X = stunting,
+                     target = stunting$Stunting,
+                     K = 5,
+                     dup_size = 2
+                     )
+ARL_Stunting_Older = ARL_Stunting_Older$data
+barplot(prop.table(table(ARL_Stunting_Older$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'ARL_Stunting_Older SMOTE-Balanced Dataset Class Distribution'
+        )
+abline(h = 0)
+################################################################################
+ARL_Thinness_Older = SMOTE(X = thinness,
+                     target = thinness$Thinness,
+                     K = 5,
+                     dup_size = 22
+                     )
+ARL_Thinness_Older = ARL_Thinness_Older$data
+barplot(prop.table(table(ARL_Thinness_Older$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'ARL_Thinness_Older SMOTE-Balanced Dataset Class Distribution'
+        )
+abline(h = 0)
+################################################################################
+ARL_Stunting_Young = SMOTE(X = StuntingYoung,
+                     target = StuntingYoung$Stunting,
+                     K = 5,
+                     dup_size = 3
+                     )
+ARL_Stunting_Young = ARL_Stunting_Young$data
+barplot(prop.table(table(ARL_Stunting_Young$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'ARL_Stunting_Young SMOTE-Balanced Dataset Class Distribution'
+        )
+abline(h = 0)
+################################################################################
+ARL_Thinness_Young = SMOTE(X = thinnessYoung,
+                     target = thinnessYoung$Thinness,
+                     K = 5,
+                     dup_size = 30
+                     )
+ARL_Thinness_Young = ARL_Thinness_Young$data
+barplot(prop.table(table(ARL_Thinness_Young$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'ARL_Thinness_Young SMOTE-Balanced Dataset Class Distribution'
+        )
+abline(h = 0)
+################################################################################
+ARL_Wasting_Young = SMOTE(X = WastingYoung,
+                     target = WastingYoung$Wasting,
+                     K = 5,
+                     dup_size = 9
+                     )
+ARL_Wasting_Young = ARL_Wasting_Young$data
+barplot(prop.table(table(ARL_Wasting_Young$Wasting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'ARL_Wasting_Young SMOTE-Balanced Dataset Class Distribution'
+        )
+abline(h = 0)
+################################################################################
+ARL_Stunting_Male = subset(StuntingFull, Sex == 0)
+ARL_Stunting_Male = SMOTE(X = ARL_Stunting_Male,
+                     target = ARL_Stunting_Male$Stunting,
+                     K = 5,
+                     dup_size = 2
+                     )
+ARL_Stunting_Male = ARL_Stunting_Male$data
+barplot(prop.table(table(ARL_Stunting_Male$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'ARL_Stunting_Male SMOTE-Balanced Dataset Class Distribution'
+        )
+abline(h = 0)
+################################################################################
+ARL_Stunting_Female = subset(StuntingFull, Sex == 1)
+ARL_Stunting_Female = SMOTE(X = ARL_Stunting_Female,
+                     target = ARL_Stunting_Female$Stunting,
+                     K = 5,
+                     dup_size = 3
+                     )
+ARL_Stunting_Female = ARL_Stunting_Female$data
+barplot(prop.table(table(ARL_Stunting_Female$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'ARL_Stunting_Female SMOTE-Balanced Dataset Class Distribution'
+        )
+abline(h = 0)
+################################################################################
+ARL_Thinness_Male = subset(ThinnessFull, Sex == 0)
+ARL_Thinness_Male = SMOTE(X = ARL_Thinness_Male,
+                     target = ARL_Thinness_Male$Thinness,
+                     K = 5,
+                     dup_size = 27
+                     )
+ARL_Thinness_Male = ARL_Thinness_Male$data
+barplot(prop.table(table(ARL_Thinness_Male$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Thinness",
+        names = c("No", "Yes"),
+        main = 'ARL_Thinness_Male SMOTE-Balanced Dataset Class Distribution'
+        )
+abline(h = 0)
+################################################################################
+ARL_Thinness_Female = subset(ThinnessFull, Sex == 1)
+ARL_Thinness_Female = SMOTE(X = ARL_Thinness_Female,
+                     target = ARL_Thinness_Female$Thinness,
+                     K = 5,
+                     dup_size = 25
+                     )
+ARL_Thinness_Female = ARL_Thinness_Female$data
+barplot(prop.table(table(ARL_Thinness_Female$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Thinness",
+        names = c("No", "Yes"),
+        main = 'ARL_Thinness_Female SMOTE-Balanced Dataset Class Distribution'
+        )
+abline(h = 0)
+################################################################################
+ARL_Wasting_Male = subset(WastingFull, Sex == 0)
+ARL_Wasting_Male = SMOTE(X = ARL_Wasting_Male,
+                     target = ARL_Wasting_Male$Wasting,
+                     K = 5,
+                     dup_size = 7
+                     )
+ARL_Wasting_Male = ARL_Wasting_Male$data
+barplot(prop.table(table(ARL_Wasting_Male$Wasting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Wasting",
+        names = c("No", "Yes"),
+        main = 'ARL_Wasting_Male SMOTE-Balanced Dataset Class Distribution'
+        )
+abline(h = 0)
+################################################################################
+ARL_Wasting_Female = subset(WastingFull, Sex == 1)
+ARL_Wasting_Female = SMOTE(X = ARL_Wasting_Female,
+                     target = ARL_Wasting_Female$Wasting,
+                     K = 5,
+                     dup_size = 11
+                     )
+ARL_Wasting_Female = ARL_Wasting_Female$data
+barplot(prop.table(table(ARL_Wasting_Female$Wasting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Wasting",
+        names = c("No", "Yes"),
+        main = 'ARL_Wasting_Female SMOTE-Balanced Dataset Class Distribution'
+        )
+abline(h = 0)
+################################################################################
+ARL_Stunting_NotUrban = subset(StuntingFull, Suburban == 1 | Rural == 1)
+ARL_Stunting_NotUrban = SMOTE(X = ARL_Stunting_NotUrban,
+                     target = ARL_Stunting_NotUrban$Stunting,
+                     K = 5,
+                     dup_size = 2
+                     )
+ARL_Stunting_NotUrban = ARL_Stunting_NotUrban$data
+barplot(prop.table(table(ARL_Stunting_NotUrban$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Wasting",
+        names = c("No", "Yes"),
+        main = 'ARL_Stunting_NotUrban SMOTE-Balanced Dataset Class Distribution'
+        )
+abline(h = 0)
+################################################################################
+ARL_Stunting_Urban = subset(StuntingFull, Rural == 0 & Suburban == 0)
+ARL_Stunting_Urban = SMOTE(X = ARL_Stunting_Urban,
+                     target = ARL_Stunting_Urban$Stunting,
+                     K = 5,
+                     dup_size = 2
+                     )
+ARL_Stunting_Urban = ARL_Stunting_Urban$data
+barplot(prop.table(table(ARL_Stunting_Urban$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Wasting",
+        names = c("No", "Yes"),
+        main = 'ARL_Stunting_Urban SMOTE-Balanced Dataset Class Distribution'
+        )
+abline(h = 0)
+################################################################################
+ARL_Thinness_NotUrban = subset(ThinnessFull, Suburban == 1 | Rural == 1)
+ARL_Thinness_NotUrban = SMOTE(X = ARL_Thinness_NotUrban,
+                     target = ARL_Thinness_NotUrban$Thinness,
+                     K = 5,
+                     dup_size = 33
+                     )
+ARL_Thinness_NotUrban = ARL_Thinness_NotUrban$data
+barplot(prop.table(table(ARL_Thinness_NotUrban$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Wasting",
+        names = c("No", "Yes"),
+        main = 'ARL_Thinness_NotUrban SMOTE-Balanced Dataset Class Distribution'
+        )
+abline(h = 0)
+################################################################################
+ARL_Thinness_Urban = subset(ThinnessFull, Rural == 0 & Suburban == 0)
+ARL_Thinness_Urban = SMOTE(X = ARL_Thinness_Urban,
+                     target = ARL_Thinness_Urban$Thinness,
+                     K = 5,
+                     dup_size = 25
+                     )
+ARL_Thinness_Urban = ARL_Thinness_Urban$data
+barplot(prop.table(table(ARL_Thinness_Urban$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Wasting",
+        names = c("No", "Yes"),
+        main = 'ARL_Thinness_Urban SMOTE-Balanced Dataset Class Distribution'
+        )
+abline(h = 0)
+################################################################################
+ARL_Wasting_NotUrban = subset(WastingFull, Suburban == 1 | Rural == 1)
+ARL_Wasting_NotUrban = SMOTE(X = ARL_Wasting_NotUrban,
+                     target = ARL_Wasting_NotUrban$Wasting,
+                     K = 5,
+                     dup_size = 9
+                     )
+ARL_Wasting_NotUrban = ARL_Wasting_NotUrban$data
+barplot(prop.table(table(ARL_Wasting_NotUrban$Wasting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Wasting",
+        names = c("No", "Yes"),
+        main = 'ARL_Wasting_NotUrban SMOTE-Balanced Dataset Class Distribution'
+        )
+abline(h = 0)
+################################################################################
+ARL_Wasting_Urban = subset(WastingFull, Rural == 0 & Suburban == 0)
+ARL_Wasting_Urban = SMOTE(X = ARL_Wasting_Urban,
+                     target = ARL_Wasting_Urban$Wasting,
+                     K = 5,
+                     dup_size = 9
+                     )
+ARL_Wasting_Urban = ARL_Wasting_Urban$data
+barplot(prop.table(table(ARL_Wasting_Urban$Wasting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Wasting",
+        names = c("No", "Yes"),
+        main = 'ARL_Wasting_Urban SMOTE-Balanced Dataset Class Distribution'
+        )
+abline(h = 0)
+################################################################################
+```
+
+
+
 ```{r Association Rule Learning: Stunting & StuntingYoung}
 #Pretty quick.
 #I played around with support and confidence values until I got ~10 rules per iteration of the Apriori algorithm. 
@@ -1997,7 +2312,7 @@ rules = apriori(male,
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
                 )
-inspect(rules[1:10])
+#inspect(rules[1:10])
 ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
 ################################################################################
 #Rural vs. suburban vs. urban rules on StuntingYoung
@@ -2027,7 +2342,7 @@ rules = apriori(suburban,
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
                 )
-inspect(rules[1:10])
+#inspect(rules[1:10])
 ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "URBAN:"
@@ -2042,7 +2357,7 @@ rules = apriori(urban,
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
                 )
-inspect(rules[1:8])
+#inspect(rules[1:8])
 ruleSet = rbind(ruleSet, as(rules[1:8], "data.frame"))
 ################################################################################
 #Young (<11) vs adolescent (11+) rules on Stunting & StuntingYouth
@@ -2057,7 +2372,7 @@ rules = apriori(data.frame(lapply(stunting, as.logical)),
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
                 )
-inspect(rules[1:10])
+#inspect(rules[1:10])
 ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "STUNTINGYOUNG OVERALL:"
@@ -2069,171 +2384,194 @@ rules = apriori(data.frame(lapply(StuntingYoung, as.logical)),
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
                 )
-inspect(rules[1:8])
+#inspect(rules[1:8])
 ruleSet = rbind(ruleSet, as(rules[1:8], "data.frame"))
 ```
 
 
 
 ```{r Association Rule Learning: Thinness & ThinnessYoung}
-#Pretty quick.
-#Identical to the above block of code, but running ARL on both Thinness datasets instead of both Stunting ones.
-
-library(arules)
-library(arulesViz)
 ################################################################################
+#Thinness female vs. male
+ruleSet[nrow(ruleSet)+1, 1] = "THINNESS:"
 data = data.frame(lapply(thinness, as.logical))
-#Male vs. Female associations on Thinness
 
-female = subset(data, Sex == TRUE)
-female = female[,-2]
-rules = apriori(female, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.01,
-                                 maxlen = 10,
-                                 target = "rules"),
-                appearance = list(default = "lhs", rhs = c("Thinness")
-                                  )
-                )
-inspect(rules[1:10])
+ruleSet[nrow(ruleSet)+1, 1] = "FEMALE:"
+# female = subset(data, Sex == TRUE)
+# female = female[,-2]
+# rules = apriori(female, 
+#                 parameter = list(support = 0.01,
+#                                  confidence = 0.01,
+#                                  maxlen = 10,
+#                                  target = "rules"),
+#                 appearance = list(default = "lhs", rhs = c("Thinness")
+#                                   )
+#                 )
+#append(ruleSet, as(rules, "data.frame"))
+#inspect(rules[1:10])
+# ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
 
+ruleSet[nrow(ruleSet)+1, 1] = "MALE:"
 male = subset(data, Sex == FALSE)
 male = male[,-2]
 rules = apriori(male, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.71,
+                parameter = list(support = 0.03,
+                                 confidence = 0.20,
                                  maxlen = 10,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
                 )
-inspect(rules[1:10])
+#inspect(rules[1:10])
+ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
 ################################################################################
 #Rural vs. suburban vs. urban rules on Thinness
-rural = subset(data, Rural == TRUE)
-rural = rural[,-c(14,15)]
-rules = apriori(rural, 
-                parameter = list(support = 0.15,
-                                 confidence = 0.35,
-                                 maxlen = 10,
-                                 target = "rules"),
-                appearance = list(default = "lhs", rhs = c("Thinness")
-                                  )
-                )
-inspect(rules[1:10])
+ruleSet[nrow(ruleSet)+1, 1] = "RURAL:"
+# rural = subset(data, Rural == TRUE)
+# rural = rural[,-c(14,15)]
+# rules = apriori(rural,
+#                 parameter = list(support = 0.07,
+#                                  confidence = 0.90,
+#                                  maxlen = 10,
+#                                  target = "rules"),
+#                 appearance = list(default = "lhs", rhs = c("Thinness")
+#                                   )
+#                 )
+# inspect(rules[1:10])
+# Rural has too few samples to narrow selection of rules down to ~10 (smallest possible is 23,260); every rule has count = 1
 
+ruleSet[nrow(ruleSet)+1, 1] = "SUBURBAN:"
 suburban = subset(data, Suburban == TRUE)
 suburban = suburban[,-c(14,15)]
 rules = apriori(suburban, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.35,
-                                 maxlen = 10,
+                parameter = list(support = 0.02,
+                                 confidence = 0.50,
+                                 maxlen = 7,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
                 )
-inspect(rules[1:10])
+#inspect(rules[1:10])
+ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
 
-urban = subset(data, Rural == FALSE)
-urban = subset(urban, Suburban == FALSE) #I don't know why this requires 2 lines; I had originally coded it as one line, but it would just copy everything from "data" into "urban". Coding is magic.
-urban = urban[,-c(14,15)]
-rules = apriori(urban, 
-                parameter = list(support = 0.028,
-                                 confidence = 0.05,
-                                 maxlen = 10,
-                                 target = "rules"),
-                appearance = list(default = "lhs", rhs = c("Thinness")
-                                  )
-                )
-inspect(rules[1:10])
-#Why is this performing so poorly? Thinness => Urban's rules suck, but it has tons of data.
+ruleSet[nrow(ruleSet)+1, 1] = "URBAN:"
+# urban = subset(data, Rural == FALSE) 
+# urban = subset(urban, Suburban == FALSE)
+# urban = urban[,-c(14,15)]
+# rules = apriori(urban, 
+#                 parameter = list(support = 0.02,
+#                                  confidence = 0.10,
+#                                  maxlen = 10,
+#                                  target = "rules"),
+#                 appearance = list(default = "lhs", rhs = c("Thinness")
+#                                   )
+#                 )
+# #inspect(rules[1:8])
+# ruleSet = rbind(ruleSet, as(rules[1:8], "data.frame"))
 ################################################################################
-data = data.frame(lapply(thinnessYoung, as.logical))
 #Male vs. Female associations on ThinnessYoung
+data = data.frame(lapply(thinnessYoung, as.logical))
+ruleSet[nrow(ruleSet)+1, 1] = "THINNESSYOUNG:"
 
+ruleSet[nrow(ruleSet)+1, 1] = "FEMALE:"
 female = subset(data, Sex == TRUE)
 female = female[,-2]
 rules = apriori(female, 
                 parameter = list(support = 0.02,
-                                 confidence = 0.10,
+                                 confidence = 0.109,
                                  maxlen = 10,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
                 )
-inspect(rules[1:10])
-#This also performs poorly.
+#inspect(rules[1:10])
+ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
 
-male = subset(data, Sex == FALSE)
-male = male[,-2]
-rules = apriori(male, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.05,
-                                 maxlen = 10,
-                                 target = "rules"),
-                appearance = list(default = "lhs", rhs = c("Thinness")
-                                  )
-                )
-inspect(rules[1:10])
+ruleSet[nrow(ruleSet)+1, 1] = "MALE:"
+# male = subset(data, Sex == FALSE)
+# male = male[,-2]
+# rules = apriori(male, 
+#                 parameter = list(support = 0.02,
+#                                  confidence = 0.05,
+#                                  maxlen = 10,
+#                                  target = "rules"),
+#                 appearance = list(default = "lhs", rhs = c("Thinness")
+#                                   )
+#                 )
+# inspect(rules[1:10])
+# ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
 ################################################################################
 #Rural vs. suburban vs. urban rules on ThinnessYoung
-rural = subset(data, Rural == TRUE)
-rural = rural[,-c(14,15)]
-rules = apriori(rural, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.35,
-                                 maxlen = 10,
-                                 target = "rules"),
-                appearance = list(default = "lhs", rhs = c("Thinness")
-                                  )
-                )
-inspect(rules[1:10])
+ruleSet[nrow(ruleSet)+1, 1] = "RURAL:"
+# rural = subset(data, Rural == TRUE)
+# rural = rural[,-c(14,15)]
+# rules = apriori(rural,
+#                 parameter = list(support = 0.14, #Anything above 0.14 returns nothing
+#                                  confidence = 1, #This data is very strange
+#                                  maxlen = 10,
+#                                  target = "rules"),
+#                 appearance = list(default = "lhs", rhs = c("Thinness")
+#                                   )
+#                 )
+# inspect(rules[1:10])
+ruleSet[nrow(ruleSet)+1, 1] = "NO RURAL ARE THIN"
+#All rural samples are not thin.
 
-suburban = subset(data, Suburban == TRUE)
-suburban = suburban[,-c(14,15)]
-rules = apriori(suburban, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.35,
-                                 maxlen = 10,
-                                 target = "rules"),
-                appearance = list(default = "lhs", rhs = c("Thinness")
-                                  )
-                )
-inspect(rules[1:10])
+ruleSet[nrow(ruleSet)+1, 1] = "SUBURBAN:"
+# suburban = subset(data, Suburban == TRUE)
+# suburban = suburban[,-c(14,15)]
+# rules = apriori(suburban, 
+#                 parameter = list(support = 0.02,
+#                                  confidence = 0.1,
+#                                  maxlen = 10,
+#                                  target = "rules"),
+#                 appearance = list(default = "lhs", rhs = c("Thinness")
+#                                   )
+#                 )
+# inspect(rules[1:10])
+# ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
 
-urban = subset(data, (Rural == FALSE && Suburban == FALSE))
-urban = urban[,-c(14,15)]
-rules = apriori(urban, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.35,
-                                 maxlen = 10,
-                                 target = "rules"),
-                appearance = list(default = "lhs", rhs = c("Thinness")
-                                  )
-                )
-inspect(rules[1:10])
+ruleSet[nrow(ruleSet)+1, 1] = "URBAN:"
+# urban = subset(data, Rural == FALSE)
+# urban = subset(data, Suburban == FALSE) #I don't know why this has to be two separate lines of subsetting. Coding is magic, but I am not a wizard.
+# urban = urban[,-c(14,15)]
+# rules = apriori(urban, 
+#                 parameter = list(support = 0.02,
+#                                  confidence = 0.10,
+#                                  maxlen = 10,
+#                                  target = "rules"),
+#                 appearance = list(default = "lhs", rhs = c("Thinness")
+#                                   )
+#                 )
+# inspect(rules[1:10])
+# ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
 ################################################################################
 #Young (<11) vs adolescent (11+) rules on Thinness & ThinnessYouth
+ruleSet[nrow(ruleSet)+1, 1] = "THINNESS v. THINNESSYOUNG:"
 
+ruleSet[nrow(ruleSet)+1, 1] = "THINNESS OVERALL:"
 rules = apriori(data.frame(lapply(thinness, as.logical)), 
-                parameter = list(support = 0.05,
+                parameter = list(support = 0.01,
                                  confidence = 0.35,
                                  maxlen = 10,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
                 )
-inspect(rules[1:10])
+#inspect(rules[1:10])
+ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
 
-rules = apriori(data.frame(lapply(ThinnessYoung, as.logical)), 
-                parameter = list(support = 0.05,
-                                 confidence = 0.25,
+ruleSet[nrow(ruleSet)+1, 1] = "THINNESSYOUNG OVERALL:"
+rules = apriori(data.frame(lapply(thinnessYoung, as.logical)), 
+                parameter = list(support = 0.02,
+                                 confidence = 0.15,
                                  maxlen = 10,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
                 )
-inspect(rules[1:10])
+#inspect(rules[1:8])
+ruleSet = rbind(ruleSet, as(rules[1:8], "data.frame"))
 ```
 
 
@@ -2242,68 +2580,82 @@ inspect(rules[1:10])
 #Pretty quick.
 #Again, same as above two blocks except only conducted on WastingYoung data.
 ################################################################################
-data = data.frame(lapply(WastingYoung, as.logical))
 #Male vs. Female associations on WastingYoung
+data = data.frame(lapply(WastingYoung, as.logical))
+ruleSet[nrow(ruleSet)+1, 1] = "WASTINGYOUNG:"
 
+ruleSet[nrow(ruleSet)+1, 1] = "FEMALE:"
 female = subset(data, Sex == TRUE)
 female = female[,-2]
 rules = apriori(female, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.35,
+                parameter = list(support = 0.02,
+                                 confidence = 0.33,
                                  maxlen = 10,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
                                   )
                 )
-inspect(rules[1:10])
+#inspect(rules[1:10])
+ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
 
+ruleSet[nrow(ruleSet)+1, 1] = "MALE:"
 male = subset(data, Sex == FALSE)
 male = male[,-2]
-rules = apriori(male, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.35,
-                                 maxlen = 10,
+rules = apriori(male,
+                parameter = list(support = 0.02,
+                                 confidence = 0.36,
+                                 maxlen = 7,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
                                   )
                 )
-inspect(rules[1:10])
+#inspect(rules[1:10])
+ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
 ################################################################################
 #Rural vs. suburban vs. urban rules on WastingYoung
-rural = subset(data, Rural == TRUE)
-rural = rural[,-c(14,15)]
-rules = apriori(rural, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.35,
-                                 maxlen = 10,
-                                 target = "rules"),
-                appearance = list(default = "lhs", rhs = c("Wasting")
-                                  )
-                )
-inspect(rules[1:10])
+ruleSet[nrow(ruleSet)+1, 1] = "RURAL:"
+# rural = subset(data, Rural == TRUE)
+# rural = rural[,-c(14,15)]
+# rules = apriori(rural,
+#                 parameter = list(support = 0.14, #Anything above 0.14 returns nothing
+#                                  confidence = 1, #This data is very strange
+#                                  maxlen = 10,
+#                                  target = "rules"),
+#                 appearance = list(default = "lhs", rhs = c("Wasting")
+#                                   )
+#                 )
+# inspect(rules[1:10])
+ruleSet[nrow(ruleSet)+1, 1] = "NO RURAL ARE WASTED"
+#All rural samples are not thin.
 
+ruleSet[nrow(ruleSet)+1, 1] = "SUBURBAN:"
 suburban = subset(data, Suburban == TRUE)
 suburban = suburban[,-c(14,15)]
-rules = apriori(suburban, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.35,
-                                 maxlen = 10,
+rules = apriori(suburban,
+                parameter = list(support = 0.03,
+                                 confidence = 0.50,
+                                 maxlen = 7,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
                                   )
                 )
-inspect(rules[1:10])
+#inspect(rules[1:10])
+ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
 
-urban = subset(data, (Rural == FALSE && Suburban == FALSE))
+ruleSet[nrow(ruleSet)+1, 1] = "URBAN:"
+urban = subset(data, Rural == FALSE)
+urban = subset(data, Suburban == FALSE) #I don't know why this has to be two separate lines of subsetting. Coding is magic, but I am not a wizard.
 urban = urban[,-c(14,15)]
-rules = apriori(urban, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.35,
+rules = apriori(urban,
+                parameter = list(support = 0.02,
+                                 confidence = 0.26,
                                  maxlen = 10,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
                                   )
                 )
-inspect(rules[1:10])
+#inspect(rules[1:10])
+ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
 ################################################################################
+write.csv(ruleSet, "Association_Rules.csv", row.names = FALSE)
 ```
