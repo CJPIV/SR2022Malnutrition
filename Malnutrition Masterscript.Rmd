@@ -548,25 +548,77 @@ names(processed)[[31]] = "NoFamLat"
 names(processed)[[32]] = "LatOutside"
 names(processed)[[36]] = "DontUseSchoolLat"
 names(processed)[[37]] = "DontUseTP"
-```
 
-
-
-```{r Removing Variables of Insufficient Prevalence}
-#COPY = processed
-#processed = COPY
-
-for (i in 6:62){ #We're removing any factors with imbalances of 95%-5% or worse
-  #cat("CURRENT: ", i, "\n")
-  factor = table(processed[,i])
-  if (factor[[2]] < 50){ # < 5% prevalence
-    cat("SHOULD REMOVE: ", names(processed)[[i]], "\n")
-  }else if (factor[[2]] > 986){ # > 95% prevalence
-    cat("SHOULD REMOVE: ", names(processed)[[i]], "\n")
+for (i in 1:1036){
+  if (processed[[i,8]] == 1 | processed[[i,9]] == 1 | processed[[i,10]] == 1){
+    processed$SickLast2Weeks[i] = 1
+  }else{
+    processed$SickLast2Weeks[i] = 0
   }
 }
-processed = processed[,-c(14, 15, 17, 19, 23, 31, 32, 39, 41, 45:48, 50, 53)]
+processed = processed[,-c(8:10)]
+
+for (i in 1:1036){
+  if (processed[[i,8]] == 1 | processed[[i,9]] == 1) {
+    processed$NailsMaintained[i] = 0
+  }else{
+    processed$NailsMaintained[i] = 1
+  }
+}
+processed = processed[,-c(8:10)]
+
+for (i in 1:1036){
+  if (processed[[i,8]] == 1 | processed[[i,9]] == 1) {
+    processed$SchoolLatClean[i] = 0
+  }else{
+    processed$SchoolLatClean[i] = 1
+  }
+}
+processed = processed[,-c(8:9, 11)]
+processed = processed[,-c(10)]
+
+for (i in 1:1036){
+  if (processed[[i,11]] == 1 | processed[[i,12]] == 1) {
+    processed$"Radio/TV"[i] = 1
+  }else{
+    processed$"Radio/TV"[i] = 0
+  }
+}
+processed = processed[,-c(11:12)]
+processed = processed[,-11]
+
+processed = processed[,-c(16, 18)]
+
+for (i in 1:1036){
+  if (processed[[i,18]] == 1 | processed[[i,19]] == 1) {
+    processed$RiverCleaning[i] = 1
+  }else{
+    processed$RiverCleaning[i] = 0
+  }
+}
+processed = processed[,-c(18,19)]
+
+for (i in 1:1036){
+  if (processed[[i,28]] == 1 | processed[[i,29]] == 1) {
+    processed$OtherMeds[i] = 1
+  }else{
+    processed$OtherMeds[i] = 0
+  }
+}
+processed = processed[,-c(28,29)]
+processed = processed[,-28]
+processed = processed[,-c(30:34)]
+
+for (i in 1:1036){
+  if (processed[[i,31]] == 1 | processed[[i,32]] == 1) {
+    processed$"momFinished2+"[i] = 1
+  }else{
+    processed$"momFinished2+"[i] = 0
+  }
+}
+processed = processed[,-c(31, 32)]
 ```
+
 
 ```{r Dependent Variable Calculations}
 #Derive WAZ/HAZ/BAZ for specific analysis
@@ -619,9 +671,9 @@ for (i in 1:1036){
 
 
 ```{r Saving Preprocessing}
-stunting = processed[,-c(3, 4, 48, 50:53)]
-thinness = processed[,-c(3, 4, 48:50, 52:53)]
-wasting = processed[,-c(3, 4, 48:52)]
+stunting = processed[,-c(3, 4, 43, 45:48)]
+thinness = processed[,-c(3, 4, 43:45, 47:48)]
+wasting = processed[,-c(3, 4, 43:47)]
 wasting = subset(wasting, Age < 11)
 wasting$Wasting = as.numeric(as.character(wasting$Wasting))
 ################################################################################
@@ -699,33 +751,201 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
     SMOTEStunting[[i]][[j]] = SMOTE(X = as.data.frame(UBStunting[[i]][[j]]),
                               target = UBStunting[[i]][[j]]$Stunting,
                               K = 5,
-                              dup_size = 3
+                              dup_size = 0
                               )
      SMOTEStunting[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
 }
-
+################################################################################
+testFolds = createFolds(stuntingMale$Stunting, k = 10) #Create k splits
+testSetsStuntingMale = list(stuntingMale[testFolds$Fold01, ], stuntingMale[testFolds$Fold02, ],
+                        stuntingMale[testFolds$Fold03, ], stuntingMale[testFolds$Fold04, ],
+                        stuntingMale[testFolds$Fold05, ], stuntingMale[testFolds$Fold06, ],
+                        stuntingMale[testFolds$Fold07, ], stuntingMale[testFolds$Fold08, ],
+                        stuntingMale[testFolds$Fold09, ], stuntingMale[testFolds$Fold10, ]
+                        )
+sansTestStuntingMale = list(stuntingMale[-testFolds$Fold01, ], stuntingMale[-testFolds$Fold02, ],
+                        stuntingMale[-testFolds$Fold03, ], stuntingMale[-testFolds$Fold04, ],
+                        stuntingMale[-testFolds$Fold05, ], stuntingMale[-testFolds$Fold06, ],
+                        stuntingMale[-testFolds$Fold07, ], stuntingMale[-testFolds$Fold08, ],
+                        stuntingMale[-testFolds$Fold09, ], stuntingMale[-testFolds$Fold10, ]
+                        )
+UBStuntingMale = list()
+for (i in 1:10){
+  curSet = sansTestStuntingMale[[i]]
+  validationFolds = createFolds(sansTestStuntingMale[[i]]$Stunting, k = 10)
+  UBStuntingMale[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+                         curSet[-validationFolds$Fold02, ],
+                         curSet[-validationFolds$Fold03, ],
+                         curSet[-validationFolds$Fold04, ],
+                         curSet[-validationFolds$Fold05, ],
+                         curSet[-validationFolds$Fold06, ],
+                         curSet[-validationFolds$Fold07, ],
+                         curSet[-validationFolds$Fold08, ],
+                         curSet[-validationFolds$Fold09, ],
+                         curSet[-validationFolds$Fold10, ]
+                         )
+}
+SMOTEStuntingMale = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTEStuntingMale[[i]] = list()
+  for (j in 1:10){
+    SMOTEStuntingMale[[i]][[j]] = SMOTE(X = as.data.frame(UBStuntingMale[[i]][[j]]),
+                              target = UBStuntingMale[[i]][[j]]$Stunting,
+                              K = 5,
+                              dup_size = 0
+                              )
+     SMOTEStuntingMale[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+  }
+}
+################################################################################
+testFolds = createFolds(stuntingFemale$Stunting, k = 10) #Create k splits
+testSetsStuntingFemale = list(stuntingFemale[testFolds$Fold01, ], stuntingFemale[testFolds$Fold02, ],
+                        stuntingFemale[testFolds$Fold03, ], stuntingFemale[testFolds$Fold04, ],
+                        stuntingFemale[testFolds$Fold05, ], stuntingFemale[testFolds$Fold06, ],
+                        stuntingFemale[testFolds$Fold07, ], stuntingFemale[testFolds$Fold08, ],
+                        stuntingFemale[testFolds$Fold09, ], stuntingFemale[testFolds$Fold10, ]
+                        )
+sansTestStuntingFemale = list(stuntingFemale[-testFolds$Fold01, ], stuntingFemale[-testFolds$Fold02, ],
+                        stuntingFemale[-testFolds$Fold03, ], stuntingFemale[-testFolds$Fold04, ],
+                        stuntingFemale[-testFolds$Fold05, ], stuntingFemale[-testFolds$Fold06, ],
+                        stuntingFemale[-testFolds$Fold07, ], stuntingFemale[-testFolds$Fold08, ],
+                        stuntingFemale[-testFolds$Fold09, ], stuntingFemale[-testFolds$Fold10, ]
+                        )
+UBStuntingFemale = list()
+for (i in 1:10){
+  curSet = sansTestStuntingFemale[[i]]
+  validationFolds = createFolds(sansTestStuntingFemale[[i]]$Stunting, k = 10)
+  UBStuntingFemale[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+                         curSet[-validationFolds$Fold02, ],
+                         curSet[-validationFolds$Fold03, ],
+                         curSet[-validationFolds$Fold04, ],
+                         curSet[-validationFolds$Fold05, ],
+                         curSet[-validationFolds$Fold06, ],
+                         curSet[-validationFolds$Fold07, ],
+                         curSet[-validationFolds$Fold08, ],
+                         curSet[-validationFolds$Fold09, ],
+                         curSet[-validationFolds$Fold10, ]
+                         )
+}
+SMOTEStuntingFemale = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTEStuntingFemale[[i]] = list()
+  for (j in 1:10){
+    SMOTEStuntingFemale[[i]][[j]] = SMOTE(X = as.data.frame(UBStuntingFemale[[i]][[j]]),
+                              target = UBStuntingFemale[[i]][[j]]$Stunting,
+                              K = 5,
+                              dup_size = 0
+                              )
+     SMOTEStuntingFemale[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+  }
+}
+################################################################################
+testFolds = createFolds(stuntingUrban$Stunting, k = 10) #Create k splits
+testSetsStuntingUrban = list(stuntingUrban[testFolds$Fold01, ], stuntingUrban[testFolds$Fold02, ],
+                        stuntingUrban[testFolds$Fold03, ], stuntingUrban[testFolds$Fold04, ],
+                        stuntingUrban[testFolds$Fold05, ], stuntingUrban[testFolds$Fold06, ],
+                        stuntingUrban[testFolds$Fold07, ], stuntingUrban[testFolds$Fold08, ],
+                        stuntingUrban[testFolds$Fold09, ], stuntingUrban[testFolds$Fold10, ]
+                        )
+sansTestStuntingUrban = list(stuntingUrban[-testFolds$Fold01, ], stuntingUrban[-testFolds$Fold02, ],
+                        stuntingUrban[-testFolds$Fold03, ], stuntingUrban[-testFolds$Fold04, ],
+                        stuntingUrban[-testFolds$Fold05, ], stuntingUrban[-testFolds$Fold06, ],
+                        stuntingUrban[-testFolds$Fold07, ], stuntingUrban[-testFolds$Fold08, ],
+                        stuntingUrban[-testFolds$Fold09, ], stuntingUrban[-testFolds$Fold10, ]
+                        )
+UBStuntingUrban = list()
+for (i in 1:10){
+  curSet = sansTestStuntingUrban[[i]]
+  validationFolds = createFolds(sansTestStuntingUrban[[i]]$Stunting, k = 10)
+  UBStuntingUrban[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+                         curSet[-validationFolds$Fold02, ],
+                         curSet[-validationFolds$Fold03, ],
+                         curSet[-validationFolds$Fold04, ],
+                         curSet[-validationFolds$Fold05, ],
+                         curSet[-validationFolds$Fold06, ],
+                         curSet[-validationFolds$Fold07, ],
+                         curSet[-validationFolds$Fold08, ],
+                         curSet[-validationFolds$Fold09, ],
+                         curSet[-validationFolds$Fold10, ]
+                         )
+}
+SMOTEStuntingUrban = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTEStuntingUrban[[i]] = list()
+  for (j in 1:10){
+    SMOTEStuntingUrban[[i]][[j]] = SMOTE(X = as.data.frame(UBStuntingUrban[[i]][[j]]),
+                              target = UBStuntingUrban[[i]][[j]]$Stunting,
+                              K = 5,
+                              dup_size = 0
+                              )
+     SMOTEStuntingUrban[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+  }
+}
+################################################################################
+testFolds = createFolds(stuntingNotUrban$Stunting, k = 10) #Create k splits
+testSetsStuntingNotUrban = list(stuntingNotUrban[testFolds$Fold01, ], stuntingNotUrban[testFolds$Fold02, ],
+                        stuntingNotUrban[testFolds$Fold03, ], stuntingNotUrban[testFolds$Fold04, ],
+                        stuntingNotUrban[testFolds$Fold05, ], stuntingNotUrban[testFolds$Fold06, ],
+                        stuntingNotUrban[testFolds$Fold07, ], stuntingNotUrban[testFolds$Fold08, ],
+                        stuntingNotUrban[testFolds$Fold09, ], stuntingNotUrban[testFolds$Fold10, ]
+                        )
+sansTestStuntingNotUrban = list(stuntingNotUrban[-testFolds$Fold01, ], stuntingNotUrban[-testFolds$Fold02, ],
+                        stuntingNotUrban[-testFolds$Fold03, ], stuntingNotUrban[-testFolds$Fold04, ],
+                        stuntingNotUrban[-testFolds$Fold05, ], stuntingNotUrban[-testFolds$Fold06, ],
+                        stuntingNotUrban[-testFolds$Fold07, ], stuntingNotUrban[-testFolds$Fold08, ],
+                        stuntingNotUrban[-testFolds$Fold09, ], stuntingNotUrban[-testFolds$Fold10, ]
+                        )
+UBStuntingNotUrban = list()
+for (i in 1:10){
+  curSet = sansTestStuntingNotUrban[[i]]
+  validationFolds = createFolds(sansTestStuntingNotUrban[[i]]$Stunting, k = 10)
+  UBStuntingNotUrban[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+                         curSet[-validationFolds$Fold02, ],
+                         curSet[-validationFolds$Fold03, ],
+                         curSet[-validationFolds$Fold04, ],
+                         curSet[-validationFolds$Fold05, ],
+                         curSet[-validationFolds$Fold06, ],
+                         curSet[-validationFolds$Fold07, ],
+                         curSet[-validationFolds$Fold08, ],
+                         curSet[-validationFolds$Fold09, ],
+                         curSet[-validationFolds$Fold10, ]
+                         )
+}
+SMOTEStuntingNotUrban = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTEStuntingNotUrban[[i]] = list()
+  for (j in 1:10){
+    SMOTEStuntingNotUrban[[i]][[j]] = SMOTE(X = as.data.frame(UBStuntingNotUrban[[i]][[j]]),
+                              target = UBStuntingNotUrban[[i]][[j]]$Stunting,
+                              K = 5,
+                              dup_size = 0
+                              )
+     SMOTEStuntingNotUrban[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+  }
+}
+################################################################################
 # Barplots for visualization of class imbalance
 #####
-barplot(prop.table(table(UBStunting[[1]][[1]]$Stunting)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Stunting",
-        names = c("No", "Yes"),
-        main = 'Stunting Training Set Class Distribution (Unbalanced)')
-abline(h = 0)
-
-barplot(prop.table(table(SMOTEStunting[[1]][[1]]$data$Stunting)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Stunting",
-        names = c("No", "Yes"),
-        main = 'Stunting Training Set Class Distribution (SMOTE)')
-abline(h = 0)
+# barplot(prop.table(table(UBStunting[[1]][[1]]$Stunting)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Stunting",
+#         names = c("No", "Yes"),
+#         main = 'Stunting Training Set Class Distribution (Unbalanced)')
+# abline(h = 0)
+# 
+# barplot(prop.table(table(SMOTEStunting[[1]][[1]]$data$Stunting)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Stunting",
+#         names = c("No", "Yes"),
+#         main = 'Stunting Training Set Class Distribution (SMOTE)')
+# abline(h = 0)
 
 
 # Following code writes each training set to its own .csv files if needed in other scripts.
@@ -746,6 +966,7 @@ library(caret)
 library(tidyverse)
 library(smotefamily)
 
+set.seed(13)
 set.seed(13)
 testFolds = createFolds(thinness$Thinness, k = 10) #Create k splits
 testSetsThinness = list(thinness[testFolds$Fold01, ], thinness[testFolds$Fold02, ],
@@ -783,33 +1004,202 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
     SMOTEThinness[[i]][[j]] = SMOTE(X = as.data.frame(UBThinness[[i]][[j]]),
                               target = UBThinness[[i]][[j]]$Thinness,
                               K = 5,
-                              dup_size = 20
+                              dup_size = 0
                               )
-    SMOTEThinness[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+     SMOTEThinness[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
 }
+################################################################################
+testFolds = createFolds(thinnessMale$Thinness, k = 10) #Create k splits
+testSetsThinnessMale = list(thinnessMale[testFolds$Fold01, ], thinnessMale[testFolds$Fold02, ],
+                        thinnessMale[testFolds$Fold03, ], thinnessMale[testFolds$Fold04, ],
+                        thinnessMale[testFolds$Fold05, ], thinnessMale[testFolds$Fold06, ],
+                        thinnessMale[testFolds$Fold07, ], thinnessMale[testFolds$Fold08, ],
+                        thinnessMale[testFolds$Fold09, ], thinnessMale[testFolds$Fold10, ]
+                        )
+sansTestThinnessMale = list(thinnessMale[-testFolds$Fold01, ], thinnessMale[-testFolds$Fold02, ],
+                        thinnessMale[-testFolds$Fold03, ], thinnessMale[-testFolds$Fold04, ],
+                        thinnessMale[-testFolds$Fold05, ], thinnessMale[-testFolds$Fold06, ],
+                        thinnessMale[-testFolds$Fold07, ], thinnessMale[-testFolds$Fold08, ],
+                        thinnessMale[-testFolds$Fold09, ], thinnessMale[-testFolds$Fold10, ]
+                        )
+UBThinnessMale = list()
+for (i in 1:10){
+  curSet = sansTestThinnessMale[[i]]
+  validationFolds = createFolds(sansTestThinnessMale[[i]]$Thinness, k = 10)
+  UBThinnessMale[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+                         curSet[-validationFolds$Fold02, ],
+                         curSet[-validationFolds$Fold03, ],
+                         curSet[-validationFolds$Fold04, ],
+                         curSet[-validationFolds$Fold05, ],
+                         curSet[-validationFolds$Fold06, ],
+                         curSet[-validationFolds$Fold07, ],
+                         curSet[-validationFolds$Fold08, ],
+                         curSet[-validationFolds$Fold09, ],
+                         curSet[-validationFolds$Fold10, ]
+                         )
+}
+SMOTEThinnessMale = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTEThinnessMale[[i]] = list()
+  for (j in 1:10){
+    SMOTEThinnessMale[[i]][[j]] = SMOTE(X = as.data.frame(UBThinnessMale[[i]][[j]]),
+                              target = UBThinnessMale[[i]][[j]]$Thinness,
+                              K = 5,
+                              dup_size = 0
+                              )
+     SMOTEThinnessMale[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+  }
+}
+################################################################################
+testFolds = createFolds(thinnessFemale$Thinness, k = 10) #Create k splits
+testSetsThinnessFemale = list(thinnessFemale[testFolds$Fold01, ], thinnessFemale[testFolds$Fold02, ],
+                        thinnessFemale[testFolds$Fold03, ], thinnessFemale[testFolds$Fold04, ],
+                        thinnessFemale[testFolds$Fold05, ], thinnessFemale[testFolds$Fold06, ],
+                        thinnessFemale[testFolds$Fold07, ], thinnessFemale[testFolds$Fold08, ],
+                        thinnessFemale[testFolds$Fold09, ], thinnessFemale[testFolds$Fold10, ]
+                        )
+sansTestThinnessFemale = list(thinnessFemale[-testFolds$Fold01, ], thinnessFemale[-testFolds$Fold02, ],
+                        thinnessFemale[-testFolds$Fold03, ], thinnessFemale[-testFolds$Fold04, ],
+                        thinnessFemale[-testFolds$Fold05, ], thinnessFemale[-testFolds$Fold06, ],
+                        thinnessFemale[-testFolds$Fold07, ], thinnessFemale[-testFolds$Fold08, ],
+                        thinnessFemale[-testFolds$Fold09, ], thinnessFemale[-testFolds$Fold10, ]
+                        )
+UBThinnessFemale = list()
+for (i in 1:10){
+  curSet = sansTestThinnessFemale[[i]]
+  validationFolds = createFolds(sansTestThinnessFemale[[i]]$Thinness, k = 10)
+  UBThinnessFemale[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+                         curSet[-validationFolds$Fold02, ],
+                         curSet[-validationFolds$Fold03, ],
+                         curSet[-validationFolds$Fold04, ],
+                         curSet[-validationFolds$Fold05, ],
+                         curSet[-validationFolds$Fold06, ],
+                         curSet[-validationFolds$Fold07, ],
+                         curSet[-validationFolds$Fold08, ],
+                         curSet[-validationFolds$Fold09, ],
+                         curSet[-validationFolds$Fold10, ]
+                         )
+}
+SMOTEThinnessFemale = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTEThinnessFemale[[i]] = list()
+  for (j in 1:10){
+    SMOTEThinnessFemale[[i]][[j]] = SMOTE(X = as.data.frame(UBThinnessFemale[[i]][[j]]),
+                              target = UBThinnessFemale[[i]][[j]]$Thinness,
+                              K = 5,
+                              dup_size = 0
+                              )
+     SMOTEThinnessFemale[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+  }
+}
+################################################################################
+testFolds = createFolds(thinnessUrban$Thinness, k = 10) #Create k splits
+testSetsThinnessUrban = list(thinnessUrban[testFolds$Fold01, ], thinnessUrban[testFolds$Fold02, ],
+                        thinnessUrban[testFolds$Fold03, ], thinnessUrban[testFolds$Fold04, ],
+                        thinnessUrban[testFolds$Fold05, ], thinnessUrban[testFolds$Fold06, ],
+                        thinnessUrban[testFolds$Fold07, ], thinnessUrban[testFolds$Fold08, ],
+                        thinnessUrban[testFolds$Fold09, ], thinnessUrban[testFolds$Fold10, ]
+                        )
+sansTestThinnessUrban = list(thinnessUrban[-testFolds$Fold01, ], thinnessUrban[-testFolds$Fold02, ],
+                        thinnessUrban[-testFolds$Fold03, ], thinnessUrban[-testFolds$Fold04, ],
+                        thinnessUrban[-testFolds$Fold05, ], thinnessUrban[-testFolds$Fold06, ],
+                        thinnessUrban[-testFolds$Fold07, ], thinnessUrban[-testFolds$Fold08, ],
+                        thinnessUrban[-testFolds$Fold09, ], thinnessUrban[-testFolds$Fold10, ]
+                        )
+UBThinnessUrban = list()
+for (i in 1:10){
+  curSet = sansTestThinnessUrban[[i]]
+  validationFolds = createFolds(sansTestThinnessUrban[[i]]$Thinness, k = 10)
+  UBThinnessUrban[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+                         curSet[-validationFolds$Fold02, ],
+                         curSet[-validationFolds$Fold03, ],
+                         curSet[-validationFolds$Fold04, ],
+                         curSet[-validationFolds$Fold05, ],
+                         curSet[-validationFolds$Fold06, ],
+                         curSet[-validationFolds$Fold07, ],
+                         curSet[-validationFolds$Fold08, ],
+                         curSet[-validationFolds$Fold09, ],
+                         curSet[-validationFolds$Fold10, ]
+                         )
+}
+SMOTEThinnessUrban = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTEThinnessUrban[[i]] = list()
+  for (j in 1:10){
+    SMOTEThinnessUrban[[i]][[j]] = SMOTE(X = as.data.frame(UBThinnessUrban[[i]][[j]]),
+                              target = UBThinnessUrban[[i]][[j]]$Thinness,
+                              K = 5,
+                              dup_size = 0
+                              )
+     SMOTEThinnessUrban[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+  }
+}
+################################################################################
+testFolds = createFolds(thinnessNotUrban$Thinness, k = 10) #Create k splits
+testSetsThinnessNotUrban = list(thinnessNotUrban[testFolds$Fold01, ], thinnessNotUrban[testFolds$Fold02, ],
+                        thinnessNotUrban[testFolds$Fold03, ], thinnessNotUrban[testFolds$Fold04, ],
+                        thinnessNotUrban[testFolds$Fold05, ], thinnessNotUrban[testFolds$Fold06, ],
+                        thinnessNotUrban[testFolds$Fold07, ], thinnessNotUrban[testFolds$Fold08, ],
+                        thinnessNotUrban[testFolds$Fold09, ], thinnessNotUrban[testFolds$Fold10, ]
+                        )
+sansTestThinnessNotUrban = list(thinnessNotUrban[-testFolds$Fold01, ], thinnessNotUrban[-testFolds$Fold02, ],
+                        thinnessNotUrban[-testFolds$Fold03, ], thinnessNotUrban[-testFolds$Fold04, ],
+                        thinnessNotUrban[-testFolds$Fold05, ], thinnessNotUrban[-testFolds$Fold06, ],
+                        thinnessNotUrban[-testFolds$Fold07, ], thinnessNotUrban[-testFolds$Fold08, ],
+                        thinnessNotUrban[-testFolds$Fold09, ], thinnessNotUrban[-testFolds$Fold10, ]
+                        )
+UBThinnessNotUrban = list()
+for (i in 1:10){
+  curSet = sansTestThinnessNotUrban[[i]]
+  validationFolds = createFolds(sansTestThinnessNotUrban[[i]]$Thinness, k = 10)
+  UBThinnessNotUrban[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+                         curSet[-validationFolds$Fold02, ],
+                         curSet[-validationFolds$Fold03, ],
+                         curSet[-validationFolds$Fold04, ],
+                         curSet[-validationFolds$Fold05, ],
+                         curSet[-validationFolds$Fold06, ],
+                         curSet[-validationFolds$Fold07, ],
+                         curSet[-validationFolds$Fold08, ],
+                         curSet[-validationFolds$Fold09, ],
+                         curSet[-validationFolds$Fold10, ]
+                         )
+}
+SMOTEThinnessNotUrban = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTEThinnessNotUrban[[i]] = list()
+  for (j in 1:10){
+    SMOTEThinnessNotUrban[[i]][[j]] = SMOTE(X = as.data.frame(UBThinnessNotUrban[[i]][[j]]),
+                              target = UBThinnessNotUrban[[i]][[j]]$Thinness,
+                              K = 4, #K had to be reduced; there weren't k = 5 minority class neighbors to extrapolate from, only 4
+                              dup_size = 0
+                              )
+     SMOTEThinnessNotUrban[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+  }
+}
+################################################################################
 
 # Barplots for visualization of class imbalance
 #####
-barplot(prop.table(table(UBThinness[[1]][[1]]$Thinness)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Thinness",
-        names = c("No", "Yes"),
-        main = 'Thinness Training Set Class Distribution (Unbalanced)')
-abline(h = 0)
-
-barplot(prop.table(table(SMOTEThinness[[1]][[1]]$data$Thinness)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Thinness",
-        names = c("No", "Yes"),
-        main = 'Thinness Training Set Class Distribution (SMOTE)')
-abline(h = 0)
+# barplot(prop.table(table(UBThinness[[1]][[1]]$Thinness)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Thinness",
+#         names = c("No", "Yes"),
+#         main = 'Thinness Training Set Class Distribution (Unbalanced)')
+# abline(h = 0)
+# 
+# barplot(prop.table(table(SMOTEThinness[[1]][[1]]$data$Thinness)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Thinness",
+#         names = c("No", "Yes"),
+#         main = 'Thinness Training Set Class Distribution (SMOTE)')
+# abline(h = 0)
 
 # Following code writes each training set to its own .csv files if needed in other scripts.
 #####
@@ -822,27 +1212,33 @@ abline(h = 0)
 # write.csv(ForFS_SMOTEThinness, "ForFS_SMOTEThinness.csv")
 ```
 
-```{r StuntingYoung Train/Test Splits}
+
+
+```{r Wasting Train/Test Splits}
 library(caret)
 library(tidyverse)
 library(smotefamily)
 
 set.seed(13)
-testFolds = createFolds(StuntingYoung$Stunting, k = 10) #Create k splits
-testSetsStuntingYoung = list(StuntingYoung[testFolds$Fold01, ],
-                             StuntingYoung[testFolds$Fold02, ],
-                        StuntingYoung[testFolds$Fold03, ], StuntingYoung[testFolds$Fold04, ],
-                        StuntingYoung[testFolds$Fold05, ], StuntingYoung[testFolds$Fold06, ],
-                        StuntingYoung[testFolds$Fold07, ], StuntingYoung[testFolds$Fold08, ],
-                        StuntingYoung[testFolds$Fold09, ], StuntingYoung[testFolds$Fold10, ]
+set.seed(13)
+testFolds = createFolds(wasting$Wasting, k = 10) #Create k splits
+testSetsWasting = list(wasting[testFolds$Fold01, ], wasting[testFolds$Fold02, ],
+                        wasting[testFolds$Fold03, ], wasting[testFolds$Fold04, ],
+                        wasting[testFolds$Fold05, ], wasting[testFolds$Fold06, ],
+                        wasting[testFolds$Fold07, ], wasting[testFolds$Fold08, ],
+                        wasting[testFolds$Fold09, ], wasting[testFolds$Fold10, ]
                         )
-sansTestStuntingYoung = list(StuntingYoung[-testFolds$Fold01, ], StuntingYoung[-testFolds$Fold02, ], StuntingYoung[-testFolds$Fold03, ], StuntingYoung[-testFolds$Fold04, ],StuntingYoung[-testFolds$Fold05, ], StuntingYoung[-testFolds$Fold06, ],StuntingYoung[-testFolds$Fold07, ], StuntingYoung[-testFolds$Fold08, ],StuntingYoung[-testFolds$Fold09, ], StuntingYoung[-testFolds$Fold10, ]
+sansTestWasting = list(wasting[-testFolds$Fold01, ], wasting[-testFolds$Fold02, ],
+                        wasting[-testFolds$Fold03, ], wasting[-testFolds$Fold04, ],
+                        wasting[-testFolds$Fold05, ], wasting[-testFolds$Fold06, ],
+                        wasting[-testFolds$Fold07, ], wasting[-testFolds$Fold08, ],
+                        wasting[-testFolds$Fold09, ], wasting[-testFolds$Fold10, ]
                         )
-UBStuntingYoung = list()
+UBWasting = list()
 for (i in 1:10){
-  curSet = sansTestStuntingYoung[[i]]
-  validationFolds = createFolds(sansTestStuntingYoung[[i]]$Stunting, k = 10)
-  UBStuntingYoung[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+  curSet = sansTestWasting[[i]]
+  validationFolds = createFolds(sansTestWasting[[i]]$Wasting, k = 10)
+  UBWasting[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
                          curSet[-validationFolds$Fold04, ],
@@ -854,73 +1250,37 @@ for (i in 1:10){
                          curSet[-validationFolds$Fold10, ]
                          )
 }
-SMOTEStuntingYoung = list()
+SMOTEWasting = list()
 for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
-  SMOTEStuntingYoung[[i]] = list()
+  SMOTEWasting[[i]] = list()
   for (j in 1:10){
-    SMOTEStuntingYoung[[i]][[j]] = SMOTE(X = as.data.frame(UBStuntingYoung[[i]][[j]]),
-                              target = UBStuntingYoung[[i]][[j]]$Stunting,
+    SMOTEWasting[[i]][[j]] = SMOTE(X = as.data.frame(UBWasting[[i]][[j]]),
+                              target = UBWasting[[i]][[j]]$Wasting,
                               K = 5,
-                              dup_size = 3
+                              dup_size = 0
                               )
-    SMOTEStuntingYoung[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+     SMOTEWasting[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
 }
-
-# Barplots for visualization of class imbalance
-#####
-barplot(prop.table(table(UBStuntingYoung[[1]][[1]]$Stunting)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Stunting",
-        names = c("No", "Yes"),
-        main = 'StuntingYoung Training Set Class Distribution (Unbalanced)')
-abline(h = 0)
-
-barplot(prop.table(table(SMOTEStuntingYoung[[1]][[1]]$data$Stunting)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Stunting",
-        names = c("No", "Yes"),
-        main = 'StuntingYoung Training Set Class Distribution (SMOTE)')
-abline(h = 0)
-
-# Following code writes each training set to its own .csv files if needed in other scripts.
-#####
-# ForFS_TestStuntingYoung = rbind(testSetsStuntingYoung[1:10])
-# ForFS_UBStuntingYoung = rbind(trainSetsUBStuntingYoung[1:10])
-# ForFS_SMOTEStuntingYoung = rbind(trainSetsSMOTEStuntingYoung[1:10])
-
-# write.csv(ForFS_TestStuntingYoung, "ForFS_TestStuntingYoung.csv")
-# write.csv(ForFS_UBStuntingYoung, "ForFS_UBStuntingYoung.csv")
-# write.csv(ForFS_SMOTEStuntingYoung, "ForFS_SMOTEStuntingYoung.csv")
-```
-
-```{r ThinnessYoung Train/Test Splits}
-library(caret)
-library(tidyverse)
-library(smotefamily)
-
-set.seed(13)
-testFolds = createFolds(thinnessYoung$Thinness, k = 10) #Create k splits
-testSetsThinnessYoung = list(thinnessYoung[testFolds$Fold01, ],
-                             thinnessYoung[testFolds$Fold02, ],
-                        thinnessYoung[testFolds$Fold03, ], thinnessYoung[testFolds$Fold04, ],
-                        thinnessYoung[testFolds$Fold05, ], thinnessYoung[testFolds$Fold06, ],
-                        thinnessYoung[testFolds$Fold07, ], thinnessYoung[testFolds$Fold08, ],
-                        thinnessYoung[testFolds$Fold09, ], thinnessYoung[testFolds$Fold10, ]
+################################################################################
+testFolds = createFolds(wastingMale$Wasting, k = 10) #Create k splits
+testSetsWastingMale = list(wastingMale[testFolds$Fold01, ], wastingMale[testFolds$Fold02, ],
+                        wastingMale[testFolds$Fold03, ], wastingMale[testFolds$Fold04, ],
+                        wastingMale[testFolds$Fold05, ], wastingMale[testFolds$Fold06, ],
+                        wastingMale[testFolds$Fold07, ], wastingMale[testFolds$Fold08, ],
+                        wastingMale[testFolds$Fold09, ], wastingMale[testFolds$Fold10, ]
                         )
-sansTestThinnessYoung = list(thinnessYoung[-testFolds$Fold01, ], thinnessYoung[-testFolds$Fold02, ], thinnessYoung[-testFolds$Fold03, ], thinnessYoung[-testFolds$Fold04, ],thinnessYoung[-testFolds$Fold05, ], thinnessYoung[-testFolds$Fold06, ],thinnessYoung[-testFolds$Fold07, ], thinnessYoung[-testFolds$Fold08, ],thinnessYoung[-testFolds$Fold09, ], thinnessYoung[-testFolds$Fold10, ]
+sansTestWastingMale = list(wastingMale[-testFolds$Fold01, ], wastingMale[-testFolds$Fold02, ],
+                        wastingMale[-testFolds$Fold03, ], wastingMale[-testFolds$Fold04, ],
+                        wastingMale[-testFolds$Fold05, ], wastingMale[-testFolds$Fold06, ],
+                        wastingMale[-testFolds$Fold07, ], wastingMale[-testFolds$Fold08, ],
+                        wastingMale[-testFolds$Fold09, ], wastingMale[-testFolds$Fold10, ]
                         )
-UBThinnessYoung = list()
+UBWastingMale = list()
 for (i in 1:10){
-  curSet = sansTestThinnessYoung[[i]]
-  validationFolds = createFolds(sansTestThinnessYoung[[i]]$Thinness, k = 10)
-  UBThinnessYoung[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+  curSet = sansTestWastingMale[[i]]
+  validationFolds = createFolds(sansTestWastingMale[[i]]$Wasting, k = 10)
+  UBWastingMale[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
                          curSet[-validationFolds$Fold04, ],
@@ -932,73 +1292,37 @@ for (i in 1:10){
                          curSet[-validationFolds$Fold10, ]
                          )
 }
-SMOTEThinnessYoung = list()
+SMOTEWastingMale = list()
 for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
-  SMOTEThinnessYoung[[i]] = list()
+  SMOTEWastingMale[[i]] = list()
   for (j in 1:10){
-    SMOTEThinnessYoung[[i]][[j]] = SMOTE(X = as.data.frame(UBThinnessYoung[[i]][[j]]),
-                              target = UBThinnessYoung[[i]][[j]]$Thinness,
+    SMOTEWastingMale[[i]][[j]] = SMOTE(X = as.data.frame(UBWastingMale[[i]][[j]]),
+                              target = UBWastingMale[[i]][[j]]$Wasting,
                               K = 5,
-                              dup_size = 34
+                              dup_size = 0
                               )
-    SMOTEThinnessYoung[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+     SMOTEWastingMale[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
 }
-
-# Barplots for visualization of class imbalance
-#####
-barplot(prop.table(table(UBThinnessYoung[[1]][[1]]$Thinness)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Thinness",
-        names = c("No", "Yes"),
-        main = 'ThinnessYoung Training Set Class Distribution (Unbalanced)')
-abline(h = 0)
-
-barplot(prop.table(table(SMOTEThinnessYoung[[1]][[1]]$data$Thinness)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Thinness",
-        names = c("No", "Yes"),
-        main = 'ThinnessYoung Training Set Class Distribution (SMOTE)')
-abline(h = 0)
-
-# Following code writes each training set to its own .csv files if needed in other scripts.
-#####
-# ForFS_TestThinnessYoung = rbind(testSetsThinnessYoung[1:10])
-# ForFS_UBThinnessYoung = rbind(trainSetsUBThinnessYoung[1:10])
-# ForFS_SMOTEThinnessYoung = rbind(trainSetsSMOTEThinnessYoung[1:10])
-
-# write.csv(ForFS_TestThinnessYoung, "ForFS_TestThinnessYoung.csv")
-# write.csv(ForFS_UBThinnessYoung, "ForFS_UBThinnessYoung.csv")
-# write.csv(ForFS_SMOTEThinnessYoung, "ForFS_SMOTEThinnessYoung.csv")
-```
-
-```{r WastingYoung Train/Test Splits}
-library(caret)
-library(tidyverse)
-library(smotefamily)
-
-set.seed(13)
-testFolds = createFolds(WastingYoung$Wasting, k = 10) #Create k splits
-testSetsWastingYoung = list(WastingYoung[testFolds$Fold01, ],
-                             WastingYoung[testFolds$Fold02, ],
-                        WastingYoung[testFolds$Fold03, ], WastingYoung[testFolds$Fold04, ],
-                        WastingYoung[testFolds$Fold05, ], WastingYoung[testFolds$Fold06, ],
-                        WastingYoung[testFolds$Fold07, ], WastingYoung[testFolds$Fold08, ],
-                        WastingYoung[testFolds$Fold09, ], WastingYoung[testFolds$Fold10, ]
+################################################################################
+testFolds = createFolds(wastingFemale$Wasting, k = 10) #Create k splits
+testSetsWastingFemale = list(wastingFemale[testFolds$Fold01, ], wastingFemale[testFolds$Fold02, ],
+                        wastingFemale[testFolds$Fold03, ], wastingFemale[testFolds$Fold04, ],
+                        wastingFemale[testFolds$Fold05, ], wastingFemale[testFolds$Fold06, ],
+                        wastingFemale[testFolds$Fold07, ], wastingFemale[testFolds$Fold08, ],
+                        wastingFemale[testFolds$Fold09, ], wastingFemale[testFolds$Fold10, ]
                         )
-sansTestWastingYoung = list(WastingYoung[-testFolds$Fold01, ], WastingYoung[-testFolds$Fold02, ], WastingYoung[-testFolds$Fold03, ], WastingYoung[-testFolds$Fold04, ],WastingYoung[-testFolds$Fold05, ], WastingYoung[-testFolds$Fold06, ],WastingYoung[-testFolds$Fold07, ], WastingYoung[-testFolds$Fold08, ],WastingYoung[-testFolds$Fold09, ], WastingYoung[-testFolds$Fold10, ]
+sansTestWastingFemale = list(wastingFemale[-testFolds$Fold01, ], wastingFemale[-testFolds$Fold02, ],
+                        wastingFemale[-testFolds$Fold03, ], wastingFemale[-testFolds$Fold04, ],
+                        wastingFemale[-testFolds$Fold05, ], wastingFemale[-testFolds$Fold06, ],
+                        wastingFemale[-testFolds$Fold07, ], wastingFemale[-testFolds$Fold08, ],
+                        wastingFemale[-testFolds$Fold09, ], wastingFemale[-testFolds$Fold10, ]
                         )
-UBWastingYoung = list()
+UBWastingFemale = list()
 for (i in 1:10){
-  curSet = sansTestWastingYoung[[i]]
-  validationFolds = createFolds(sansTestWastingYoung[[i]]$Wasting, k = 10)
-  UBWastingYoung[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+  curSet = sansTestWastingFemale[[i]]
+  validationFolds = createFolds(sansTestWastingFemale[[i]]$Wasting, k = 10)
+  UBWastingFemale[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
                          curSet[-validationFolds$Fold04, ],
@@ -1010,39 +1334,124 @@ for (i in 1:10){
                          curSet[-validationFolds$Fold10, ]
                          )
 }
-SMOTEWastingYoung = list()
+SMOTEWastingFemale = list()
 for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
-  SMOTEWastingYoung[[i]] = list()
+  SMOTEWastingFemale[[i]] = list()
   for (j in 1:10){
-    SMOTEWastingYoung[[i]][[j]] = SMOTE(X = as.data.frame(UBWastingYoung[[i]][[j]]),
-                              target = UBWastingYoung[[i]][[j]]$Wasting,
+    SMOTEWastingFemale[[i]][[j]] = SMOTE(X = as.data.frame(UBWastingFemale[[i]][[j]]),
+                              target = UBWastingFemale[[i]][[j]]$Wasting,
                               K = 5,
-                              dup_size = 10
+                              dup_size = 0
                               )
-    SMOTEWastingYoung[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+     SMOTEWastingFemale[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
 }
+################################################################################
+testFolds = createFolds(wastingUrban$Wasting, k = 10) #Create k splits
+testSetsWastingUrban = list(wastingUrban[testFolds$Fold01, ], wastingUrban[testFolds$Fold02, ],
+                        wastingUrban[testFolds$Fold03, ], wastingUrban[testFolds$Fold04, ],
+                        wastingUrban[testFolds$Fold05, ], wastingUrban[testFolds$Fold06, ],
+                        wastingUrban[testFolds$Fold07, ], wastingUrban[testFolds$Fold08, ],
+                        wastingUrban[testFolds$Fold09, ], wastingUrban[testFolds$Fold10, ]
+                        )
+sansTestWastingUrban = list(wastingUrban[-testFolds$Fold01, ], wastingUrban[-testFolds$Fold02, ],
+                        wastingUrban[-testFolds$Fold03, ], wastingUrban[-testFolds$Fold04, ],
+                        wastingUrban[-testFolds$Fold05, ], wastingUrban[-testFolds$Fold06, ],
+                        wastingUrban[-testFolds$Fold07, ], wastingUrban[-testFolds$Fold08, ],
+                        wastingUrban[-testFolds$Fold09, ], wastingUrban[-testFolds$Fold10, ]
+                        )
+UBWastingUrban = list()
+for (i in 1:10){
+  curSet = sansTestWastingUrban[[i]]
+  validationFolds = createFolds(sansTestWastingUrban[[i]]$Wasting, k = 10)
+  UBWastingUrban[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+                         curSet[-validationFolds$Fold02, ],
+                         curSet[-validationFolds$Fold03, ],
+                         curSet[-validationFolds$Fold04, ],
+                         curSet[-validationFolds$Fold05, ],
+                         curSet[-validationFolds$Fold06, ],
+                         curSet[-validationFolds$Fold07, ],
+                         curSet[-validationFolds$Fold08, ],
+                         curSet[-validationFolds$Fold09, ],
+                         curSet[-validationFolds$Fold10, ]
+                         )
+}
+SMOTEWastingUrban = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTEWastingUrban[[i]] = list()
+  for (j in 1:10){
+    SMOTEWastingUrban[[i]][[j]] = SMOTE(X = as.data.frame(UBWastingUrban[[i]][[j]]),
+                              target = UBWastingUrban[[i]][[j]]$Wasting,
+                              K = 5,
+                              dup_size = 0
+                              )
+     SMOTEWastingUrban[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+  }
+}
+################################################################################
+testFolds = createFolds(wastingNotUrban$Wasting, k = 10) #Create k splits
+testSetsWastingNotUrban = list(wastingNotUrban[testFolds$Fold01, ], wastingNotUrban[testFolds$Fold02, ],
+                        wastingNotUrban[testFolds$Fold03, ], wastingNotUrban[testFolds$Fold04, ],
+                        wastingNotUrban[testFolds$Fold05, ], wastingNotUrban[testFolds$Fold06, ],
+                        wastingNotUrban[testFolds$Fold07, ], wastingNotUrban[testFolds$Fold08, ],
+                        wastingNotUrban[testFolds$Fold09, ], wastingNotUrban[testFolds$Fold10, ]
+                        )
+sansTestWastingNotUrban = list(wastingNotUrban[-testFolds$Fold01, ], wastingNotUrban[-testFolds$Fold02, ],
+                        wastingNotUrban[-testFolds$Fold03, ], wastingNotUrban[-testFolds$Fold04, ],
+                        wastingNotUrban[-testFolds$Fold05, ], wastingNotUrban[-testFolds$Fold06, ],
+                        wastingNotUrban[-testFolds$Fold07, ], wastingNotUrban[-testFolds$Fold08, ],
+                        wastingNotUrban[-testFolds$Fold09, ], wastingNotUrban[-testFolds$Fold10, ]
+                        )
+UBWastingNotUrban = list()
+for (i in 1:10){
+  curSet = sansTestWastingNotUrban[[i]]
+  validationFolds = createFolds(sansTestWastingNotUrban[[i]]$Wasting, k = 10)
+  UBWastingNotUrban[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+                         curSet[-validationFolds$Fold02, ],
+                         curSet[-validationFolds$Fold03, ],
+                         curSet[-validationFolds$Fold04, ],
+                         curSet[-validationFolds$Fold05, ],
+                         curSet[-validationFolds$Fold06, ],
+                         curSet[-validationFolds$Fold07, ],
+                         curSet[-validationFolds$Fold08, ],
+                         curSet[-validationFolds$Fold09, ],
+                         curSet[-validationFolds$Fold10, ]
+                         )
+}
+SMOTEWastingNotUrban = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTEWastingNotUrban[[i]] = list()
+  for (j in 1:10){
+    SMOTEWastingNotUrban[[i]][[j]] = SMOTE(X = as.data.frame(UBWastingNotUrban[[i]][[j]]),
+                              target = UBWastingNotUrban[[i]][[j]]$Wasting,
+                              K = 5,
+                              dup_size = 0
+                              )
+     SMOTEWastingNotUrban[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+  }
+}
+################################################################################
 
 # Barplots for visualization of class imbalance
 #####
-barplot(prop.table(table(UBWastingYoung[[1]][[1]]$Wasting)),
+barplot(prop.table(table(UBWasting[[1]][[1]]$Wasting)),
         col = c("white", "darkgrey"),
         ylim = c(0, 1),
         xlim = c(0, 3),
         ylab = "Prevalence (%)",
         xlab = "Wasting",
         names = c("No", "Yes"),
-        main = 'WastingYoung Training Set Class Distribution (Unbalanced)')
+        main = 'Wasting Training Set Class Distribution (Unbalanced)')
 abline(h = 0)
 
-barplot(prop.table(table(SMOTEWastingYoung[[1]][[1]]$data$Wasting)),
+barplot(prop.table(table(SMOTEWasting[[1]][[1]]$data$Wasting)),
         col = c("white", "darkgrey"),
         ylim = c(0, 1),
         xlim = c(0, 3),
         ylab = "Prevalence (%)",
         xlab = "Wasting",
         names = c("No", "Yes"),
-        main = 'WastingYoung Training Set Class Distribution (SMOTE)')
+        main = 'Wasting Training Set Class Distribution (SMOTE)')
 abline(h = 0)
 
 # Following code writes each training set to its own .csv files if needed in other scripts.
@@ -1876,32 +2285,27 @@ write.csv(cbind(
           exp(confint(OR_Stunting))),
           "OR_Stunting.csv"
           )
+
+StepStunting = stepAIC(OR_Stunting, direction = "both", trace = FALSE)   # Stepwise regression model
+tidy(StepStunting, exponentiate = TRUE, conf.level = 0.95)
+################################################################################
 OR_Thinness = glm(Thinness~., data = thinness, family = "binomial")
 write.csv(cbind(
           tidy(OR_Thinness, exponentiate = TRUE, conf.level = 0.95),
           exp(confint(OR_Thinness))),
-          "OR_ThinnessFULL.csv"
+          "OR_Thinness.csv"
           )
-OR_StuntingYoung = glm(Stunting~., data = stuntingYoung, family = "binomial")
+StepThinness = stepAIC(OR_Thinness, direction = "both", trace = FALSE)   # Stepwise regression model
+tidy(StepThinness, exponentiate = TRUE, conf.level = 0.95)
+################################################################################
+OR_Wasting = glm(Wasting~., data = wasting, family = "binomial")
 write.csv(cbind(
-          tidy(OR_StuntingYoung, exponentiate = TRUE, conf.level = 0.95),
-          exp(confint(OR_StuntingYoung))),
-          "OR_StuntingYoung.csv"
+          tidy(OR_Wasting, exponentiate = TRUE, conf.level = 0.95)),
+          #exp(confint(OR_Wasting)),
+          "OR_Wasting.csv"
           )
-OR_ThinnessYoung = glm(Thinness~., data = thinnessYoung, family = "binomial")
-write.csv(cbind(
-          tidy(OR_ThinnessYoung, exponentiate = TRUE, conf.level = 0.95),
-          exp(confint(OR_ThinnessYoung))),
-          "OR_ThinnessYoung.csv"
-          )
-OR_WastingYoung = glm(Wasting~., data = wastingYoung, family = "binomial")
-write.csv(cbind(
-          tidy(OR_WastingYoung, exponentiate = TRUE, conf.level = 0.95)),
-          #exp(confint(OR_WastingYoung)),
-          "OR_WastingYoung.csv"
-          )
-
-
+StepWasting = stepAIC(OR_Wasting, direction = "both", trace = FALSE)   # Stepwise regression model
+tidy(StepWasting, exponentiate = TRUE, conf.level = 0.95)
 
 # ################################################################################
 # OR_Stunting = glm(Stunting~., data = stunting, family = "binomial")
