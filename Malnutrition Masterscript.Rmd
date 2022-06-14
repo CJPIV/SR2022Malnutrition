@@ -556,19 +556,16 @@ names(processed)[[37]] = "DontUseTP"
 #COPY = processed
 #processed = COPY
 
-for (i in 6:62){
+for (i in 6:62){ #We're removing any factors with imbalances of 95%-5% or worse
   #cat("CURRENT: ", i, "\n")
   factor = table(processed[,i])
-  # if (is.na(factor[[2]])){ #Removing elements causes us to check out of bounds
-  #   break
-  # }
-  if (factor[[2]] < 50){
-    cat("REMOVED: ", names(processed)[[i]], "\n")
-    processed = processed[,-i]
-    i = i - 1
+  if (factor[[2]] < 50){ # < 5% prevalence
+    cat("SHOULD REMOVE: ", names(processed)[[i]], "\n")
+  }else if (factor[[2]] > 986){ # > 95% prevalence
+    cat("SHOULD REMOVE: ", names(processed)[[i]], "\n")
   }
 }
-processed = processed[,-c(17, 19)]
+processed = processed[,-c(14, 15, 17, 19, 23, 31, 32, 39, 41, 45:48, 50, 53)]
 ```
 
 ```{r Dependent Variable Calculations}
@@ -622,38 +619,30 @@ for (i in 1:1036){
 
 
 ```{r Saving Preprocessing}
-stunting = processed[,-c(3, 4, 54, 56:59)]
-thinness = processed[,-c(3, 4, 54:56, 58:59)]
-wasting = processed[,-c(3, 4, 54:58)]
-
-#These will be used in Association Rule Learning (last several blocks of code at bottom of this script)
-StuntingFull = stunting 
-ThinnessFull = thinness
-#Wasting 6 lines below
+stunting = processed[,-c(3, 4, 48, 50:53)]
+thinness = processed[,-c(3, 4, 48:50, 52:53)]
+wasting = processed[,-c(3, 4, 48:52)]
+wasting = subset(wasting, Age < 11)
+wasting$Wasting = as.numeric(as.character(wasting$Wasting))
 ################################################################################
-wastingYoung = subset(wasting, Age < 11)
-wastingYoung$Wasting = as.numeric(as.character(wastingYoung$Wasting))
-#wastingYoung = wastingYoung[,-27] #All values for row 27 were the same
+stuntingUrban = subset(stunting, Urban == 1)
+stuntingNotUrban = subset(stunting, Urban == 0)
+stuntingMale = subset(stunting, Sex == 0)
+stuntingFemale = subset(stunting, Sex == 1)
 
-WastingFull = wastingYoung #Can only determine wasting for "Young" samples (age < 11)
+thinnessUrban = subset(thinness, Urban == 1)
+thinnessNotUrban = subset(thinness, Urban == 0)
+thinnessMale = subset(thinness, Sex == 0)
+thinnessFemale = subset(thinness, Sex == 1)
 
-stuntingYoung = subset(stunting, Age < 11)
-#stuntingYoung = stuntingYoung[,-c(19)]
-
-thinnessYoung = subset(thinness, Age < 11)
-#thinnessYoung = thinnessYoung[,-c(19)]
-
-stunting = subset(stunting, Age > 10)
-
-thinness = subset(thinness, Age > 10)
-#thinness = thinness[,-27]
-
+wastingUrban = subset(wasting, Urban == 1)
+wastingNotUrban = subset(wasting, Urban == 0)
+wastingMale = subset(wasting, Sex == 0)
+wastingFemale = subset(wasting, Sex == 1)
 ################################################################################
-write.csv(stunting, "stunting.csv", row.names = FALSE)
-write.csv(thinness, "thinness.csv", row.names = FALSE)
-write.csv(wastingYoung, "wastingUnder11.csv", row.names = FALSE)
-write.csv(stuntingYoung, "stuntingUnder11.csv", row.names = FALSE)
-write.csv(thinnessYoung, "thinnessUnder11.csv", row.names = FALSE)
+# write.csv(stunting, "stunting.csv", row.names = FALSE)
+# write.csv(thinness, "thinness.csv", row.names = FALSE)
+# write.csv(wasting, "wasting.csv", row.names = FALSE)
 ```
 
 # TRAIN/TEST SPLITS: Prepares train/test splits for use in feature selection and
@@ -665,9 +654,7 @@ write.csv(thinnessYoung, "thinnessUnder11.csv", row.names = FALSE)
 ```{r Read Data}
 stunting = read.csv("stunting.csv")
 thinness = read.csv("thinness.csv")
-StuntingYoung = read.csv("stuntingUnder11.csv")
-thinnessYoung = read.csv("thinnessUnder11.csv")
-WastingYoung = read.csv("wastingUnder11.csv")
+wasting = read.csv("wasting.csv")
 ```
 
 ```{r Stunting Train/Test Splits}
@@ -712,7 +699,7 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
     SMOTEStunting[[i]][[j]] = SMOTE(X = as.data.frame(UBStunting[[i]][[j]]),
                               target = UBStunting[[i]][[j]]$Stunting,
                               K = 5,
-                              dup_size = 2
+                              dup_size = 3
                               )
      SMOTEStunting[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
