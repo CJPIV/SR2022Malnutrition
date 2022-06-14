@@ -2282,6 +2282,7 @@ library(MASS)
 OR_Stunting = glm(Stunting~., data = stunting, family = "binomial")
 write.csv(cbind(
           tidy(OR_Stunting, exponentiate = TRUE, conf.level = 0.95),
+          p.adjust(summary(OR_Stunting)$coefficients[1:41,4],method = "BH"),
           exp(confint(OR_Stunting))),
           "OR_Stunting.csv"
           )
@@ -2292,6 +2293,7 @@ tidy(StepStunting, exponentiate = TRUE, conf.level = 0.95)
 OR_Thinness = glm(Thinness~., data = thinness, family = "binomial")
 write.csv(cbind(
           tidy(OR_Thinness, exponentiate = TRUE, conf.level = 0.95),
+          p.adjust(summary(OR_Thinness)$coefficients[1:41,4],method = "BH"),
           exp(confint(OR_Thinness))),
           "OR_Thinness.csv"
           )
@@ -2300,8 +2302,9 @@ tidy(StepThinness, exponentiate = TRUE, conf.level = 0.95)
 ################################################################################
 OR_Wasting = glm(Wasting~., data = wasting, family = "binomial")
 write.csv(cbind(
-          tidy(OR_Wasting, exponentiate = TRUE, conf.level = 0.95)),
-          #exp(confint(OR_Wasting)),
+          tidy(OR_Wasting, exponentiate = TRUE, conf.level = 0.95),
+          p.adjust(summary(OR_Wasting)$coefficients[1:41,4],method = "BH"),
+          exp(confint(OR_Wasting))),
           "OR_Wasting.csv"
           )
 StepWasting = stepAIC(OR_Wasting, direction = "both", trace = FALSE)   # Stepwise regression model
