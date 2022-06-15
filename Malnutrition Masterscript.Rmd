@@ -74,7 +74,7 @@ names(SURVEY)[70] = "TV"
 names(SURVEY)[71] = "Phone"
 names(SURVEY)[72] = "WhyPhone"
 names(SURVEY)[73] = "Cattle"
-names(SURVEY)[74] = "Sheep/Goat"
+names(SURVEY)[74] = "SheepGoat"
 names(SURVEY)[75] = "Chicken"
 names(SURVEY)[76] = "HousePet"
 names(SURVEY)[77] = "NoAnimal"
@@ -611,12 +611,14 @@ processed = processed[,-c(30:34)]
 
 for (i in 1:1036){
   if (processed[[i,31]] == 1 | processed[[i,32]] == 1) {
-    processed$"momFinished2+"[i] = 1
+    processed$"momFinished2Up"[i] = 1
   }else{
-    processed$"momFinished2+"[i] = 0
+    processed$"momFinished2Up"[i] = 0
   }
 }
 processed = processed[,-c(31, 32)]
+names(processed)[[12]] = "SheepGoat"
+names(processed)[[39]] = "RadioTV"
 ```
 
 
@@ -704,10 +706,12 @@ wastingFemale = subset(wasting, Sex == 1)
 #####
 
 ```{r Read Data}
-stunting = read.csv("stunting.csv")
-thinness = read.csv("thinness.csv")
-wasting = read.csv("wasting.csv")
+# stunting = read.csv("stunting.csv")
+# thinness = read.csv("thinness.csv")
+# wasting = read.csv("wasting.csv")
 ```
+
+
 
 ```{r Stunting Train/Test Splits}
 library(caret)
@@ -751,12 +755,44 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
     SMOTEStunting[[i]][[j]] = SMOTE(X = as.data.frame(UBStunting[[i]][[j]]),
                               target = UBStunting[[i]][[j]]$Stunting,
                               K = 5,
-                              dup_size = 0
+                              dup_size = 1
                               )
      SMOTEStunting[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
 }
 ################################################################################
+barplot(prop.table(table(UBStunting[[1]][[1]]$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'Stunting Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEStunting[[1]][[1]]$data$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'Stunting Training Set Class Distribution (SMOTE)')
+abline(h = 0)
+################################################################################
+table(UBStunting[[1]][[1]]$Stunting)[[1]][[1]]
+table(UBStunting[[1]][[1]]$Stunting)[[2]][[1]]
+table(UBStunting[[1]][[1]]$Stunting)[[1]][[1]]/table(UBStunting[[1]][[1]]$Stunting)[[2]][[1]]
+table(SMOTEStunting[[1]][[1]]$data$Stunting)[[1]][[1]]
+table(SMOTEStunting[[1]][[1]]$data$Stunting)[[2]][[1]]
+table(SMOTEStunting[[1]][[1]]$data$Stunting)[[1]][[1]]/table(SMOTEStunting[[1]][[1]]$data$Stunting)[[2]][[1]]
+```
+
+
+
+```{r }
+set.seed(13)
 testFolds = createFolds(stuntingMale$Stunting, k = 10) #Create k splits
 testSetsStuntingMale = list(stuntingMale[testFolds$Fold01, ], stuntingMale[testFolds$Fold02, ],
                         stuntingMale[testFolds$Fold03, ], stuntingMale[testFolds$Fold04, ],
@@ -793,11 +829,44 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
     SMOTEStuntingMale[[i]][[j]] = SMOTE(X = as.data.frame(UBStuntingMale[[i]][[j]]),
                               target = UBStuntingMale[[i]][[j]]$Stunting,
                               K = 5,
-                              dup_size = 0
+                              dup_size = 1
                               )
      SMOTEStuntingMale[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
 }
+################################################################################
+barplot(prop.table(table(UBStuntingMale[[1]][[1]]$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'StuntingMale Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEStuntingMale[[1]][[1]]$data$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'StuntingMale Training Set Class Distribution (SMOTE)')
+abline(h = 0)
+################################################################################
+table(UBStuntingMale[[1]][[1]]$Stunting)[[1]][[1]]
+table(UBStuntingMale[[1]][[1]]$Stunting)[[2]][[1]]
+table(UBStuntingMale[[1]][[1]]$Stunting)[[1]][[1]]/table(UBStuntingMale[[1]][[1]]$Stunting)[[2]][[1]]
+table(SMOTEStuntingMale[[1]][[1]]$data$Stunting)[[1]][[1]]
+table(SMOTEStuntingMale[[1]][[1]]$data$Stunting)[[2]][[1]]
+table(SMOTEStuntingMale[[1]][[1]]$data$Stunting)[[1]][[1]]/table(SMOTEStuntingMale[[1]][[1]]$data$Stunting)[[2]][[1]]
+```
+
+
+
+```{r }
+set.seed(13)
 ################################################################################
 testFolds = createFolds(stuntingFemale$Stunting, k = 10) #Create k splits
 testSetsStuntingFemale = list(stuntingFemale[testFolds$Fold01, ], stuntingFemale[testFolds$Fold02, ],
@@ -835,11 +904,42 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
     SMOTEStuntingFemale[[i]][[j]] = SMOTE(X = as.data.frame(UBStuntingFemale[[i]][[j]]),
                               target = UBStuntingFemale[[i]][[j]]$Stunting,
                               K = 5,
-                              dup_size = 0
+                              dup_size = 1
                               )
      SMOTEStuntingFemale[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
 }
+################################################################################
+barplot(prop.table(table(UBStuntingFemale[[1]][[1]]$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'StuntingFemale Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEStuntingFemale[[1]][[1]]$data$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'StuntingFemale Training Set Class Distribution (SMOTE)')
+abline(h = 0)
+################################################################################
+table(UBStuntingFemale[[1]][[1]]$Stunting)[[1]][[1]]
+table(UBStuntingFemale[[1]][[1]]$Stunting)[[2]][[1]]
+table(UBStuntingFemale[[1]][[1]]$Stunting)[[1]][[1]]/table(UBStuntingFemale[[1]][[1]]$Stunting)[[2]][[1]]
+table(SMOTEStuntingFemale[[1]][[1]]$data$Stunting)[[1]][[1]]
+table(SMOTEStuntingFemale[[1]][[1]]$data$Stunting)[[2]][[1]]
+table(SMOTEStuntingFemale[[1]][[1]]$data$Stunting)[[1]][[1]]/table(SMOTEStuntingFemale[[1]][[1]]$data$Stunting)[[2]][[1]]
+```
+
+``` {r }
+set.seed(13)
 ################################################################################
 testFolds = createFolds(stuntingUrban$Stunting, k = 10) #Create k splits
 testSetsStuntingUrban = list(stuntingUrban[testFolds$Fold01, ], stuntingUrban[testFolds$Fold02, ],
@@ -883,6 +983,37 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
   }
 }
 ################################################################################
+barplot(prop.table(table(UBStuntingUrban[[1]][[1]]$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'StuntingUrban Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEStuntingUrban[[1]][[1]]$data$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'StuntingUrban Training Set Class Distribution (SMOTE)')
+abline(h = 0)
+################################################################################
+table(UBStuntingUrban[[1]][[1]]$Stunting)[[1]][[1]]
+table(UBStuntingUrban[[1]][[1]]$Stunting)[[2]][[1]]
+table(UBStuntingUrban[[1]][[1]]$Stunting)[[1]][[1]]/table(UBStuntingUrban[[1]][[1]]$Stunting)[[2]][[1]]
+table(SMOTEStuntingUrban[[1]][[1]]$data$Stunting)[[1]][[1]]
+table(SMOTEStuntingUrban[[1]][[1]]$data$Stunting)[[2]][[1]]
+table(SMOTEStuntingUrban[[1]][[1]]$data$Stunting)[[1]][[1]]/table(SMOTEStuntingUrban[[1]][[1]]$data$Stunting)[[2]][[1]]
+```
+
+```{r }
+set.seed(13)
+################################################################################
 testFolds = createFolds(stuntingNotUrban$Stunting, k = 10) #Create k splits
 testSetsStuntingNotUrban = list(stuntingNotUrban[testFolds$Fold01, ], stuntingNotUrban[testFolds$Fold02, ],
                         stuntingNotUrban[testFolds$Fold03, ], stuntingNotUrban[testFolds$Fold04, ],
@@ -925,38 +1056,32 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
   }
 }
 ################################################################################
-# Barplots for visualization of class imbalance
-#####
-# barplot(prop.table(table(UBStunting[[1]][[1]]$Stunting)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Stunting",
-#         names = c("No", "Yes"),
-#         main = 'Stunting Training Set Class Distribution (Unbalanced)')
-# abline(h = 0)
-# 
-# barplot(prop.table(table(SMOTEStunting[[1]][[1]]$data$Stunting)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Stunting",
-#         names = c("No", "Yes"),
-#         main = 'Stunting Training Set Class Distribution (SMOTE)')
-# abline(h = 0)
+barplot(prop.table(table(UBStuntingNotUrban[[1]][[1]]$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'StuntingNotUrban Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
 
-
-# Following code writes each training set to its own .csv files if needed in other scripts.
-#####
-# ForFS_TestStunting = rbind(testSetsStunting[1:10])
-# ForFS_UBStunting = rbind(sansTestStunting[1:10])
-# ForFS_SMOTEStunting = rbind(SMOTEStunting[1:10])
-
-# write.csv(ForFS_TestStunting, "ForFS_TestStunting.csv")
-# write.csv(ForFS_UBStunting, "ForFS_UBStunting.csv")
-# write.csv(ForFS_SMOTEStunting, "ForFS_SMOTEStunting.csv")
+barplot(prop.table(table(SMOTEStuntingNotUrban[[1]][[1]]$data$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'StuntingNotUrban Training Set Class Distribution (SMOTE)')
+abline(h = 0)
+################################################################################
+table(UBStuntingNotUrban[[1]][[1]]$Stunting)[[1]][[1]]
+table(UBStuntingNotUrban[[1]][[1]]$Stunting)[[2]][[1]]
+table(UBStuntingNotUrban[[1]][[1]]$Stunting)[[1]][[1]]/table(UBStuntingNotUrban[[1]][[1]]$Stunting)[[2]][[1]]
+table(SMOTEStuntingNotUrban[[1]][[1]]$data$Stunting)[[1]][[1]]
+table(SMOTEStuntingNotUrban[[1]][[1]]$data$Stunting)[[2]][[1]]
+table(SMOTEStuntingNotUrban[[1]][[1]]$data$Stunting)[[1]][[1]]/table(SMOTEStuntingNotUrban[[1]][[1]]$data$Stunting)[[2]][[1]]
 ```
 
 
@@ -966,7 +1091,6 @@ library(caret)
 library(tidyverse)
 library(smotefamily)
 
-set.seed(13)
 set.seed(13)
 testFolds = createFolds(thinness$Thinness, k = 10) #Create k splits
 testSetsThinness = list(thinness[testFolds$Fold01, ], thinness[testFolds$Fold02, ],
@@ -1004,11 +1128,44 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
     SMOTEThinness[[i]][[j]] = SMOTE(X = as.data.frame(UBThinness[[i]][[j]]),
                               target = UBThinness[[i]][[j]]$Thinness,
                               K = 5,
-                              dup_size = 0
+                              dup_size = 9
                               )
      SMOTEThinness[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
 }
+################################################################################
+barplot(prop.table(table(UBThinness[[1]][[1]]$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'Thinness Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEThinness[[1]][[1]]$data$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'Thinness Training Set Class Distribution (SMOTE)')
+abline(h = 0)
+################################################################################
+table(UBThinness[[1]][[1]]$Thinness)[[1]][[1]]
+table(UBThinness[[1]][[1]]$Thinness)[[2]][[1]]
+table(UBThinness[[1]][[1]]$Thinness)[[1]][[1]]/table(UBThinness[[1]][[1]]$Thinness)[[2]][[1]]
+table(SMOTEThinness[[1]][[1]]$data$Thinness)[[1]][[1]]
+table(SMOTEThinness[[1]][[1]]$data$Thinness)[[2]][[1]]
+table(SMOTEThinness[[1]][[1]]$data$Thinness)[[1]][[1]]/table(SMOTEThinness[[1]][[1]]$data$Thinness)[[2]][[1]]
+```
+
+
+
+``` {r }
+set.seed(13)
 ################################################################################
 testFolds = createFolds(thinnessMale$Thinness, k = 10) #Create k splits
 testSetsThinnessMale = list(thinnessMale[testFolds$Fold01, ], thinnessMale[testFolds$Fold02, ],
@@ -1046,11 +1203,44 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
     SMOTEThinnessMale[[i]][[j]] = SMOTE(X = as.data.frame(UBThinnessMale[[i]][[j]]),
                               target = UBThinnessMale[[i]][[j]]$Thinness,
                               K = 5,
-                              dup_size = 0
+                              dup_size = 8
                               )
      SMOTEThinnessMale[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
 }
+################################################################################
+barplot(prop.table(table(UBThinnessMale[[1]][[1]]$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'ThinnessMale Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEThinnessMale[[1]][[1]]$data$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'ThinnessMale Training Set Class Distribution (SMOTE)')
+abline(h = 0)
+################################################################################
+table(UBThinnessMale[[1]][[1]]$Thinness)[[1]][[1]]
+table(UBThinnessMale[[1]][[1]]$Thinness)[[2]][[1]]
+table(UBThinnessMale[[1]][[1]]$Thinness)[[1]][[1]]/table(UBThinnessMale[[1]][[1]]$Thinness)[[2]][[1]]
+table(SMOTEThinnessMale[[1]][[1]]$data$Thinness)[[1]][[1]]
+table(SMOTEThinnessMale[[1]][[1]]$data$Thinness)[[2]][[1]]
+table(SMOTEThinnessMale[[1]][[1]]$data$Thinness)[[1]][[1]]/table(SMOTEThinnessMale[[1]][[1]]$data$Thinness)[[2]][[1]]
+```
+
+
+
+```{r }
+set.seed(13)
 ################################################################################
 testFolds = createFolds(thinnessFemale$Thinness, k = 10) #Create k splits
 testSetsThinnessFemale = list(thinnessFemale[testFolds$Fold01, ], thinnessFemale[testFolds$Fold02, ],
@@ -1088,11 +1278,42 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
     SMOTEThinnessFemale[[i]][[j]] = SMOTE(X = as.data.frame(UBThinnessFemale[[i]][[j]]),
                               target = UBThinnessFemale[[i]][[j]]$Thinness,
                               K = 5,
-                              dup_size = 0
+                              dup_size = 6
                               )
      SMOTEThinnessFemale[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
 }
+################################################################################
+barplot(prop.table(table(UBThinnessFemale[[1]][[1]]$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'ThinnessFemale Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEThinnessFemale[[1]][[1]]$data$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'ThinnessFemale Training Set Class Distribution (SMOTE)')
+abline(h = 0)
+################################################################################
+table(UBThinnessFemale[[1]][[1]]$Thinness)[[1]][[1]]
+table(UBThinnessFemale[[1]][[1]]$Thinness)[[2]][[1]]
+table(UBThinnessFemale[[1]][[1]]$Thinness)[[1]][[1]]/table(UBThinnessFemale[[1]][[1]]$Thinness)[[2]][[1]]
+table(SMOTEThinnessFemale[[1]][[1]]$data$Thinness)[[1]][[1]]
+table(SMOTEThinnessFemale[[1]][[1]]$data$Thinness)[[2]][[1]]
+table(SMOTEThinnessFemale[[1]][[1]]$data$Thinness)[[1]][[1]]/table(SMOTEThinnessFemale[[1]][[1]]$data$Thinness)[[2]][[1]]
+```
+
+```{r }
+set.seed(13)
 ################################################################################
 testFolds = createFolds(thinnessUrban$Thinness, k = 10) #Create k splits
 testSetsThinnessUrban = list(thinnessUrban[testFolds$Fold01, ], thinnessUrban[testFolds$Fold02, ],
@@ -1130,11 +1351,44 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
     SMOTEThinnessUrban[[i]][[j]] = SMOTE(X = as.data.frame(UBThinnessUrban[[i]][[j]]),
                               target = UBThinnessUrban[[i]][[j]]$Thinness,
                               K = 5,
-                              dup_size = 0
+                              dup_size = 7
                               )
      SMOTEThinnessUrban[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
 }
+################################################################################
+barplot(prop.table(table(UBThinnessUrban[[1]][[1]]$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'ThinnessUrban Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEThinnessUrban[[1]][[1]]$data$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'ThinnessUrban Training Set Class Distribution (SMOTE)')
+abline(h = 0)
+################################################################################
+table(UBThinnessUrban[[1]][[1]]$Thinness)[[1]][[1]]
+table(UBThinnessUrban[[1]][[1]]$Thinness)[[2]][[1]]
+table(UBThinnessUrban[[1]][[1]]$Thinness)[[1]][[1]]/table(UBThinnessUrban[[1]][[1]]$Thinness)[[2]][[1]]
+table(SMOTEThinnessUrban[[1]][[1]]$data$Thinness)[[1]][[1]]
+table(SMOTEThinnessUrban[[1]][[1]]$data$Thinness)[[2]][[1]]
+table(SMOTEThinnessUrban[[1]][[1]]$data$Thinness)[[1]][[1]]/table(SMOTEThinnessUrban[[1]][[1]]$data$Thinness)[[2]][[1]]
+```
+
+
+
+```{r }
+set.seed(13)
 ################################################################################
 testFolds = createFolds(thinnessNotUrban$Thinness, k = 10) #Create k splits
 testSetsThinnessNotUrban = list(thinnessNotUrban[testFolds$Fold01, ], thinnessNotUrban[testFolds$Fold02, ],
@@ -1171,45 +1425,39 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
   for (j in 1:10){
     SMOTEThinnessNotUrban[[i]][[j]] = SMOTE(X = as.data.frame(UBThinnessNotUrban[[i]][[j]]),
                               target = UBThinnessNotUrban[[i]][[j]]$Thinness,
-                              K = 4, #K had to be reduced; there weren't k = 5 minority class neighbors to extrapolate from, only 4
-                              dup_size = 0
+                              K = 2, #K had to be reduced; there weren't k = 5 minority class neighbors to extrapolate from, only 4
+                              dup_size = 10
                               )
      SMOTEThinnessNotUrban[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
 }
 ################################################################################
+barplot(prop.table(table(UBThinnessNotUrban[[1]][[1]]$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'ThinnessNotUrban Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
 
-# Barplots for visualization of class imbalance
-#####
-# barplot(prop.table(table(UBThinness[[1]][[1]]$Thinness)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Thinness",
-#         names = c("No", "Yes"),
-#         main = 'Thinness Training Set Class Distribution (Unbalanced)')
-# abline(h = 0)
-# 
-# barplot(prop.table(table(SMOTEThinness[[1]][[1]]$data$Thinness)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Thinness",
-#         names = c("No", "Yes"),
-#         main = 'Thinness Training Set Class Distribution (SMOTE)')
-# abline(h = 0)
-
-# Following code writes each training set to its own .csv files if needed in other scripts.
-#####
-# ForFS_TestThinness = rbind(testSetsThinness[1:10])
-# ForFS_UBThinness = rbind(trainSetsUBThinness[1:10])
-# ForFS_SMOTEThinness = rbind(trainSetsSMOTEThinness[1:10])
-
-# write.csv(ForFS_TestThinness, "ForFS_TestThinness.csv")
-# write.csv(ForFS_UBThinness, "ForFS_UBThinness.csv")
-# write.csv(ForFS_SMOTEThinness, "ForFS_SMOTEThinness.csv")
+barplot(prop.table(table(SMOTEThinnessNotUrban[[1]][[1]]$data$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'ThinnessNotUrban Training Set Class Distribution (SMOTE)')
+abline(h = 0)
+################################################################################
+table(UBThinnessNotUrban[[1]][[1]]$Thinness)[[1]][[1]]
+table(UBThinnessNotUrban[[1]][[1]]$Thinness)[[2]][[1]]
+table(UBThinnessNotUrban[[1]][[1]]$Thinness)[[1]][[1]]/table(UBThinnessNotUrban[[1]][[1]]$Thinness)[[2]][[1]]
+table(SMOTEThinnessNotUrban[[1]][[1]]$data$Thinness)[[1]][[1]]
+table(SMOTEThinnessNotUrban[[1]][[1]]$data$Thinness)[[2]][[1]]
+table(SMOTEThinnessNotUrban[[1]][[1]]$data$Thinness)[[1]][[1]]/table(SMOTEThinnessNotUrban[[1]][[1]]$data$Thinness)[[2]][[1]]
 ```
 
 
@@ -1219,7 +1467,6 @@ library(caret)
 library(tidyverse)
 library(smotefamily)
 
-set.seed(13)
 set.seed(13)
 testFolds = createFolds(wasting$Wasting, k = 10) #Create k splits
 testSetsWasting = list(wasting[testFolds$Fold01, ], wasting[testFolds$Fold02, ],
@@ -1257,11 +1504,44 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
     SMOTEWasting[[i]][[j]] = SMOTE(X = as.data.frame(UBWasting[[i]][[j]]),
                               target = UBWasting[[i]][[j]]$Wasting,
                               K = 5,
-                              dup_size = 0
+                              dup_size = 3
                               )
      SMOTEWasting[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
 }
+################################################################################
+barplot(prop.table(table(UBWasting[[1]][[1]]$Wasting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'Wasting Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEWasting[[1]][[1]]$data$Wasting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'Wasting Training Set Class Distribution (SMOTE)')
+abline(h = 0)
+################################################################################
+table(UBWasting[[1]][[1]]$Wasting)[[1]][[1]]
+table(UBWasting[[1]][[1]]$Wasting)[[2]][[1]]
+table(UBWasting[[1]][[1]]$Wasting)[[1]][[1]]/table(UBWasting[[1]][[1]]$Wasting)[[2]][[1]]
+table(SMOTEWasting[[1]][[1]]$data$Wasting)[[1]][[1]]
+table(SMOTEWasting[[1]][[1]]$data$Wasting)[[2]][[1]]
+table(SMOTEWasting[[1]][[1]]$data$Wasting)[[1]][[1]]/table(SMOTEWasting[[1]][[1]]$data$Wasting)[[2]][[1]]
+```
+
+
+
+```{r }
+set.seed(13)
 ################################################################################
 testFolds = createFolds(wastingMale$Wasting, k = 10) #Create k splits
 testSetsWastingMale = list(wastingMale[testFolds$Fold01, ], wastingMale[testFolds$Fold02, ],
@@ -1299,11 +1579,44 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
     SMOTEWastingMale[[i]][[j]] = SMOTE(X = as.data.frame(UBWastingMale[[i]][[j]]),
                               target = UBWastingMale[[i]][[j]]$Wasting,
                               K = 5,
-                              dup_size = 0
+                              dup_size = 2
                               )
      SMOTEWastingMale[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
 }
+################################################################################
+barplot(prop.table(table(UBWastingMale[[1]][[1]]$Wasting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'UBWastingMale Training Set Class Distribution')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEWastingMale[[1]][[1]]$data$Wasting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'SMOTEWastingMale Training Set Class Distribution')
+abline(h = 0)
+################################################################################
+table(UBWastingMale[[1]][[1]]$Wasting)[[1]][[1]]
+table(UBWastingMale[[1]][[1]]$Wasting)[[2]][[1]]
+table(UBWastingMale[[1]][[1]]$Wasting)[[1]][[1]]/table(UBWastingMale[[1]][[1]]$Wasting)[[2]][[1]]
+table(SMOTEWastingMale[[1]][[1]]$data$Wasting)[[1]][[1]]
+table(SMOTEWastingMale[[1]][[1]]$data$Wasting)[[2]][[1]]
+table(SMOTEWastingMale[[1]][[1]]$data$Wasting)[[1]][[1]]/table(SMOTEWastingMale[[1]][[1]]$data$Wasting)[[2]][[1]]
+```
+
+
+
+```{r }
+set.seed(13)
 ################################################################################
 testFolds = createFolds(wastingFemale$Wasting, k = 10) #Create k splits
 testSetsWastingFemale = list(wastingFemale[testFolds$Fold01, ], wastingFemale[testFolds$Fold02, ],
@@ -1341,11 +1654,44 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
     SMOTEWastingFemale[[i]][[j]] = SMOTE(X = as.data.frame(UBWastingFemale[[i]][[j]]),
                               target = UBWastingFemale[[i]][[j]]$Wasting,
                               K = 5,
-                              dup_size = 0
+                              dup_size = 3
                               )
      SMOTEWastingFemale[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
 }
+################################################################################
+barplot(prop.table(table(UBWastingFemale[[1]][[1]]$Wasting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'UBWastingFemale Training Set Class Distribution')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEWastingFemale[[1]][[1]]$data$Wasting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'SMOTEWastingFemale Training Set Class Distribution')
+abline(h = 0)
+################################################################################
+table(UBWastingFemale[[1]][[1]]$Wasting)[[1]][[1]]
+table(UBWastingFemale[[1]][[1]]$Wasting)[[2]][[1]]
+table(UBWastingFemale[[1]][[1]]$Wasting)[[1]][[1]]/table(UBWastingFemale[[1]][[1]]$Wasting)[[2]][[1]]
+table(SMOTEWastingFemale[[1]][[1]]$data$Wasting)[[1]][[1]]
+table(SMOTEWastingFemale[[1]][[1]]$data$Wasting)[[2]][[1]]
+table(SMOTEWastingFemale[[1]][[1]]$data$Wasting)[[1]][[1]]/table(SMOTEWastingFemale[[1]][[1]]$data$Wasting)[[2]][[1]]
+```
+
+
+
+```{r }
+set.seed(13)
 ################################################################################
 testFolds = createFolds(wastingUrban$Wasting, k = 10) #Create k splits
 testSetsWastingUrban = list(wastingUrban[testFolds$Fold01, ], wastingUrban[testFolds$Fold02, ],
@@ -1383,11 +1729,44 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
     SMOTEWastingUrban[[i]][[j]] = SMOTE(X = as.data.frame(UBWastingUrban[[i]][[j]]),
                               target = UBWastingUrban[[i]][[j]]$Wasting,
                               K = 5,
-                              dup_size = 0
+                              dup_size = 2
                               )
      SMOTEWastingUrban[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
 }
+################################################################################
+barplot(prop.table(table(UBWastingUrban[[1]][[1]]$Wasting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'UBWastingUrban Training Set Class Distribution')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEWastingUrban[[1]][[1]]$data$Wasting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'SMOTEWastingUrban Training Set Class Distribution')
+abline(h = 0)
+################################################################################
+table(UBWastingUrban[[1]][[1]]$Wasting)[[1]][[1]]
+table(UBWastingUrban[[1]][[1]]$Wasting)[[2]][[1]]
+table(UBWastingUrban[[1]][[1]]$Wasting)[[1]][[1]]/table(UBWastingUrban[[1]][[1]]$Wasting)[[2]][[1]]
+table(SMOTEWastingUrban[[1]][[1]]$data$Wasting)[[1]][[1]]
+table(SMOTEWastingUrban[[1]][[1]]$data$Wasting)[[2]][[1]]
+table(SMOTEWastingUrban[[1]][[1]]$data$Wasting)[[1]][[1]]/table(SMOTEWastingUrban[[1]][[1]]$data$Wasting)[[2]][[1]]
+```
+
+
+
+```{r }
+set.seed(13)
 ################################################################################
 testFolds = createFolds(wastingNotUrban$Wasting, k = 10) #Create k splits
 testSetsWastingNotUrban = list(wastingNotUrban[testFolds$Fold01, ], wastingNotUrban[testFolds$Fold02, ],
@@ -1424,45 +1803,39 @@ for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training 
   for (j in 1:10){
     SMOTEWastingNotUrban[[i]][[j]] = SMOTE(X = as.data.frame(UBWastingNotUrban[[i]][[j]]),
                               target = UBWastingNotUrban[[i]][[j]]$Wasting,
-                              K = 5,
-                              dup_size = 0
+                              K = 4,
+                              dup_size = 2
                               )
      SMOTEWastingNotUrban[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
 }
 ################################################################################
-
-# Barplots for visualization of class imbalance
-#####
-barplot(prop.table(table(UBWasting[[1]][[1]]$Wasting)),
+barplot(prop.table(table(UBWastingNotUrban[[1]][[1]]$Wasting)),
         col = c("white", "darkgrey"),
         ylim = c(0, 1),
         xlim = c(0, 3),
         ylab = "Prevalence (%)",
-        xlab = "Wasting",
+        xlab = "Stunting",
         names = c("No", "Yes"),
-        main = 'Wasting Training Set Class Distribution (Unbalanced)')
+        main = 'UBWastingNotUrban Training Set Class Distribution')
 abline(h = 0)
 
-barplot(prop.table(table(SMOTEWasting[[1]][[1]]$data$Wasting)),
+barplot(prop.table(table(SMOTEWastingNotUrban[[1]][[1]]$data$Wasting)),
         col = c("white", "darkgrey"),
         ylim = c(0, 1),
         xlim = c(0, 3),
         ylab = "Prevalence (%)",
-        xlab = "Wasting",
+        xlab = "Stunting",
         names = c("No", "Yes"),
-        main = 'Wasting Training Set Class Distribution (SMOTE)')
+        main = 'SMOTEWastingNotUrban Training Set Class Distribution')
 abline(h = 0)
-
-# Following code writes each training set to its own .csv files if needed in other scripts.
-#####
-# ForFS_TestWastingYoung = rbind(testSetsWastingYoung[1:10])
-# ForFS_UBWastingYoung = rbind(trainSetsUBWastingYoung[1:10])
-# ForFS_SMOTEWastingYoung = rbind(trainSetsSMOTEWastingYoung[1:10])
-
-# write.csv(ForFS_TestWastingYoung, "ForFS_TestWastingYoung.csv")
-# write.csv(ForFS_UBWastingYoung, "ForFS_UBWastingYoung.csv")
-# write.csv(ForFS_SMOTEWastingYoung, "ForFS_SMOTEWastingYoung.csv")
+################################################################################
+table(UBWastingNotUrban[[1]][[1]]$Wasting)[[1]][[1]]
+table(UBWastingNotUrban[[1]][[1]]$Wasting)[[2]][[1]]
+table(UBWastingNotUrban[[1]][[1]]$Wasting)[[1]][[1]]/table(UBWastingNotUrban[[1]][[1]]$Wasting)[[2]][[1]]
+table(SMOTEWastingNotUrban[[1]][[1]]$data$Wasting)[[1]][[1]]
+table(SMOTEWastingNotUrban[[1]][[1]]$data$Wasting)[[2]][[1]]
+table(SMOTEWastingNotUrban[[1]][[1]]$data$Wasting)[[1]][[1]]/table(SMOTEWastingNotUrban[[1]][[1]]$data$Wasting)[[2]][[1]]
 ```
 
 
@@ -1942,45 +2315,118 @@ write.csv(FS_JMI, "FS_JMI.csv")
 
 
 ```{r Repeated Univariate Logistic Regression (FS), warning = FALSE}
-#This one takes ~5 minutes.
+#This one takes ~15 minutes.
 #Repeated Univariate Logistic Regression for FS in training models
+set.seed(13)
 
 library(broom)
 library(car)
 library(performance)
 library(MASS)
 
-results = data.frame(StuntingRejects = double(), StuntingOR = double(),
-                     ThinnessRejects = double(), ThinnessOR = double(),
-                     StuntingYoungRejects = double(), StuntingYoungOR = double(),
-                     ThinnessYoungRejects = double(), ThinnessYoungOR = double(),
-                     WastingYoungRejects = double(), WastingYoungOR = double()
+results = data.frame(StuntingRejects = double(),
+                     StuntingMaleRejects = double(),
+                     StuntinFemaleRejects = double(),
+                     StuntingUrbanRejects = double(),
+                     StuntingNotUrbanRejects = double(),
+                     
+                     ThinnessRejects = double(),
+                     ThinnessMaleRejects = double(),
+                     StuntinFemaleRejects = double(),
+                     ThinnessUrbanRejects = double(),
+                     ThinnessNotUrbanRejects = double(),
+                     
+                     WastingRejects = double(),
+                     WastingMaleRejects = double(),
+                     StuntinFemaleRejects = double(), 
+                     WastingUrbanRejects = double(), 
+                     WastingNotUrbanRejects = double()
                      )
 ################################################################################
 #Stunting PV-based feature selection & crude odds ratios
-for (factor in names(stunting)[1:54]){
+for (factor in names(stunting)[1:40]){
   results[[factor, 1]] = 0
-  CORSum = 0
   for (i in 1:10){
     for (j in 1:10){
-        UVLoR = glm(paste0("Stunting","~",factor),
-                    data = SMOTEStunting[[i]][[j]][["data"]],
+        UVLoR = glm(paste0("Stunting","~", factor),
+                    data = UBStunting[[i]][[j]],
                     family = "binomial"
                     )
         regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
         if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
           results[[factor, 1]] = results[[factor, 1]] + 1
         }
-        CORSum = CORSum + regSummary[[2, 2]] #COR
     }
   }
-  results[[factor, 2]] = CORSum/100
+}
+################################################################################
+for (factor in names(stunting)[1:40]){
+  results[[factor, 2]] = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Stunting","~", factor),
+                    data = UBStuntingMale[[i]][[j]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 2]] = results[[factor, 2]] + 1
+        }
+    }
+  }
+}
+################################################################################
+for (factor in names(stunting)[1:40]){
+  results[[factor, 3]] = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Stunting","~", factor),
+                    data = SMOTEStuntingFemale[[i]][[j]][["data"]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 3]] = results[[factor, 3]] + 1
+        }
+    }
+  }
+}
+################################################################################
+for (factor in names(stunting)[1:40]){
+  results[[factor, 4]] = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Stunting","~", factor),
+                    data = UBStuntingUrban[[i]][[j]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 4]] = results[[factor, 4]] + 1
+        }
+    }
+  }
+}
+################################################################################
+for (factor in names(stunting)[1:40]){
+  results[[factor, 5]] = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Stunting","~", factor),
+                    data = UBStuntingNotUrban[[i]][[j]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 5]] = results[[factor, 5]] + 1
+        }
+    }
+  }
 }
 ################################################################################
 #Thinness PV-based feature selection & crude odds ratios
-for (factor in names(stunting)[1:54]){
-  results[[factor, 3]] = 0
-  CORSum = 0
+for (factor in names(stunting)[1:40]){
+  results[[factor, 6]] = 0
   for (i in 1:10){
     for (j in 1:10){
         UVLoR = glm(paste0("Thinness","~",factor),
@@ -1989,72 +2435,155 @@ for (factor in names(stunting)[1:54]){
                     )
         regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
         if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
-          results[[factor, 3]] = results[[factor, 3]] + 1
+          results[[factor, 6]] = results[[factor, 6]] + 1
         }
-        CORSum = CORSum + regSummary[[2, 2]] #COR
     }
   }
-  results[[factor, 4]] = CORSum/100
 }
 ################################################################################
-#StuntingYoung PV-based feature selection & crude odds ratios
-for (factor in names(stunting)[1:54]){
-  results[[factor, 5]] = 0
-  CORSum = 0
-  for (i in 1:10){
-    for (j in 1:10){
-        UVLoR = glm(paste0("Stunting","~",factor),
-                    data = SMOTEStuntingYoung[[i]][[j]][["data"]],
-                    family = "binomial"
-                    )
-        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
-        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
-          results[[factor, 5]] = results[[factor, 5]] + 1
-        }
-        CORSum = CORSum + regSummary[[2, 2]] #COR
-    }
-  }
-  results[[factor, 6]] = CORSum/100
-}
-################################################################################
-#ThinnessYoung PV-based feature selection & crude odds ratios
-for (factor in names(stunting)[1:54]){
+for (factor in names(stunting)[1:40]){
   results[[factor, 7]] = 0
-  CORSum = 0
   for (i in 1:10){
     for (j in 1:10){
         UVLoR = glm(paste0("Thinness","~",factor),
-                    data = SMOTEThinnessYoung[[i]][[j]][["data"]],
+                    data = SMOTEThinnessMale[[i]][[j]][["data"]],
                     family = "binomial"
                     )
         regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
         if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
           results[[factor, 7]] = results[[factor, 7]] + 1
         }
-        CORSum = CORSum + regSummary[[2, 2]] #COR
     }
   }
-  results[[factor, 8]] = CORSum/100
 }
 ################################################################################
-#WastingYoung PV-based feature selection & crude odds ratios
-for (factor in names(stunting)[1:54]){
-  results[[factor, 9]] = 0
-  CORSum = 0
+for (factor in names(stunting)[1:40]){
+  results[[factor, 8]] = 0
   for (i in 1:10){
     for (j in 1:10){
-        UVLoR = glm(paste0("Wasting","~",factor),
-                    data = SMOTEWastingYoung[[i]][[j]][["data"]],
+        UVLoR = glm(paste0("Thinness","~",factor),
+                    data = SMOTEThinnessFemale[[i]][[j]][["data"]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 8]] = results[[factor, 8]] + 1
+        }
+    }
+  }
+}
+################################################################################
+for (factor in names(stunting)[1:40]){
+  results[[factor, 9]] = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Thinness","~",factor),
+                    data = SMOTEThinnessUrban[[i]][[j]][["data"]],
                     family = "binomial"
                     )
         regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
         if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
           results[[factor, 9]] = results[[factor, 9]] + 1
         }
-        CORSum = CORSum + regSummary[[2, 2]] #COR
     }
   }
-  results[[factor, 10]] = CORSum/100
+}
+################################################################################
+for (factor in names(stunting)[1:40]){
+  results[[factor, 10]] = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Thinness","~",factor),
+                    data = SMOTEThinnessNotUrban[[i]][[j]][["data"]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 10]] = results[[factor, 10]] + 1
+        }
+    }
+  }
+}
+################################################################################
+#WastingYoung PV-based feature selection & crude odds ratios
+for (factor in names(stunting)[1:40]){
+  results[[factor, 11]] = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Wasting","~",factor),
+                    data = SMOTEWasting[[i]][[j]][["data"]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 11]] = results[[factor, 11]] + 1
+        }
+    }
+  }
+}
+################################################################################
+for (factor in names(stunting)[1:40]){
+  results[[factor, 12]] = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Wasting","~",factor),
+                    data = SMOTEWastingMale[[i]][[j]][["data"]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 12]] = results[[factor, 12]] + 1
+        }
+    }
+  }
+}
+################################################################################
+for (factor in names(stunting)[1:40]){
+  results[[factor, 13]] = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Wasting","~",factor),
+                    data = SMOTEWastingFemale[[i]][[j]][["data"]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 13]] = results[[factor, 13]] + 1
+        }
+    }
+  }
+}
+################################################################################
+for (factor in names(stunting)[1:40]){
+  results[[factor, 14]] = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Wasting","~",factor),
+                    data = SMOTEWastingUrban[[i]][[j]][["data"]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 14]] = results[[factor, 14]] + 1
+        }
+    }
+  }
+}
+################################################################################
+for (factor in names(stunting)[1:40]){
+  results[[factor, 15]] = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Wasting","~",factor),
+                    data = SMOTEWastingNotUrban[[i]][[j]][["data"]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 15]] = results[[factor, 15]] + 1
+        }
+    }
+  }
 }
 ################################################################################
 write.csv(results, "FS_R-UVLoR.csv")
