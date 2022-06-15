@@ -1861,6 +1861,54 @@ for (i in 1:10){
   }
 }
 ################################################################################
+FS_RLF_StuntingMale = list()
+for (i in 1:10){
+  FS_RLF_StuntingMale[[i]] = list()
+  for (j in 1:10){
+    relF = relief(Stunting~.,
+                as.data.frame(UBStuntingMale[[i]][[j]]),
+                neighboursCount = 5
+                )
+    FS_RLF_StuntingMale[[i]][[j]] = relF[order(relF$importance), ]
+  }
+}
+################################################################################
+FS_RLF_StuntingFemale = list()
+for (i in 1:10){
+  FS_RLF_StuntingFemale[[i]] = list()
+  for (j in 1:10){
+    relF = relief(Stunting~.,
+                as.data.frame(SMOTEStuntingFemale[[i]][[j]]$data),
+                neighboursCount = 5
+                )
+    FS_RLF_StuntingFemale[[i]][[j]] = relF[order(relF$importance), ]
+  }
+}
+################################################################################
+FS_RLF_StuntingUrban = list()
+for (i in 1:10){
+  FS_RLF_StuntingUrban[[i]] = list()
+  for (j in 1:10){
+    relF = relief(Stunting~.,
+                as.data.frame(UBStunting[[i]][[j]]),
+                neighboursCount = 5
+                )
+    FS_RLF_StuntingUrban[[i]][[j]] = relF[order(relF$importance), ]
+  }
+}
+################################################################################
+FS_RLF_StuntingNotUrban = list()
+for (i in 1:10){
+  FS_RLF_StuntingNotUrban[[i]] = list()
+  for (j in 1:10){
+    relF = relief(Stunting~.,
+                as.data.frame(UBStunting[[i]][[j]]),
+                neighboursCount = 5
+                )
+    FS_RLF_StuntingNotUrban[[i]][[j]] = relF[order(relF$importance), ]
+  }
+}
+################################################################################
 FS_RLF_Thinness = list()
 for (i in 1:10){
   FS_RLF_Thinness[[i]] = list()
@@ -1873,39 +1921,111 @@ for (i in 1:10){
   }
 }
 ################################################################################
-FS_RLF_StuntingYoung = list()
+FS_RLF_ThinnessMale = list()
 for (i in 1:10){
-  FS_RLF_StuntingYoung[[i]] = list()
-  for (j in 1:10){
-    relF = relief(Stunting~.,
-                as.data.frame(SMOTEStuntingYoung[[i]][[j]]$data),
-                neighboursCount = 5
-                )
-    FS_RLF_StuntingYoung[[i]][[j]] = relF[order(relF$importance), ]
-  }
-}
-################################################################################
-FS_RLF_ThinnessYoung = list()
-for (i in 1:10){
-  FS_RLF_ThinnessYoung[[i]] = list()
+  FS_RLF_ThinnessMale[[i]] = list()
   for (j in 1:10){
     relF = relief(Thinness~.,
-                as.data.frame(SMOTEThinnessYoung[[i]][[j]]$data),
+                as.data.frame(SMOTEThinnessMale[[i]][[j]]$data),
                 neighboursCount = 5
                 )
-    FS_RLF_ThinnessYoung[[i]][[j]] = relF[order(relF$importance), ]
+    FS_RLF_ThinnessMale[[i]][[j]] = relF[order(relF$importance), ]
   }
 }
 ################################################################################
-FS_RLF_WastingYoung = list()
+FS_RLF_ThinnessFemale = list()
 for (i in 1:10){
-  FS_RLF_WastingYoung[[i]] = list()
+  FS_RLF_ThinnessFemale[[i]] = list()
   for (j in 1:10){
-    relF = relief(Wasting~.,
-                as.data.frame(SMOTEWastingYoung[[i]][[j]]$data),
+    relF = relief(Thinness~.,
+                as.data.frame(SMOTEThinnessFemale[[i]][[j]]$data),
                 neighboursCount = 5
                 )
-    FS_RLF_WastingYoung[[i]][[j]] = relF[order(relF$importance), ]
+    FS_RLF_ThinnessFemale[[i]][[j]] = relF[order(relF$importance), ]
+  }
+}
+################################################################################
+FS_RLF_ThinnessUrban = list()
+for (i in 1:10){
+  FS_RLF_ThinnessUrban[[i]] = list()
+  for (j in 1:10){
+    relF = relief(Thinness~.,
+                as.data.frame(SMOTEThinnessUrban[[i]][[j]]$data),
+                neighboursCount = 5
+                )
+    FS_RLF_ThinnessUrban[[i]][[j]] = relF[order(relF$importance), ]
+  }
+}
+################################################################################
+FS_RLF_ThinnessNotUrban = list()
+for (i in 1:10){
+  FS_RLF_ThinnessNotUrban[[i]] = list()
+  for (j in 1:10){
+    relF = relief(Thinness~.,
+                as.data.frame(SMOTEThinnessNotUrban[[i]][[j]]$data),
+                neighboursCount = 5
+                )
+    FS_RLF_ThinnessNotUrban[[i]][[j]] = relF[order(relF$importance), ]
+  }
+}
+################################################################################
+FS_RLF_Wasting = list()
+for (i in 1:10){
+  FS_RLF_Wasting[[i]] = list()
+  for (j in 1:10){
+    relF = relief(Wasting~.,
+                as.data.frame(SMOTEWasting[[i]][[j]]$data),
+                neighboursCount = 5
+                )
+    FS_RLF_Wasting[[i]][[j]] = relF[order(relF$importance), ]
+  }
+}
+################################################################################
+FS_RLF_WastingMale = list()
+for (i in 1:10){
+  FS_RLF_WastingMale[[i]] = list()
+  for (j in 1:10){
+    relF = relief(Wasting~.,
+                as.data.frame(SMOTEWastingMale[[i]][[j]]$data),
+                neighboursCount = 5
+                )
+    FS_RLF_WastingMale[[i]][[j]] = relF[order(relF$importance), ]
+  }
+}
+################################################################################
+FS_RLF_WastingFemale = list()
+for (i in 1:10){
+  FS_RLF_WastingFemale[[i]] = list()
+  for (j in 1:10){
+    relF = relief(Wasting~.,
+                as.data.frame(SMOTEWastingFemale[[i]][[j]]$data),
+                neighboursCount = 5
+                )
+    FS_RLF_WastingFemale[[i]][[j]] = relF[order(relF$importance), ]
+  }
+}
+################################################################################
+FS_RLF_WastingUrban = list()
+for (i in 1:10){
+  FS_RLF_WastingUrban[[i]] = list()
+  for (j in 1:10){
+    relF = relief(Wasting~.,
+                as.data.frame(SMOTEWastingUrban[[i]][[j]]$data),
+                neighboursCount = 5
+                )
+    FS_RLF_WastingUrban[[i]][[j]] = relF[order(relF$importance), ]
+  }
+}
+################################################################################
+FS_RLF_WastingNotUrban = list()
+for (i in 1:10){
+  FS_RLF_WastingNotUrban[[i]] = list()
+  for (j in 1:10){
+    relF = relief(Wasting~.,
+                as.data.frame(SMOTEWastingNotUrban[[i]][[j]]$data),
+                neighboursCount = 5
+                )
+    FS_RLF_WastingNotUrban[[i]][[j]] = relF[order(relF$importance), ]
   }
 }
 ################################################################################
