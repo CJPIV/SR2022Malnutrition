@@ -1854,7 +1854,7 @@ for (i in 1:10){
   FS_RLF_Stunting[[i]] = list()
   for (j in 1:10){
     relF = relief(Stunting~.,
-                as.data.frame(SMOTEStunting[[i]][[j]]$data),
+                as.data.frame(UBStunting[[i]][[j]]),
                 neighboursCount = 5
                 )
     FS_RLF_Stunting[[i]][[j]] = relF[order(relF$importance), ]
@@ -1917,18 +1917,30 @@ for (i in 1:10){
 #Separated from computations so I don't have to wait an hour and a half to see if my new code can parse the results correctly
 ################################################################################
 FS_RLF = data.frame(Stunting = double(),
-                       Thinness = double(),
-                       StuntingYoung = double(),
-                       ThinnessYoung = double(),
-                       WastingYoung = double()
-                       )
-for (i in 1:54){
+                     StuntingMale = double(),
+                     StuntingFemale = double(),
+                     StuntingUrban = double(),
+                     StuntingNotUrban = double(),
+                     
+                     Thinness = double(),
+                     ThinnessMale = double(),
+                     ThinnessFemale = double(),
+                     ThinnessUrban = double(),
+                     ThinnessNotUrban = double(),
+                     
+                     Wasting = double(),
+                     WastingMale = double(),
+                     WastingFemale = double(), 
+                     WastingUrban = double(), 
+                     WastingNotUrban = double()
+                     )
+for (i in 1:40){
  FS_RLF[i,] = 0
 }
-row.names(FS_RLF) = names(stunting)[1:54]
+row.names(FS_RLF) = names(stunting)[1:40]
 ################################################################################
 COPY = FS_RLF_Stunting
-for (factor in names(stunting)[1:54]){
+for (factor in names(stunting)[1:40]){
   sum = 0
   for (i in 1:10){
     for (j in 1:10){
@@ -3487,6 +3499,7 @@ library(broom)
 library(car)
 library(performance)
 library(MASS)
+library(leaps)
 
 OR_Stunting = glm(Stunting~., data = stunting, family = "binomial")
 write.csv(cbind(
@@ -3499,7 +3512,7 @@ write.csv(cbind(
 StepStunting = stepAIC(OR_Stunting, direction = "both", trace = FALSE)   # Stepwise regression model
 write.csv(cbind(
           tidy(StepStunting, exponentiate = TRUE, conf.level = 0.95),
-          p.adjust(summary(StepStunting)$coefficients[1:9,4],method = "BH"),
+          p.adjust(summary(StepStunting)$coefficients[,4],method = "BH"),
           exp(confint(StepStunting))),
           "MVLoR_SW_Stunting.csv"
           )
@@ -3515,10 +3528,12 @@ write.csv(cbind(
 StepLINStunting = stepAIC(LIN_Stunting, direction = "both", trace = FALSE)
 write.csv(cbind(
           tidy(StepLINStunting, conf.level = 0.95),
-          p.adjust(summary(StepLINStunting)$coefficients[1:9,4],method = "BH"),
+          p.adjust(summary(StepLINStunting)$coefficients[,4],method = "BH"),
           confint(StepLINStunting)),
           "MVLiR_SW_Stunting.csv"
           )
+
+summary(regsubsets(Stunting~., data = stunting, nvmax = 5, method = "forward"))$adjr2
 ################################################################################
 OR_Thinness = glm(Thinness~., data = thinness, family = "binomial")
 write.csv(cbind(
@@ -3528,7 +3543,28 @@ write.csv(cbind(
           "OR_Thinness.csv"
           )
 StepThinness = stepAIC(OR_Thinness, direction = "both", trace = FALSE)   # Stepwise regression model
-tidy(StepThinness, exponentiate = TRUE, conf.level = 0.95)
+write.csv(cbind(
+          tidy(StepThinness, exponentiate = TRUE, conf.level = 0.95),
+          p.adjust(summary(StepThinness)$coefficients[,4],method = "BH"),
+          exp(confint(StepThinness))),
+          "MVLoR_SW_Thinness.csv"
+          )
+
+LIN_Thinness = lm(Thinness~., data = thinness)
+write.csv(cbind(
+          tidy(LIN_Thinness, conf.level = 0.95),
+          p.adjust(summary(LIN_Thinness)$coefficients[1:41,4],method = "BH"),
+          confint(LIN_Thinness)),
+          "MVLiR_Thinness.csv"
+          )
+
+StepLINThinness = stepAIC(LIN_Thinness, direction = "both", trace = FALSE)
+write.csv(cbind(
+          tidy(StepLINThinness, conf.level = 0.95),
+          p.adjust(summary(StepLINThinness)$coefficients[,4],method = "BH"),
+          confint(StepLINThinness)),
+          "MVLiR_SW_Thinness.csv"
+          )
 ################################################################################
 OR_Wasting = glm(Wasting~., data = wasting, family = "binomial")
 write.csv(cbind(
@@ -3538,42 +3574,28 @@ write.csv(cbind(
           "OR_Wasting.csv"
           )
 StepWasting = stepAIC(OR_Wasting, direction = "both", trace = FALSE)   # Stepwise regression model
-tidy(StepWasting, exponentiate = TRUE, conf.level = 0.95)
+write.csv(cbind(
+          tidy(StepWasting, exponentiate = TRUE, conf.level = 0.95),
+          p.adjust(summary(StepWasting)$coefficients[,4],method = "BH"),
+          exp(confint(StepWasting))),
+          "MVLoR_SW_Wasting.csv"
+          )
 
-# ################################################################################
-# OR_Stunting = glm(Stunting~., data = stunting, family = "binomial")
-# #summary(OR_Stunting)
-# OddsRatio = exp(cbind(OR = coef(OR_Stunting), confint(na.omit(OR_Stunting))))
-# #BH = p.adjust(summary(OR_Stunting)$coefficients[,4], method = "BH")
-# write.csv(cbind(OddsRatio, summary(OR_Stunting$coefficients[,4])), "OR_Stunting.csv")
-# 
-# ################################################################################
-# OR_Thinness = glm(Thinness~., data = thinness, family = "binomial")
-# #summary(OR_Thinness)
-# OddsRatio = exp(cbind(OR = coef(OR_Thinness), confint(na.omit(OR_Thinness))))
-# #BH = p.adjust(summary(OR_Thinness)$coefficients[,4], method = "BH")
-# write.csv(cbind(OddsRatio, summary(OR_Thinness$coefficients[,4])), "OR_Thinness.csv")
-# 
-# ################################################################################
-# OR_StuntingYoung = glm(Stunting~., data = stuntingYoung, family = "binomial")
-# #summary(OR_Thinness)
-# OddsRatio = exp(cbind(OR = coef(OR_StuntingYoung), confint(na.omit(OR_StuntingYoung))))
-# #BH = p.adjust(summary(OR_StuntingYoung)$coefficients[,4], method = "BH")
-# write.csv(cbind(OddsRatio, summary(OR_StuntingYoung$coefficients[,4])), "OR_StuntingYoung.csv")
-# 
-# ################################################################################
-# OR_ThinnessYoung = glm(Thinness~., data = thinnessYoung, family = "binomial")
-# #summary(OR_Thinness)
-# OddsRatio = exp(cbind(OR = coef(OR_ThinnessYoung), confint(na.omit(OR_ThinnessYoung))))
-# #BH = p.adjust(summary(OR_ThinnessYoung)$coefficients[,4], method = "BH")
-# write.csv(cbind(OddsRatio, summary(OR_ThinnessYoung$coefficients[,4])), "OR_ThinnessYoung.csv")
-# 
-# ################################################################################
-# OR_WastingYoung = glm(Wasting~., data = wastingYoung, family = "binomial")
-# #summary(OR_Thinness)
-# OddsRatio = exp(cbind(OR = coef(OR_WastingYoung), confint(na.omit(OR_WastingYoung))))
-# #BH = p.adjust(summary(OR_WastingYoung)$coefficients[,4], method = "BH")
-# write.csv(cbind(OddsRatio, summary(OR_WastingYoung$coefficients[,4])), "OR_WastingYoung.csv")
+LIN_Wasting = lm(Wasting~., data = wasting)
+write.csv(cbind(
+          tidy(LIN_Wasting, conf.level = 0.95),
+          p.adjust(summary(LIN_Wasting)$coefficients[1:41,4],method = "BH"),
+          confint(LIN_Wasting)),
+          "MVLiR_Wasting.csv"
+          )
+
+StepLINWasting = stepAIC(LIN_Wasting, direction = "both", trace = FALSE)
+write.csv(cbind(
+          tidy(StepLINWasting, conf.level = 0.95),
+          p.adjust(summary(StepLINWasting)$coefficients[,4],method = "BH"),
+          confint(StepLINWasting)),
+          "MVLiR_SW_Wasting.csv"
+          )
 
 ```
 
