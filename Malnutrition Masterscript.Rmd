@@ -4277,14 +4277,317 @@ write.csv(results, "FS_R-MVLoR.csv")
 
 
 
-```{r Chi-Square Test}
+```{r Chi-Squared Test, warning = FALSE}
+set.seed(13)
+library(plyr)
+
+FS_ChiSq = data.frame(StuntingRejects = double(),
+                     StuntingMaleRejects = double(),
+                     StuntingFemaleRejects = double(),
+                     StuntingUrbanRejects = double(),
+                     StuntingNotUrbanRejects = double(),
+                     StuntingYouthRejects = double(),
+                     StuntingAdolescentRejects = double(),
+                     
+                     ThinnessRejects = double(),
+                     ThinnessMaleRejects = double(),
+                     ThinnessFemaleRejects = double(),
+                     ThinnessUrbanRejects = double(),
+                     ThinnessNotUrbanRejects = double(),
+                     ThinnessYouthRejects = double(),
+                     ThinnessAdolescentRejects = double(),
+                     
+                     WastingRejects = double(),
+                     WastingMaleRejects = double(),
+                     WastingFemaleRejects = double(), 
+                     WastingUrbanRejects = double(), 
+                     WastingNotUrbanRejects = double()
+                     )
+for (i in 1:40){
+ FS_ChiSq[i,] = 0
+}
+row.names(FS_ChiSq) = names(stunting)[1:40]
+################################################################################
 for (i in 1:10){
   for (j in 1:10){
     for (factor in 1:40){
-      chisq.test()
+      #cat(names(UBStunting[[i]][[j]])[factor],"\n")
+      chisq = chisq.test(table(UBStunting[[i]][[j]][,factor],
+                               UBStunting[[i]][[j]]$Stunting)
+                         )
+      if (chisq$p.value < 0.05){
+        FS_ChiSq[[factor, 1]] = FS_ChiSq[[factor, 1]] + 1
+      }
     }
   }
 }
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    for (factor in 1:40){
+      #cat(names(UBStunting[[i]][[j]])[factor],"\n")
+      chisq = chisq.test(table(UBStuntingMale[[i]][[j]][,factor],
+                               UBStuntingMale[[i]][[j]]$Stunting)
+                         )
+      if (chisq$p.value < 0.05){
+        FS_ChiSq[[factor, 2]] = FS_ChiSq[[factor, 2]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    for (factor in 1:40){
+      #cat(names(UBStunting[[i]][[j]])[factor],"\n")
+      chisq = chisq.test(table(round(SMOTEStuntingFemale[[i]][[j]]$data[,factor],
+                                     digits = 0),
+                               SMOTEStuntingFemale[[i]][[j]]$data$Stunting
+                         ))
+      if (chisq$p.value < 0.05){
+        FS_ChiSq[[factor, 3]] = FS_ChiSq[[factor, 3]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    for (factor in 1:40){
+      #cat(names(UBStunting[[i]][[j]])[factor],"\n")
+      chisq = chisq.test(table(UBStuntingUrban[[i]][[j]][,factor],
+                               UBStuntingUrban[[i]][[j]]$Stunting)
+                         )
+      if (chisq$p.value < 0.05){
+        FS_ChiSq[[factor, 4]] = FS_ChiSq[[factor, 4]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    for (factor in 1:40){
+      #cat(names(UBStunting[[i]][[j]])[factor],"\n")
+      chisq = chisq.test(table(UBStuntingNotUrban[[i]][[j]][,factor],
+                               UBStuntingNotUrban[[i]][[j]]$Stunting)
+                         )
+      if (chisq$p.value < 0.05){
+        FS_ChiSq[[factor, 5]] = FS_ChiSq[[factor, 5]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    for (factor in 1:40){
+      #cat(names(UBStunting[[i]][[j]])[factor],"\n")
+      chisq = chisq.test(table(UBStuntingYouth[[i]][[j]][,factor],
+                               UBStuntingYouth[[i]][[j]]$Stunting)
+                         )
+      if (chisq$p.value < 0.05){
+        FS_ChiSq[[factor, 6]] = FS_ChiSq[[factor, 6]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    for (factor in 1:40){
+      #cat(names(UBStunting[[i]][[j]])[factor],"\n")
+      chisq = chisq.test(table(UBStuntingAdolescent[[i]][[j]][,factor],
+                               UBStuntingAdolescent[[i]][[j]]$Stunting)
+                         )
+      if (chisq$p.value < 0.05){
+        FS_ChiSq[[factor, 7]] = FS_ChiSq[[factor, 7]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    for (factor in 1:40){
+      #cat(names(UBStunting[[i]][[j]])[factor],"\n")
+      chisq = chisq.test(table(round(SMOTEThinness[[i]][[j]]$data[,factor],
+                                     digits = 0),
+                               SMOTEThinness[[i]][[j]]$data$Thinness
+                         ))
+      if (chisq$p.value < 0.05){
+        FS_ChiSq[[factor, 8]] = FS_ChiSq[[factor, 8]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    for (factor in 1:40){
+      #cat(names(UBStunting[[i]][[j]])[factor],"\n")
+      chisq = chisq.test(table(round(SMOTEThinnessMale[[i]][[j]]$data[,factor],
+                                     digits = 0),
+                               SMOTEThinnessMale[[i]][[j]]$data$Thinness
+                         ))
+      if (chisq$p.value < 0.05){
+        FS_ChiSq[[factor, 9]] = FS_ChiSq[[factor, 9]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    for (factor in 1:40){
+      #cat(names(UBStunting[[i]][[j]])[factor],"\n")
+      chisq = chisq.test(table(round(SMOTEThinnessFemale[[i]][[j]]$data[,factor],
+                                     digits = 0),
+                               SMOTEThinnessFemale[[i]][[j]]$data$Thinness
+                         ))
+      if (chisq$p.value < 0.05){
+        FS_ChiSq[[factor, 10]] = FS_ChiSq[[factor, 10]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    for (factor in 1:40){
+      #cat(names(UBStunting[[i]][[j]])[factor],"\n")
+      chisq = chisq.test(table(round(SMOTEThinnessUrban[[i]][[j]]$data[,factor],
+                                     digits = 0),
+                               SMOTEThinnessUrban[[i]][[j]]$data$Thinness
+                         ))
+      if (chisq$p.value < 0.05){
+        FS_ChiSq[[factor, 11]] = FS_ChiSq[[factor, 11]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    for (factor in 1:40){
+      #cat(names(UBStunting[[i]][[j]])[factor],"\n")
+      chisq = chisq.test(table(round(SMOTEThinnessNotUrban[[i]][[j]]$data[,factor],
+                                     digits = 0),
+                               SMOTEThinnessNotUrban[[i]][[j]]$data$Thinness
+                         ))
+      if (chisq$p.value < 0.05){
+        FS_ChiSq[[factor, 12]] = FS_ChiSq[[factor, 12]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    for (factor in 1:40){
+      #cat(names(UBStunting[[i]][[j]])[factor],"\n")
+      chisq = chisq.test(table(round(SMOTEThinnessYouth[[i]][[j]]$data[,factor],
+                                     digits = 0),
+                               SMOTEThinnessYouth[[i]][[j]]$data$Thinness
+                         ))
+      if (chisq$p.value < 0.05){
+        FS_ChiSq[[factor, 13]] = FS_ChiSq[[factor, 13]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    for (factor in 1:40){
+      #cat(names(UBStunting[[i]][[j]])[factor],"\n")
+      chisq = chisq.test(table(round(SMOTEThinnessAdolescent[[i]][[j]]$data[,factor],
+                                     digits = 0),
+                               SMOTEThinnessAdolescent[[i]][[j]]$data$Thinness
+                         ))
+      if (chisq$p.value < 0.05){
+        FS_ChiSq[[factor, 14]] = FS_ChiSq[[factor, 14]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    for (factor in 1:40){
+      #cat(names(UBStunting[[i]][[j]])[factor],"\n")
+      chisq = chisq.test(table(round(SMOTEWasting[[i]][[j]]$data[,factor],
+                                     digits = 0),
+                               SMOTEWasting[[i]][[j]]$data$Wasting
+                         ))
+      if (chisq$p.value < 0.05){
+        FS_ChiSq[[factor, 15]] = FS_ChiSq[[factor, 15]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    for (factor in 1:40){
+      #cat(names(UBStunting[[i]][[j]])[factor],"\n")
+      chisq = chisq.test(table(round(SMOTEWastingMale[[i]][[j]]$data[,factor],
+                                     digits = 0),
+                               SMOTEWastingMale[[i]][[j]]$data$Wasting
+                         ))
+      if (chisq$p.value < 0.05){
+        FS_ChiSq[[factor, 16]] = FS_ChiSq[[factor, 16]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    for (factor in 1:40){
+      #cat(names(UBStunting[[i]][[j]])[factor],"\n")
+      chisq = chisq.test(table(round(SMOTEWastingFemale[[i]][[j]]$data[,factor],
+                                     digits = 0),
+                               SMOTEWastingFemale[[i]][[j]]$data$Wasting
+                         ))
+      if (chisq$p.value < 0.05){
+        FS_ChiSq[[factor, 17]] = FS_ChiSq[[factor, 17]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    for (factor in 1:40){
+      #cat(names(UBStunting[[i]][[j]])[factor],"\n")
+      chisq = chisq.test(table(round(SMOTEWastingUrban[[i]][[j]]$data[,factor],
+                                     digits = 0),
+                               SMOTEWastingUrban[[i]][[j]]$data$Wasting
+                         ))
+      if (chisq$p.value < 0.05){
+        FS_ChiSq[[factor, 18]] = FS_ChiSq[[factor, 18]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    for (factor in 1:40){
+      #cat(names(UBStunting[[i]][[j]])[factor],"\n")
+      chisq = chisq.test(table(round(SMOTEWastingNotUrban[[i]][[j]]$data[,factor],
+                                     digits = 0),
+                               SMOTEWastingNotUrban[[i]][[j]]$data$Wasting
+                         ))
+      if (chisq$p.value < 0.05){
+        FS_ChiSq[[factor, 19]] = FS_ChiSq[[factor, 19]] + 1
+      }
+    }
+  }
+}
+################################################################################
+write.csv(FS_ChiSq, "FS_ChiSq.csv")
 ```
 
 
@@ -4294,6 +4597,7 @@ for (i in 1:10){
 #####
 ```{r Model Data Preparation}
 #Creating train/test sets of selected features from original datasets for use in classifier modelling.
+TRAINING = list(None, InfoGain, mRMR, JMI, MVLoR, ChiSq)
 
 ```
 
@@ -4304,6 +4608,46 @@ set.seed(13)
 library(randomForest)
 library(datasets)
 library(caret)
+
+RF_Accuracy = data.frame(Stunting = double(),
+                     StuntingMale = double(),
+                     StuntingFemale = double(),
+                     StuntingUrban = double(),
+                     StuntingNotUrban = double(),
+                     StuntingYouth = double(),
+                     StuntingAdolescent = double(),
+                     
+                     Thinness = double(),
+                     ThinnessMale = double(),
+                     ThinnessFemale = double(),
+                     ThinnessUrban = double(),
+                     ThinnessNotUrban = double(),
+                     ThinnessYouth = double(),
+                     ThinnessAdolescent = double(),
+                     
+                     Wasting = double(),
+                     WastingMale = double(),
+                     WastingFemale = double(), 
+                     WastingUrban = double(), 
+                     WastingNotUrban = double()
+                     )
+RF_F1 = RF_Accuracy
+
+control = trainControl(method = "cv",
+                       number = 100,
+                       repeats = 100,
+                       search = "grid")
+for (set in 1:19){
+  for (i in 1:10){
+    for (j in 1:10){
+        training = data[[set]][[i]][[j]]
+        if (set == 3 | set > 7){ #SMOTEd data is one layer deeper
+          training = training$data
+        }
+      RF = train(Stunting~., data = training, method = "rf", trControl = )
+    }
+  }
+}
 
 ```
 
