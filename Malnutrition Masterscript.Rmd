@@ -737,9 +737,11 @@ sansTestStunting = list(stunting[-testFolds$Fold01, ], stunting[-testFolds$Fold0
                         stunting[-testFolds$Fold09, ], stunting[-testFolds$Fold10, ]
                         )
 UBStunting = list()
+validSetsStunting = list()
 for (i in 1:10){
   curSet = sansTestStunting[[i]]
   validationFolds = createFolds(sansTestStunting[[i]]$Stunting, k = 10)
+  validSetsStunting[[i]] = validationFolds
   UBStunting[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -811,9 +813,11 @@ sansTestStuntingMale = list(stuntingMale[-testFolds$Fold01, ], stuntingMale[-tes
                         stuntingMale[-testFolds$Fold09, ], stuntingMale[-testFolds$Fold10, ]
                         )
 UBStuntingMale = list()
+validSetsStuntingMale = list()
 for (i in 1:10){
   curSet = sansTestStuntingMale[[i]]
   validationFolds = createFolds(sansTestStuntingMale[[i]]$Stunting, k = 10)
+  validSetsStuntingMale[[i]] = validationFolds
   UBStuntingMale[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -886,9 +890,11 @@ sansTestStuntingFemale = list(stuntingFemale[-testFolds$Fold01, ], stuntingFemal
                         stuntingFemale[-testFolds$Fold09, ], stuntingFemale[-testFolds$Fold10, ]
                         )
 UBStuntingFemale = list()
+validSetsStuntingFemale = list()
 for (i in 1:10){
   curSet = sansTestStuntingFemale[[i]]
   validationFolds = createFolds(sansTestStuntingFemale[[i]]$Stunting, k = 10)
+  validSetsStuntingFemale[[i]] = validationFolds
   UBStuntingFemale[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -959,9 +965,11 @@ sansTestStuntingUrban = list(stuntingUrban[-testFolds$Fold01, ], stuntingUrban[-
                         stuntingUrban[-testFolds$Fold09, ], stuntingUrban[-testFolds$Fold10, ]
                         )
 UBStuntingUrban = list()
+validSetsStuntingUrban = list()
 for (i in 1:10){
   curSet = sansTestStuntingUrban[[i]]
   validationFolds = createFolds(sansTestStuntingUrban[[i]]$Stunting, k = 10)
+  validSetsStuntingUrban[[i]] = validationFolds
   UBStuntingUrban[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -1032,9 +1040,11 @@ sansTestStuntingNotUrban = list(stuntingNotUrban[-testFolds$Fold01, ], stuntingN
                         stuntingNotUrban[-testFolds$Fold09, ], stuntingNotUrban[-testFolds$Fold10, ]
                         )
 UBStuntingNotUrban = list()
+validSetsStuntingNotUrban = list()
 for (i in 1:10){
   curSet = sansTestStuntingNotUrban[[i]]
   validationFolds = createFolds(sansTestStuntingNotUrban[[i]]$Stunting, k = 10)
+  validSetsStuntingNotUrban[[i]] = validationFolds
   UBStuntingNotUrban[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -1110,9 +1120,11 @@ sansTestStuntingYouth = list(stuntingYouth[-testFolds$Fold01, ], stuntingYouth[-
                         stuntingYouth[-testFolds$Fold09, ], stuntingYouth[-testFolds$Fold10, ]
                         )
 UBStuntingYouth = list()
+validSetsStuntingYouth = list()
 for (i in 1:10){
   curSet = sansTestStuntingYouth[[i]]
   validationFolds = createFolds(sansTestStuntingYouth[[i]]$Stunting, k = 10)
+  validSetsStuntingYouth[[i]] = validationFolds
   UBStuntingYouth[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -1189,9 +1201,11 @@ sansTestStuntingAdolescent = list(stuntingAdolescent[-testFolds$Fold01, ], stunt
                         stuntingAdolescent[-testFolds$Fold09, ], stuntingAdolescent[-testFolds$Fold10, ]
                         )
 UBStuntingAdolescent = list()
+validSetsStuntingAdolescent = list()
 for (i in 1:10){
   curSet = sansTestStuntingAdolescent[[i]]
   validationFolds = createFolds(sansTestStuntingAdolescent[[i]]$Stunting, k = 10)
+  validSetsStuntingAdolescent[[i]] = validationFolds
   UBStuntingAdolescent[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -1266,9 +1280,11 @@ sansTestThinness = list(thinness[-testFolds$Fold01, ], thinness[-testFolds$Fold0
                         thinness[-testFolds$Fold09, ], thinness[-testFolds$Fold10, ]
                         )
 UBThinness = list()
+validSetsThinness = list()
 for (i in 1:10){
   curSet = sansTestThinness[[i]]
   validationFolds = createFolds(sansTestThinness[[i]]$Thinness, k = 10)
+  validSetsThinness[[i]] = validationFolds
   UBThinness[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -1341,9 +1357,11 @@ sansTestThinnessMale = list(thinnessMale[-testFolds$Fold01, ], thinnessMale[-tes
                         thinnessMale[-testFolds$Fold09, ], thinnessMale[-testFolds$Fold10, ]
                         )
 UBThinnessMale = list()
+validSetsThinnessMale = list()
 for (i in 1:10){
   curSet = sansTestThinnessMale[[i]]
   validationFolds = createFolds(sansTestThinnessMale[[i]]$Thinness, k = 10)
+  validSetsThinnessMale[[i]] = validationFolds
   UBThinnessMale[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -1416,9 +1434,11 @@ sansTestThinnessFemale = list(thinnessFemale[-testFolds$Fold01, ], thinnessFemal
                         thinnessFemale[-testFolds$Fold09, ], thinnessFemale[-testFolds$Fold10, ]
                         )
 UBThinnessFemale = list()
+validSetsThinnessFemale = list()
 for (i in 1:10){
   curSet = sansTestThinnessFemale[[i]]
   validationFolds = createFolds(sansTestThinnessFemale[[i]]$Thinness, k = 10)
+  validSetsThinnessFemale[[i]] = validationFolds
   UBThinnessFemale[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -1489,9 +1509,11 @@ sansTestThinnessUrban = list(thinnessUrban[-testFolds$Fold01, ], thinnessUrban[-
                         thinnessUrban[-testFolds$Fold09, ], thinnessUrban[-testFolds$Fold10, ]
                         )
 UBThinnessUrban = list()
+validSetsThinnessUrban = list()
 for (i in 1:10){
   curSet = sansTestThinnessUrban[[i]]
   validationFolds = createFolds(sansTestThinnessUrban[[i]]$Thinness, k = 10)
+  validSetsThinnessUrban[[i]] = validationFolds
   UBThinnessUrban[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -1564,9 +1586,11 @@ sansTestThinnessNotUrban = list(thinnessNotUrban[-testFolds$Fold01, ], thinnessN
                         thinnessNotUrban[-testFolds$Fold09, ], thinnessNotUrban[-testFolds$Fold10, ]
                         )
 UBThinnessNotUrban = list()
+validSetsThinnessNotUrban = list()
 for (i in 1:10){
   curSet = sansTestThinnessNotUrban[[i]]
   validationFolds = createFolds(sansTestThinnessNotUrban[[i]]$Thinness, k = 10)
+  validSetsThinnessNotUrban[[i]] = validationFolds
   UBThinnessNotUrban[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -1642,9 +1666,11 @@ sansTestThinnessYouth = list(thinnessYouth[-testFolds$Fold01, ], thinnessYouth[-
                         thinnessYouth[-testFolds$Fold09, ], thinnessYouth[-testFolds$Fold10, ]
                         )
 UBThinnessYouth = list()
+validSetsThinnessYouth = list()
 for (i in 1:10){
   curSet = sansTestThinnessYouth[[i]]
   validationFolds = createFolds(sansTestThinnessYouth[[i]]$Thinness, k = 10)
+  validSetsThinnessYouth[[i]] = validationFolds
   UBThinnessYouth[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -1721,9 +1747,11 @@ sansTestThinnessAdolescent = list(thinnessAdolescent[-testFolds$Fold01, ], thinn
                         thinnessAdolescent[-testFolds$Fold09, ], thinnessAdolescent[-testFolds$Fold10, ]
                         )
 UBThinnessAdolescent = list()
+validSetsThinnessAdolescent = list()
 for (i in 1:10){
   curSet = sansTestThinnessAdolescent[[i]]
   validationFolds = createFolds(sansTestThinnessAdolescent[[i]]$Thinness, k = 10)
+  validSetsThinnessAdolescent[[i]] = validationFolds
   UBThinnessAdolescent[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -1799,9 +1827,11 @@ sansTestWasting = list(wasting[-testFolds$Fold01, ], wasting[-testFolds$Fold02, 
                         wasting[-testFolds$Fold09, ], wasting[-testFolds$Fold10, ]
                         )
 UBWasting = list()
+validSetsWasting = list()
 for (i in 1:10){
   curSet = sansTestWasting[[i]]
   validationFolds = createFolds(sansTestWasting[[i]]$Wasting, k = 10)
+  validSetsWasting[[i]] = validationFolds
   UBWasting[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -1874,9 +1904,11 @@ sansTestWastingMale = list(wastingMale[-testFolds$Fold01, ], wastingMale[-testFo
                         wastingMale[-testFolds$Fold09, ], wastingMale[-testFolds$Fold10, ]
                         )
 UBWastingMale = list()
+validSetsWastingMale = list()
 for (i in 1:10){
   curSet = sansTestWastingMale[[i]]
   validationFolds = createFolds(sansTestWastingMale[[i]]$Wasting, k = 10)
+  validSetsWastingMale[[i]] = validationFolds
   UBWastingMale[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -1949,9 +1981,11 @@ sansTestWastingFemale = list(wastingFemale[-testFolds$Fold01, ], wastingFemale[-
                         wastingFemale[-testFolds$Fold09, ], wastingFemale[-testFolds$Fold10, ]
                         )
 UBWastingFemale = list()
+validSetsWastingFemale = list()
 for (i in 1:10){
   curSet = sansTestWastingFemale[[i]]
   validationFolds = createFolds(sansTestWastingFemale[[i]]$Wasting, k = 10)
+  validSetsWastingFemale[[i]] = validationFolds
   UBWastingFemale[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -2024,9 +2058,11 @@ sansTestWastingUrban = list(wastingUrban[-testFolds$Fold01, ], wastingUrban[-tes
                         wastingUrban[-testFolds$Fold09, ], wastingUrban[-testFolds$Fold10, ]
                         )
 UBWastingUrban = list()
+validSetsWastingUrban = list()
 for (i in 1:10){
   curSet = sansTestWastingUrban[[i]]
   validationFolds = createFolds(sansTestWastingUrban[[i]]$Wasting, k = 10)
+  validSetsWastingUrban[[i]] = validationFolds
   UBWastingUrban[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -2099,9 +2135,11 @@ sansTestWastingNotUrban = list(wastingNotUrban[-testFolds$Fold01, ], wastingNotU
                         wastingNotUrban[-testFolds$Fold09, ], wastingNotUrban[-testFolds$Fold10, ]
                         )
 UBWastingNotUrban = list()
+validSetsWastingNotUrban = list()
 for (i in 1:10){
   curSet = sansTestWastingNotUrban[[i]]
   validationFolds = createFolds(sansTestWastingNotUrban[[i]]$Wasting, k = 10)
+  validSetsWastingNotUrban[[i]] = validationFolds
   UBWastingNotUrban[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
