@@ -4595,8 +4595,13 @@ write.csv(FS_ChiSq, "FS_ChiSq.csv")
 #####
 # CLASSIFIER MODELLING:
 #####
-```{r Model Data Preparation}
+```{r Classifer Model Data Preparation}
 #Creating train/test sets of selected features from original datasets for use in classifier modelling.
+TEST = list(Stunting = testSetsStunting,
+                Thinness = testSetsThinness,
+                Wasting = testSetsWasting
+            )
+
 TRAINING = list(Stunting = list(None = list(),
                                 MVLoR = list(),
                                 IG = list(),
@@ -4715,18 +4720,34 @@ RF_Accuracy = data.frame(Stunting = double(),
                      )
 RF_F1 = RF_Accuracy
 
-control = trainControl(method = "cv",
-                       number = 100,
-                       repeats = 100,
-                       search = "grid")
-for (set in 1:19){
-  for (i in 1:10){
-    for (j in 1:10){
-        training = data[[set]][[i]][[j]]
-        if (set == 3 | set > 7){ #SMOTEd data is one layer deeper
-          training = training$data
-        }
-      RF = train(Stunting~., data = training, method = "rf", trControl = )
+# control = trainControl(method = "cv",
+#                        number = 100,
+#                        repeats = 100,
+#                        search = "grid")
+
+for (i in 1:3){
+  if (i == 1){
+    dep = "Stunting"
+  }else if (i == 2){
+    dep = "Thinness"
+  }else{
+    dep = "Wasting"
+  }
+  for (j in 1:5){
+    for (k in 1:10){
+      for (l in 1:10){
+        test = TEST[[i]][[k]]
+        test[,ncol(test)] = as.factor(as.character(test[,ncol(test)]))
+        train = TRAINING[[i]][[j]][[k]][[l]]
+        train[,ncol(train)] = as.factor(as.character(train[,ncol(train)]))
+        RFTrain = randomForest::randomForest(paste0(dep),"~",".",
+                                             data = train,
+                                             proximity = TRUE,
+                                             xtest = test,
+                                             ytest = test[,ncol(test)]
+                                             )
+        #RFTrain$test$confusion
+      }
     }
   }
 }
@@ -4737,7 +4758,13 @@ for (set in 1:19){
 
 ```{r Support Vector Machine}
 set.seed(13)
-
+library(e1071)
+ 
+classifier = svm(formula = Stunting~.,
+                 data = train,
+                 type = 'C-classification',
+                 kernel = 'linear')
+y = predict(classifier, test)
 ```
 
 
