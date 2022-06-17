@@ -683,16 +683,21 @@ stuntingUrban = subset(stunting, Urban == 1)
 stuntingNotUrban = subset(stunting, Urban == 0)
 stuntingMale = subset(stunting, Sex == 0)
 stuntingFemale = subset(stunting, Sex == 1)
+stuntingYouth = subset(stunting, Age < 11)
+stuntingAdolescent = subset(stunting, Age > 10)
 
 thinnessUrban = subset(thinness, Urban == 1)
 thinnessNotUrban = subset(thinness, Urban == 0)
 thinnessMale = subset(thinness, Sex == 0)
 thinnessFemale = subset(thinness, Sex == 1)
+thinnessYouth = subset(thinness, Age < 11)
+thinnessAdolescent = subset(thinness, Age > 10)
 
 wastingUrban = subset(wasting, Urban == 1)
 wastingNotUrban = subset(wasting, Urban == 0)
 wastingMale = subset(wasting, Sex == 0)
 wastingFemale = subset(wasting, Sex == 1)
+#No Youth/Adolescent splits for Wasting; it's already limited to samples < 11 years old
 ################################################################################
 # write.csv(stunting, "stunting.csv", row.names = FALSE)
 # write.csv(thinness, "thinness.csv", row.names = FALSE)
@@ -710,7 +715,6 @@ wastingFemale = subset(wasting, Sex == 1)
 # thinness = read.csv("thinness.csv")
 # wasting = read.csv("wasting.csv")
 ```
-
 
 
 ```{r Stunting Train/Test Splits}
@@ -791,7 +795,7 @@ table(SMOTEStunting[[1]][[1]]$data$Stunting)[[1]][[1]]/table(SMOTEStunting[[1]][
 
 
 
-```{r }
+```{r StuntingMale}
 set.seed(13)
 testFolds = createFolds(stuntingMale$Stunting, k = 10) #Create k splits
 testSetsStuntingMale = list(stuntingMale[testFolds$Fold01, ], stuntingMale[testFolds$Fold02, ],
@@ -865,7 +869,7 @@ table(SMOTEStuntingMale[[1]][[1]]$data$Stunting)[[1]][[1]]/table(SMOTEStuntingMa
 
 
 
-```{r }
+```{r StuntingFemale}
 set.seed(13)
 ################################################################################
 testFolds = createFolds(stuntingFemale$Stunting, k = 10) #Create k splits
@@ -1084,6 +1088,162 @@ table(SMOTEStuntingNotUrban[[1]][[1]]$data$Stunting)[[2]][[1]]
 table(SMOTEStuntingNotUrban[[1]][[1]]$data$Stunting)[[1]][[1]]/table(SMOTEStuntingNotUrban[[1]][[1]]$data$Stunting)[[2]][[1]]
 ```
 
+
+
+```{r StuntingYouth Train/Test Splits}
+library(caret)
+library(tidyverse)
+library(smotefamily)
+
+set.seed(13)
+testFolds = createFolds(stuntingYouth$Stunting, k = 10) #Create k splits
+testSetsStuntingYouth = list(stuntingYouth[testFolds$Fold01, ], stuntingYouth[testFolds$Fold02, ],
+                        stuntingYouth[testFolds$Fold03, ], stuntingYouth[testFolds$Fold04, ],
+                        stuntingYouth[testFolds$Fold05, ], stuntingYouth[testFolds$Fold06, ],
+                        stuntingYouth[testFolds$Fold07, ], stuntingYouth[testFolds$Fold08, ],
+                        stuntingYouth[testFolds$Fold09, ], stuntingYouth[testFolds$Fold10, ]
+                        )
+sansTestStuntingYouth = list(stuntingYouth[-testFolds$Fold01, ], stuntingYouth[-testFolds$Fold02, ],
+                        stuntingYouth[-testFolds$Fold03, ], stuntingYouth[-testFolds$Fold04, ],
+                        stuntingYouth[-testFolds$Fold05, ], stuntingYouth[-testFolds$Fold06, ],
+                        stuntingYouth[-testFolds$Fold07, ], stuntingYouth[-testFolds$Fold08, ],
+                        stuntingYouth[-testFolds$Fold09, ], stuntingYouth[-testFolds$Fold10, ]
+                        )
+UBStuntingYouth = list()
+for (i in 1:10){
+  curSet = sansTestStuntingYouth[[i]]
+  validationFolds = createFolds(sansTestStuntingYouth[[i]]$Stunting, k = 10)
+  UBStuntingYouth[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+                         curSet[-validationFolds$Fold02, ],
+                         curSet[-validationFolds$Fold03, ],
+                         curSet[-validationFolds$Fold04, ],
+                         curSet[-validationFolds$Fold05, ],
+                         curSet[-validationFolds$Fold06, ],
+                         curSet[-validationFolds$Fold07, ],
+                         curSet[-validationFolds$Fold08, ],
+                         curSet[-validationFolds$Fold09, ],
+                         curSet[-validationFolds$Fold10, ]
+                         )
+}
+SMOTEStuntingYouth = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTEStuntingYouth[[i]] = list()
+  for (j in 1:10){
+    SMOTEStuntingYouth[[i]][[j]] = SMOTE(X = as.data.frame(UBStuntingYouth[[i]][[j]]),
+                              target = UBStuntingYouth[[i]][[j]]$Stunting,
+                              K = 5,
+                              dup_size = 1
+                              )
+     SMOTEStuntingYouth[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+  }
+}
+################################################################################
+barplot(prop.table(table(UBStuntingYouth[[1]][[1]]$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'StuntingYouth Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEStuntingYouth[[1]][[1]]$data$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'StuntingYouth Training Set Class Distribution (SMOTE)')
+abline(h = 0)
+################################################################################
+table(UBStuntingYouth[[1]][[1]]$Stunting)[[1]][[1]]
+table(UBStuntingYouth[[1]][[1]]$Stunting)[[2]][[1]]
+table(UBStuntingYouth[[1]][[1]]$Stunting)[[1]][[1]]/table(UBStuntingYouth[[1]][[1]]$Stunting)[[2]][[1]]
+table(SMOTEStuntingYouth[[1]][[1]]$data$Stunting)[[1]][[1]]
+table(SMOTEStuntingYouth[[1]][[1]]$data$Stunting)[[2]][[1]]
+table(SMOTEStuntingYouth[[1]][[1]]$data$Stunting)[[1]][[1]]/table(SMOTEStuntingYouth[[1]][[1]]$data$Stunting)[[2]][[1]]
+```
+
+
+
+
+```{r StuntingAdolescent Train/Test Splits}
+library(caret)
+library(tidyverse)
+library(smotefamily)
+
+set.seed(13)
+testFolds = createFolds(stuntingAdolescent$Stunting, k = 10) #Create k splits
+testSetsStuntingAdolescent = list(stuntingAdolescent[testFolds$Fold01, ], stuntingAdolescent[testFolds$Fold02, ],
+                        stuntingAdolescent[testFolds$Fold03, ], stuntingAdolescent[testFolds$Fold04, ],
+                        stuntingAdolescent[testFolds$Fold05, ], stuntingAdolescent[testFolds$Fold06, ],
+                        stuntingAdolescent[testFolds$Fold07, ], stuntingAdolescent[testFolds$Fold08, ],
+                        stuntingAdolescent[testFolds$Fold09, ], stuntingAdolescent[testFolds$Fold10, ]
+                        )
+sansTestStuntingAdolescent = list(stuntingAdolescent[-testFolds$Fold01, ], stuntingAdolescent[-testFolds$Fold02, ],
+                        stuntingAdolescent[-testFolds$Fold03, ], stuntingAdolescent[-testFolds$Fold04, ],
+                        stuntingAdolescent[-testFolds$Fold05, ], stuntingAdolescent[-testFolds$Fold06, ],
+                        stuntingAdolescent[-testFolds$Fold07, ], stuntingAdolescent[-testFolds$Fold08, ],
+                        stuntingAdolescent[-testFolds$Fold09, ], stuntingAdolescent[-testFolds$Fold10, ]
+                        )
+UBStuntingAdolescent = list()
+for (i in 1:10){
+  curSet = sansTestStuntingAdolescent[[i]]
+  validationFolds = createFolds(sansTestStuntingAdolescent[[i]]$Stunting, k = 10)
+  UBStuntingAdolescent[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+                         curSet[-validationFolds$Fold02, ],
+                         curSet[-validationFolds$Fold03, ],
+                         curSet[-validationFolds$Fold04, ],
+                         curSet[-validationFolds$Fold05, ],
+                         curSet[-validationFolds$Fold06, ],
+                         curSet[-validationFolds$Fold07, ],
+                         curSet[-validationFolds$Fold08, ],
+                         curSet[-validationFolds$Fold09, ],
+                         curSet[-validationFolds$Fold10, ]
+                         )
+}
+SMOTEStuntingAdolescent = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTEStuntingAdolescent[[i]] = list()
+  for (j in 1:10){
+    SMOTEStuntingAdolescent[[i]][[j]] = SMOTE(X = as.data.frame(UBStuntingAdolescent[[i]][[j]]),
+                              target = UBStuntingAdolescent[[i]][[j]]$Stunting,
+                              K = 5,
+                              dup_size = 1
+                              )
+     SMOTEStuntingAdolescent[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+  }
+}
+################################################################################
+barplot(prop.table(table(UBStuntingAdolescent[[1]][[1]]$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'StuntingAdolescent Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEStuntingAdolescent[[1]][[1]]$data$Stunting)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Stunting",
+        names = c("No", "Yes"),
+        main = 'StuntingAdolescent Training Set Class Distribution (SMOTE)')
+abline(h = 0)
+################################################################################
+table(UBStuntingAdolescent[[1]][[1]]$Stunting)[[1]][[1]]
+table(UBStuntingAdolescent[[1]][[1]]$Stunting)[[2]][[1]]
+table(UBStuntingAdolescent[[1]][[1]]$Stunting)[[1]][[1]]/table(UBStuntingAdolescent[[1]][[1]]$Stunting)[[2]][[1]]
+table(SMOTEStuntingAdolescent[[1]][[1]]$data$Stunting)[[1]][[1]]
+table(SMOTEStuntingAdolescent[[1]][[1]]$data$Stunting)[[2]][[1]]
+table(SMOTEStuntingAdolescent[[1]][[1]]$data$Stunting)[[1]][[1]]/table(SMOTEStuntingAdolescent[[1]][[1]]$data$Stunting)[[2]][[1]]
+```
 
 
 ```{r Thinness Train/Test Splits}
@@ -1462,6 +1622,163 @@ table(SMOTEThinnessNotUrban[[1]][[1]]$data$Thinness)[[1]][[1]]/table(SMOTEThinne
 
 
 
+```{r ThinnessYouth Train/Test Splits}
+library(caret)
+library(tidyverse)
+library(smotefamily)
+
+set.seed(13)
+testFolds = createFolds(thinnessYouth$Thinness, k = 10) #Create k splits
+testSetsThinnessYouth = list(thinnessYouth[testFolds$Fold01, ], thinnessYouth[testFolds$Fold02, ],
+                        thinnessYouth[testFolds$Fold03, ], thinnessYouth[testFolds$Fold04, ],
+                        thinnessYouth[testFolds$Fold05, ], thinnessYouth[testFolds$Fold06, ],
+                        thinnessYouth[testFolds$Fold07, ], thinnessYouth[testFolds$Fold08, ],
+                        thinnessYouth[testFolds$Fold09, ], thinnessYouth[testFolds$Fold10, ]
+                        )
+sansTestThinnessYouth = list(thinnessYouth[-testFolds$Fold01, ], thinnessYouth[-testFolds$Fold02, ],
+                        thinnessYouth[-testFolds$Fold03, ], thinnessYouth[-testFolds$Fold04, ],
+                        thinnessYouth[-testFolds$Fold05, ], thinnessYouth[-testFolds$Fold06, ],
+                        thinnessYouth[-testFolds$Fold07, ], thinnessYouth[-testFolds$Fold08, ],
+                        thinnessYouth[-testFolds$Fold09, ], thinnessYouth[-testFolds$Fold10, ]
+                        )
+UBThinnessYouth = list()
+for (i in 1:10){
+  curSet = sansTestThinnessYouth[[i]]
+  validationFolds = createFolds(sansTestThinnessYouth[[i]]$Thinness, k = 10)
+  UBThinnessYouth[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+                         curSet[-validationFolds$Fold02, ],
+                         curSet[-validationFolds$Fold03, ],
+                         curSet[-validationFolds$Fold04, ],
+                         curSet[-validationFolds$Fold05, ],
+                         curSet[-validationFolds$Fold06, ],
+                         curSet[-validationFolds$Fold07, ],
+                         curSet[-validationFolds$Fold08, ],
+                         curSet[-validationFolds$Fold09, ],
+                         curSet[-validationFolds$Fold10, ]
+                         )
+}
+SMOTEThinnessYouth = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTEThinnessYouth[[i]] = list()
+  for (j in 1:10){
+    SMOTEThinnessYouth[[i]][[j]] = SMOTE(X = as.data.frame(UBThinnessYouth[[i]][[j]]),
+                              target = UBThinnessYouth[[i]][[j]]$Thinness,
+                              K = 5,
+                              dup_size = 11
+                              )
+     SMOTEThinnessYouth[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+  }
+}
+################################################################################
+barplot(prop.table(table(UBThinnessYouth[[1]][[1]]$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Thinness",
+        names = c("No", "Yes"),
+        main = 'ThinnessYouth Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEThinnessYouth[[1]][[1]]$data$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Thinness",
+        names = c("No", "Yes"),
+        main = 'ThinnessYouth Training Set Class Distribution (SMOTE)')
+abline(h = 0)
+################################################################################
+table(UBThinnessYouth[[1]][[1]]$Thinness)[[1]][[1]]
+table(UBThinnessYouth[[1]][[1]]$Thinness)[[2]][[1]]
+table(UBThinnessYouth[[1]][[1]]$Thinness)[[1]][[1]]/table(UBThinnessYouth[[1]][[1]]$Thinness)[[2]][[1]]
+table(SMOTEThinnessYouth[[1]][[1]]$data$Thinness)[[1]][[1]]
+table(SMOTEThinnessYouth[[1]][[1]]$data$Thinness)[[2]][[1]]
+table(SMOTEThinnessYouth[[1]][[1]]$data$Thinness)[[1]][[1]]/table(SMOTEThinnessYouth[[1]][[1]]$data$Thinness)[[2]][[1]]
+```
+
+
+
+
+```{r ThinnessAdolescent Train/Test Splits}
+library(caret)
+library(tidyverse)
+library(smotefamily)
+
+set.seed(13)
+testFolds = createFolds(thinnessAdolescent$Thinness, k = 10) #Create k splits
+testSetsThinnessAdolescent = list(thinnessAdolescent[testFolds$Fold01, ], thinnessAdolescent[testFolds$Fold02, ],
+                        thinnessAdolescent[testFolds$Fold03, ], thinnessAdolescent[testFolds$Fold04, ],
+                        thinnessAdolescent[testFolds$Fold05, ], thinnessAdolescent[testFolds$Fold06, ],
+                        thinnessAdolescent[testFolds$Fold07, ], thinnessAdolescent[testFolds$Fold08, ],
+                        thinnessAdolescent[testFolds$Fold09, ], thinnessAdolescent[testFolds$Fold10, ]
+                        )
+sansTestThinnessAdolescent = list(thinnessAdolescent[-testFolds$Fold01, ], thinnessAdolescent[-testFolds$Fold02, ],
+                        thinnessAdolescent[-testFolds$Fold03, ], thinnessAdolescent[-testFolds$Fold04, ],
+                        thinnessAdolescent[-testFolds$Fold05, ], thinnessAdolescent[-testFolds$Fold06, ],
+                        thinnessAdolescent[-testFolds$Fold07, ], thinnessAdolescent[-testFolds$Fold08, ],
+                        thinnessAdolescent[-testFolds$Fold09, ], thinnessAdolescent[-testFolds$Fold10, ]
+                        )
+UBThinnessAdolescent = list()
+for (i in 1:10){
+  curSet = sansTestThinnessAdolescent[[i]]
+  validationFolds = createFolds(sansTestThinnessAdolescent[[i]]$Thinness, k = 10)
+  UBThinnessAdolescent[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
+                         curSet[-validationFolds$Fold02, ],
+                         curSet[-validationFolds$Fold03, ],
+                         curSet[-validationFolds$Fold04, ],
+                         curSet[-validationFolds$Fold05, ],
+                         curSet[-validationFolds$Fold06, ],
+                         curSet[-validationFolds$Fold07, ],
+                         curSet[-validationFolds$Fold08, ],
+                         curSet[-validationFolds$Fold09, ],
+                         curSet[-validationFolds$Fold10, ]
+                         )
+}
+SMOTEThinnessAdolescent = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTEThinnessAdolescent[[i]] = list()
+  for (j in 1:10){
+    SMOTEThinnessAdolescent[[i]][[j]] = SMOTE(X = as.data.frame(UBThinnessAdolescent[[i]][[j]]),
+                              target = UBThinnessAdolescent[[i]][[j]]$Thinness,
+                              K = 5,
+                              dup_size = 6
+                              )
+     SMOTEThinnessAdolescent[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+  }
+}
+################################################################################
+barplot(prop.table(table(UBThinnessAdolescent[[1]][[1]]$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Thinness",
+        names = c("No", "Yes"),
+        main = 'ThinnessAdolescent Training Set Class Distribution (Unbalanced)')
+abline(h = 0)
+
+barplot(prop.table(table(SMOTEThinnessAdolescent[[1]][[1]]$data$Thinness)),
+        col = c("white", "darkgrey"),
+        ylim = c(0, 1),
+        xlim = c(0, 3),
+        ylab = "Prevalence (%)",
+        xlab = "Thinness",
+        names = c("No", "Yes"),
+        main = 'ThinnessAdolescent Training Set Class Distribution (SMOTE)')
+abline(h = 0)
+################################################################################
+table(UBThinnessAdolescent[[1]][[1]]$Thinness)[[1]][[1]]
+table(UBThinnessAdolescent[[1]][[1]]$Thinness)[[2]][[1]]
+table(UBThinnessAdolescent[[1]][[1]]$Thinness)[[1]][[1]]/table(UBThinnessAdolescent[[1]][[1]]$Thinness)[[2]][[1]]
+table(SMOTEThinnessAdolescent[[1]][[1]]$data$Thinness)[[1]][[1]]
+table(SMOTEThinnessAdolescent[[1]][[1]]$data$Thinness)[[2]][[1]]
+table(SMOTEThinnessAdolescent[[1]][[1]]$data$Thinness)[[1]][[1]]/table(SMOTEThinnessAdolescent[[1]][[1]]$data$Thinness)[[2]][[1]]
+```
+
+
+
 ```{r Wasting Train/Test Splits}
 library(caret)
 library(tidyverse)
@@ -1515,7 +1832,7 @@ barplot(prop.table(table(UBWasting[[1]][[1]]$Wasting)),
         ylim = c(0, 1),
         xlim = c(0, 3),
         ylab = "Prevalence (%)",
-        xlab = "Stunting",
+        xlab = "Wasting",
         names = c("No", "Yes"),
         main = 'Wasting Training Set Class Distribution (Unbalanced)')
 abline(h = 0)
@@ -1839,13 +2156,14 @@ table(SMOTEWastingNotUrban[[1]][[1]]$data$Wasting)[[1]][[1]]/table(SMOTEWastingN
 ```
 
 
+
 #####
 # FEATURE SELECTION: Selects important model features to reduce noise and help 
 # prevent overfitting. All feature selection methods should be run on SMOTE-
 # balanced datasets.
 #####
 ```{r ReliefF Computations}
-#This one takes ~90 minutes to run. Have fun waiting.
+#This one takes ~5 hours to run. Have fun waiting.
 library(FSelectorRcpp)
 
 ################################################################################
@@ -2153,12 +2471,16 @@ FS_IG = data.frame(Stunting = double(),
                      StuntingFemale = double(),
                      StuntingUrban = double(),
                      StuntingNotUrban = double(),
+                     StuntingYouth = double(),
+                     StuntingAdolescent = double(),
                      
                      Thinness = double(),
                      ThinnessMale = double(),
                      ThinnessFemale = double(),
                      ThinnessUrban = double(),
                      ThinnessNotUrban = double(),
+                     ThinnessYouth = double(),
+                     ThinnessAdolescent = double(),
                      
                      Wasting = double(),
                      WastingMale = double(),
@@ -2179,7 +2501,7 @@ for (i in 1:10){
                               equal = TRUE
                               )
     infogain = infogain[order(infogain$importance, decreasing = TRUE),] #Order by importance
-    for (k in 1:20){ #Look at top 20 most important features
+   for (k in 1:10){ #Look at top 10 most important features
       factor = infogain[[k, 1]]
       if (infogain[[k, 2]] > 0){
         FS_IG[[factor, 1]] = FS_IG[[factor, 1]] + 1
@@ -2196,7 +2518,7 @@ for (i in 1:10){
                               equal = TRUE
                               )
     infogain = infogain[order(infogain$importance, decreasing = TRUE),]
-    for (k in 1:20){
+   for (k in 1:10){
       factor = infogain[[k, 1]]
       if (infogain[[k, 2]] > 0){
         FS_IG[[factor, 2]] = FS_IG[[factor, 2]] + 1
@@ -2213,7 +2535,7 @@ for (i in 1:10){
                               equal = TRUE
                               )
     infogain = infogain[order(infogain$importance, decreasing = TRUE),]
-    for (k in 1:20){
+   for (k in 1:10){
       factor = infogain[[k, 1]]
       if (infogain[[k, 2]] > 0){
         FS_IG[[factor, 3]] = FS_IG[[factor, 3]] + 1
@@ -2230,7 +2552,7 @@ for (i in 1:10){
                               equal = TRUE
                               )
     infogain = infogain[order(infogain$importance, decreasing = TRUE),]
-    for (k in 1:20){
+   for (k in 1:10){
       factor = infogain[[k, 1]]
       if (infogain[[k, 2]] > 0){
         FS_IG[[factor, 4]] = FS_IG[[factor, 4]] + 1
@@ -2247,10 +2569,44 @@ for (i in 1:10){
                               equal = TRUE
                               )
     infogain = infogain[order(infogain$importance, decreasing = TRUE),]
-    for (k in 1:20){
+   for (k in 1:10){
       factor = infogain[[k, 1]]
       if (infogain[[k, 2]] > 0){
         FS_IG[[factor, 5]] = FS_IG[[factor, 5]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    infogain = information_gain(formula = Stunting~.,
+                              data = as.data.frame(UBStuntingYouth[[i]][[j]]),
+                              type = 'infogain',
+                              equal = TRUE
+                              )
+    infogain = infogain[order(infogain$importance, decreasing = TRUE),] #Order by importance
+   for (k in 1:10){ #Look at top 20 most important features
+      factor = infogain[[k, 1]]
+      if (infogain[[k, 2]] > 0){
+        FS_IG[[factor, 6]] = FS_IG[[factor, 6]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    infogain = information_gain(formula = Stunting~.,
+                              data = as.data.frame(UBStuntingAdolescent[[i]][[j]]),
+                              type = 'infogain',
+                              equal = TRUE
+                              )
+    infogain = infogain[order(infogain$importance, decreasing = TRUE),] #Order by importance
+   for (k in 1:10){ #Look at top 20 most important features
+      factor = infogain[[k, 1]]
+      if (infogain[[k, 2]] > 0){
+        FS_IG[[factor, 7]] = FS_IG[[factor, 7]] + 1
       }
     }
   }
@@ -2264,10 +2620,10 @@ for (i in 1:10){
                               equal = TRUE
                               )
     infogain = infogain[order(infogain$importance, decreasing = TRUE),]
-    for (k in 1:20){
+   for (k in 1:10){
       factor = infogain[[k, 1]]
       if (infogain[[k, 2]] > 0){
-        FS_IG[[factor, 6]] = FS_IG[[factor, 6]] + 1
+        FS_IG[[factor, 8]] = FS_IG[[factor, 8]] + 1
       }
     }
   }
@@ -2281,10 +2637,10 @@ for (i in 1:10){
                               equal = TRUE
                               )
     infogain = infogain[order(infogain$importance, decreasing = TRUE),]
-    for (k in 1:20){
+   for (k in 1:10){
       factor = infogain[[k, 1]]
       if (infogain[[k, 2]] > 0){
-        FS_IG[[factor, 7]] = FS_IG[[factor, 7]] + 1
+        FS_IG[[factor, 9]] = FS_IG[[factor, 9]] + 1
       }
     }
   }
@@ -2298,10 +2654,10 @@ for (i in 1:10){
                               equal = TRUE
                               )
     infogain = infogain[order(infogain$importance, decreasing = TRUE),]
-    for (k in 1:20){
+   for (k in 1:10){
       factor = infogain[[k, 1]]
       if (infogain[[k, 2]] > 0){
-        FS_IG[[factor, 8]] = FS_IG[[factor, 8]] + 1
+        FS_IG[[factor, 10]] = FS_IG[[factor, 10]] + 1
       }
     }
   }
@@ -2315,10 +2671,10 @@ for (i in 1:10){
                               equal = TRUE
                               )
     infogain = infogain[order(infogain$importance, decreasing = TRUE),]
-    for (k in 1:20){
+   for (k in 1:10){
       factor = infogain[[k, 1]]
       if (infogain[[k, 2]] > 0){
-        FS_IG[[factor, 9]] = FS_IG[[factor, 9]] + 1
+        FS_IG[[factor, 11]] = FS_IG[[factor, 11]] + 1
       }
     }
   }
@@ -2332,10 +2688,44 @@ for (i in 1:10){
                               equal = TRUE
                               )
     infogain = infogain[order(infogain$importance, decreasing = TRUE),]
-    for (k in 1:20){
+   for (k in 1:10){
       factor = infogain[[k, 1]]
       if (infogain[[k, 2]] > 0){
-        FS_IG[[factor, 10]] = FS_IG[[factor, 10]] + 1
+        FS_IG[[factor, 12]] = FS_IG[[factor, 12]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    infogain = information_gain(formula = Thinness~.,
+                              data = as.data.frame(SMOTEThinnessYouth[[i]][[j]]$data),
+                              type = 'infogain',
+                              equal = TRUE
+                              )
+    infogain = infogain[order(infogain$importance, decreasing = TRUE),]
+   for (k in 1:10){
+      factor = infogain[[k, 1]]
+      if (infogain[[k, 2]] > 0){
+        FS_IG[[factor, 13]] = FS_IG[[factor, 13]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    infogain = information_gain(formula = Thinness~.,
+                              data = as.data.frame(SMOTEThinnessAdolescent[[i]][[j]]$data),
+                              type = 'infogain',
+                              equal = TRUE
+                              )
+    infogain = infogain[order(infogain$importance, decreasing = TRUE),]
+   for (k in 1:10){
+      factor = infogain[[k, 1]]
+      if (infogain[[k, 2]] > 0){
+        FS_IG[[factor, 14]] = FS_IG[[factor, 14]] + 1
       }
     }
   }
@@ -2349,10 +2739,10 @@ for (i in 1:10){
                               equal = TRUE
                               )
     infogain = infogain[order(infogain$importance, decreasing = TRUE),]
-    for (k in 1:20){
+   for (k in 1:10){
       factor = infogain[[k, 1]]
       if (infogain[[k, 2]] > 0){
-        FS_IG[[factor, 11]] = FS_IG[[factor, 11]] + 1
+        FS_IG[[factor, 15]] = FS_IG[[factor, 15]] + 1
       }
     }
   }
@@ -2366,10 +2756,10 @@ for (i in 1:10){
                               equal = TRUE
                               )
     infogain = infogain[order(infogain$importance, decreasing = TRUE),]
-    for (k in 1:20){
+   for (k in 1:10){
       factor = infogain[[k, 1]]
       if (infogain[[k, 2]] > 0){
-        FS_IG[[factor, 12]] = FS_IG[[factor, 12]] + 1
+        FS_IG[[factor, 16]] = FS_IG[[factor, 16]] + 1
       }
     }
   }
@@ -2383,10 +2773,10 @@ for (i in 1:10){
                               equal = TRUE
                               )
     infogain = infogain[order(infogain$importance, decreasing = TRUE),]
-    for (k in 1:20){
+   for (k in 1:10){
       factor = infogain[[k, 1]]
       if (infogain[[k, 2]] > 0){
-        FS_IG[[factor, 13]] = FS_IG[[factor, 13]] + 1
+        FS_IG[[factor, 17]] = FS_IG[[factor, 17]] + 1
       }
     }
   }
@@ -2400,10 +2790,10 @@ for (i in 1:10){
                               equal = TRUE
                               )
     infogain = infogain[order(infogain$importance, decreasing = TRUE),]
-    for (k in 1:20){
+   for (k in 1:10){
       factor = infogain[[k, 1]]
       if (infogain[[k, 2]] > 0){
-        FS_IG[[factor, 14]] = FS_IG[[factor, 14]] + 1
+        FS_IG[[factor, 18]] = FS_IG[[factor, 18]] + 1
       }
     }
   }
@@ -2417,16 +2807,16 @@ for (i in 1:10){
                               equal = TRUE
                               )
     infogain = infogain[order(infogain$importance, decreasing = TRUE),]
-    for (k in 1:20){
+    for (k in 1:10){
       factor = infogain[[k, 1]]
       if (infogain[[k, 2]] > 0){
-        FS_IG[[factor, 15]] = FS_IG[[factor, 15]] + 1
+        FS_IG[[factor, 19]] = FS_IG[[factor, 19]] + 1
       }
     }
   }
 }
 ################################################################################
-write.csv(FS_IG, "FS_IG.csv")
+write.csv(FS_IG, "FS_IG_10.csv")
 ```
 
 
@@ -2440,12 +2830,16 @@ FS_MRMR = data.frame(Stunting = double(),
                      StuntingFemale = double(),
                      StuntingUrban = double(),
                      StuntingNotUrban = double(),
+                     StuntingYouth = double(),
+                     StuntingAdolescent = double(),
                      
                      Thinness = double(),
                      ThinnessMale = double(),
                      ThinnessFemale = double(),
                      ThinnessUrban = double(),
                      ThinnessNotUrban = double(),
+                     ThinnessYouth = double(),
+                     ThinnessAdolescent = double(),
                      
                      Wasting = double(),
                      WastingMale = double(),
@@ -2464,10 +2858,10 @@ for (i in 1:10){
     results = mRMR.classic("mRMRe.Filter",
                            data = mrmr,
                            target_indices = 41,
-                           feature_count = 20,
+                           feature_count = 10,
                            method = "exhaustive"
                            )
-    for (k in 1:20){
+    for (k in 1:10){
       factorInd = results@filters[["41"]][[k,1]]
       factor = names(stunting)[[factorInd]]
       FS_MRMR[[factor, 1]] = FS_MRMR[[factor, 1]] + 1
@@ -2481,10 +2875,10 @@ for (i in 1:10){
     results = mRMR.classic("mRMRe.Filter",
                            data = mrmr,
                            target_indices = 41,
-                           feature_count = 20,
+                           feature_count = 10,
                            method = "exhaustive"
                            )
-    for (k in 1:20){
+    for (k in 1:10){
       factorInd = results@filters[["41"]][[k,1]]
       factor = names(stunting)[[factorInd]]
       FS_MRMR[[factor, 2]] = FS_MRMR[[factor, 2]] + 1
@@ -2498,10 +2892,10 @@ for (i in 1:10){
     results = mRMR.classic("mRMRe.Filter",
                            data = mrmr,
                            target_indices = 41,
-                           feature_count = 20,
+                           feature_count = 10,
                            method = "exhaustive"
                            )
-    for (k in 1:20){
+    for (k in 1:10){
       factorInd = results@filters[["41"]][[k,1]]
       factor = names(stunting)[[factorInd]]
       FS_MRMR[[factor, 3]] = FS_MRMR[[factor, 3]] + 1
@@ -2515,10 +2909,10 @@ for (i in 1:10){
     results = mRMR.classic("mRMRe.Filter",
                            data = mrmr,
                            target_indices = 41,
-                           feature_count = 20,
+                           feature_count = 10,
                            method = "exhaustive"
                            )
-    for (k in 1:20){
+    for (k in 1:10){
       factorInd = results@filters[["41"]][[k,1]]
       factor = names(stunting)[[factorInd]]
       FS_MRMR[[factor, 4]] = FS_MRMR[[factor, 4]] + 1
@@ -2532,13 +2926,47 @@ for (i in 1:10){
     results = mRMR.classic("mRMRe.Filter",
                            data = mrmr,
                            target_indices = 41,
-                           feature_count = 20,
+                           feature_count = 10,
                            method = "exhaustive"
                            )
-    for (k in 1:20){
+    for (k in 1:10){
       factorInd = results@filters[["41"]][[k,1]]
       factor = names(stunting)[[factorInd]]
       FS_MRMR[[factor, 5]] = FS_MRMR[[factor, 5]] + 1
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    mrmr = mRMR.data(data = UBStuntingYouth[[i]][[j]])
+    results = mRMR.classic("mRMRe.Filter",
+                           data = mrmr,
+                           target_indices = 41,
+                           feature_count = 10,
+                           method = "exhaustive"
+                           )
+    for (k in 1:10){
+      factorInd = results@filters[["41"]][[k,1]]
+      factor = names(stunting)[[factorInd]]
+      FS_MRMR[[factor, 6]] = FS_MRMR[[factor, 6]] + 1
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    mrmr = mRMR.data(data = UBStunting[[i]][[j]])
+    results = mRMR.classic("mRMRe.Filter",
+                           data = mrmr,
+                           target_indices = 41,
+                           feature_count = 10,
+                           method = "exhaustive"
+                           )
+    for (k in 1:10){
+      factorInd = results@filters[["41"]][[k,1]]
+      factor = names(stunting)[[factorInd]]
+      FS_MRMR[[factor, 7]] = FS_MRMR[[factor, 7]] + 1
     }
   }
 }
@@ -2549,13 +2977,13 @@ for (i in 1:10){
     results = mRMR.classic("mRMRe.Filter",
                            data = mrmr,
                            target_indices = 41,
-                           feature_count = 20,
+                           feature_count = 10,
                            method = "exhaustive"
                            )
-    for (k in 1:20){
+    for (k in 1:10){
       factorInd = results@filters[["41"]][[k,1]]
       factor = names(stunting)[[factorInd]]
-      FS_MRMR[[factor, 6]] = FS_MRMR[[factor, 6]] + 1
+      FS_MRMR[[factor, 8]] = FS_MRMR[[factor, 8]] + 1
     }
   }
 }
@@ -2566,13 +2994,13 @@ for (i in 1:10){
     results = mRMR.classic("mRMRe.Filter",
                            data = mrmr,
                            target_indices = 41,
-                           feature_count = 20,
+                           feature_count = 10,
                            method = "exhaustive"
                            )
-    for (k in 1:20){
+    for (k in 1:10){
       factorInd = results@filters[["41"]][[k,1]]
       factor = names(stunting)[[factorInd]]
-      FS_MRMR[[factor, 7]] = FS_MRMR[[factor, 7]] + 1
+      FS_MRMR[[factor, 9]] = FS_MRMR[[factor, 9]] + 1
     }
   }
 }
@@ -2583,13 +3011,13 @@ for (i in 1:10){
     results = mRMR.classic("mRMRe.Filter",
                            data = mrmr,
                            target_indices = 41,
-                           feature_count = 20,
+                           feature_count = 10,
                            method = "exhaustive"
                            )
-    for (k in 1:20){
+    for (k in 1:10){
       factorInd = results@filters[["41"]][[k,1]]
       factor = names(stunting)[[factorInd]]
-      FS_MRMR[[factor, 8]] = FS_MRMR[[factor, 8]] + 1
+      FS_MRMR[[factor, 10]] = FS_MRMR[[factor, 10]] + 1
     }
   }
 }
@@ -2600,13 +3028,13 @@ for (i in 1:10){
     results = mRMR.classic("mRMRe.Filter",
                            data = mrmr,
                            target_indices = 41,
-                           feature_count = 20,
+                           feature_count = 10,
                            method = "exhaustive"
                            )
-    for (k in 1:20){
+    for (k in 1:10){
       factorInd = results@filters[["41"]][[k,1]]
       factor = names(stunting)[[factorInd]]
-      FS_MRMR[[factor, 9]] = FS_MRMR[[factor, 9]] + 1
+      FS_MRMR[[factor, 11]] = FS_MRMR[[factor, 11]] + 1
     }
   }
 }
@@ -2617,13 +3045,47 @@ for (i in 1:10){
     results = mRMR.classic("mRMRe.Filter",
                            data = mrmr,
                            target_indices = 41,
-                           feature_count = 20,
+                           feature_count = 10,
                            method = "exhaustive"
                            )
-    for (k in 1:20){
+    for (k in 1:10){
       factorInd = results@filters[["41"]][[k,1]]
       factor = names(stunting)[[factorInd]]
-      FS_MRMR[[factor, 10]] = FS_MRMR[[factor, 10]] + 1
+      FS_MRMR[[factor, 12]] = FS_MRMR[[factor, 12]] + 1
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    mrmr = mRMR.data(data = SMOTEThinnessYouth[[i]][[j]]$data)
+    results = mRMR.classic("mRMRe.Filter",
+                           data = mrmr,
+                           target_indices = 41,
+                           feature_count = 10,
+                           method = "exhaustive"
+                           )
+    for (k in 1:10){
+      factorInd = results@filters[["41"]][[k,1]]
+      factor = names(stunting)[[factorInd]]
+      FS_MRMR[[factor, 13]] = FS_MRMR[[factor, 13]] + 1
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    mrmr = mRMR.data(data = SMOTEThinnessAdolescent[[i]][[j]]$data)
+    results = mRMR.classic("mRMRe.Filter",
+                           data = mrmr,
+                           target_indices = 41,
+                           feature_count = 10,
+                           method = "exhaustive"
+                           )
+    for (k in 1:10){
+      factorInd = results@filters[["41"]][[k,1]]
+      factor = names(stunting)[[factorInd]]
+      FS_MRMR[[factor, 14]] = FS_MRMR[[factor, 14]] + 1
     }
   }
 }
@@ -2634,13 +3096,13 @@ for (i in 1:10){
     results = mRMR.classic("mRMRe.Filter",
                            data = mrmr,
                            target_indices = 41,
-                           feature_count = 20,
+                           feature_count = 10,
                            method = "exhaustive"
                            )
-    for (k in 1:20){
+    for (k in 1:10){
       factorInd = results@filters[["41"]][[k,1]]
       factor = names(stunting)[[factorInd]]
-      FS_MRMR[[factor, 11]] = FS_MRMR[[factor, 11]] + 1
+      FS_MRMR[[factor, 15]] = FS_MRMR[[factor, 15]] + 1
     }
   }
 }
@@ -2651,13 +3113,13 @@ for (i in 1:10){
     results = mRMR.classic("mRMRe.Filter",
                            data = mrmr,
                            target_indices = 41,
-                           feature_count = 20,
+                           feature_count = 10,
                            method = "exhaustive"
                            )
-    for (k in 1:20){
+    for (k in 1:10){
       factorInd = results@filters[["41"]][[k,1]]
       factor = names(stunting)[[factorInd]]
-      FS_MRMR[[factor, 12]] = FS_MRMR[[factor, 12]] + 1
+      FS_MRMR[[factor, 16]] = FS_MRMR[[factor, 16]] + 1
     }
   }
 }
@@ -2668,13 +3130,13 @@ for (i in 1:10){
     results = mRMR.classic("mRMRe.Filter",
                            data = mrmr,
                            target_indices = 41,
-                           feature_count = 20,
+                           feature_count = 10,
                            method = "exhaustive"
                            )
-    for (k in 1:20){
+    for (k in 1:10){
       factorInd = results@filters[["41"]][[k,1]]
       factor = names(stunting)[[factorInd]]
-      FS_MRMR[[factor, 13]] = FS_MRMR[[factor, 13]] + 1
+      FS_MRMR[[factor, 17]] = FS_MRMR[[factor, 17]] + 1
     }
   }
 }
@@ -2685,13 +3147,13 @@ for (i in 1:10){
     results = mRMR.classic("mRMRe.Filter",
                            data = mrmr,
                            target_indices = 41,
-                           feature_count = 20,
+                           feature_count = 10,
                            method = "exhaustive"
                            )
-    for (k in 1:20){
+    for (k in 1:10){
       factorInd = results@filters[["41"]][[k,1]]
       factor = names(stunting)[[factorInd]]
-      FS_MRMR[[factor, 14]] = FS_MRMR[[factor, 14]] + 1
+      FS_MRMR[[factor, 18]] = FS_MRMR[[factor, 18]] + 1
     }
   }
 }
@@ -2702,18 +3164,18 @@ for (i in 1:10){
     results = mRMR.classic("mRMRe.Filter",
                            data = mrmr,
                            target_indices = 41,
-                           feature_count = 20,
+                           feature_count = 10,
                            method = "exhaustive"
                            )
-    for (k in 1:20){
+    for (k in 1:10){
       factorInd = results@filters[["41"]][[k,1]]
       factor = names(stunting)[[factorInd]]
-      FS_MRMR[[factor, 15]] = FS_MRMR[[factor, 15]] + 1
+      FS_MRMR[[factor, 19]] = FS_MRMR[[factor, 19]] + 1
     }
   }
 }
 ################################################################################
-write.csv(FS_MRMR, "FS_MRMR.csv")
+write.csv(FS_MRMR, "FS_MRMR_10.csv")
 ```
 
 
@@ -2728,12 +3190,16 @@ FS_JMI = data.frame(Stunting = double(),
                      StuntingFemale = double(),
                      StuntingUrban = double(),
                      StuntingNotUrban = double(),
+                     StuntingYouth = double(),
+                     StuntingAdolescent = double(),
                      
                      Thinness = double(),
                      ThinnessMale = double(),
                      ThinnessFemale = double(),
                      ThinnessUrban = double(),
                      ThinnessNotUrban = double(),
+                     ThinnessYouth = double(),
+                     ThinnessAdolescent = double(),
                      
                      Wasting = double(),
                      WastingMale = double(),
@@ -2750,9 +3216,9 @@ for (i in 1:10){
   for (j in 1:10){
     jmi = JMI(UBStunting[[i]][[j]][1:40],
               UBStunting[[i]][[j]]$Stunting,
-              k = 20
+              k = 10
               )
-    for (k in 1:20){
+    for (k in 1:10){
       factor = names(stunting)[jmi$selection[[k]]]
       FS_JMI[[factor, 1]] = FS_JMI[[factor, 1]] + 1
     }
@@ -2763,9 +3229,9 @@ for (i in 1:10){
   for (j in 1:10){
     jmi = JMI(UBStuntingMale[[i]][[j]][1:40],
               UBStuntingMale[[i]][[j]]$Stunting,
-              k = 20
+              k = 10
               )
-    for (k in 1:20){
+    for (k in 1:10){
       factor = names(stunting)[jmi$selection[[k]]]
       FS_JMI[[factor, 2]] = FS_JMI[[factor, 2]] + 1
     }
@@ -2776,9 +3242,9 @@ for (i in 1:10){
   for (j in 1:10){
     jmi = JMI(SMOTEStuntingFemale[[i]][[j]]$data[1:40],
               SMOTEStuntingFemale[[i]][[j]]$data$Stunting,
-              k = 20
+              k = 10
               )
-    for (k in 1:20){
+    for (k in 1:10){
       factor = names(stunting)[jmi$selection[[k]]]
       FS_JMI[[factor, 3]] = FS_JMI[[factor, 3]] + 1
     }
@@ -2789,9 +3255,9 @@ for (i in 1:10){
   for (j in 1:10){
     jmi = JMI(UBStuntingUrban[[i]][[j]][1:40],
               UBStuntingUrban[[i]][[j]]$Stunting,
-              k = 20
+              k = 10
               )
-    for (k in 1:20){
+    for (k in 1:10){
       factor = names(stunting)[jmi$selection[[k]]]
       FS_JMI[[factor, 4]] = FS_JMI[[factor, 4]] + 1
     }
@@ -2802,9 +3268,9 @@ for (i in 1:10){
   for (j in 1:10){
     jmi = JMI(UBStuntingNotUrban[[i]][[j]][1:40],
               UBStuntingNotUrban[[i]][[j]]$Stunting,
-              k = 20
+              k = 10
               )
-    for (k in 1:20){
+    for (k in 1:10){
       factor = names(stunting)[jmi$selection[[k]]]
       FS_JMI[[factor, 5]] = FS_JMI[[factor, 5]] + 1
     }
@@ -2813,11 +3279,11 @@ for (i in 1:10){
 ################################################################################
 for (i in 1:10){
   for (j in 1:10){
-    jmi = JMI(SMOTEThinness[[i]][[j]]$data[1:40],
-              SMOTEThinness[[i]][[j]]$data$Thinness,
-              k = 20
+    jmi = JMI(UBStuntingYouth[[i]][[j]][1:40],
+              UBStuntingYouth[[i]][[j]]$Stunting,
+              k = 10
               )
-    for (k in 1:20){
+    for (k in 1:10){
       factor = names(stunting)[jmi$selection[[k]]]
       FS_JMI[[factor, 6]] = FS_JMI[[factor, 6]] + 1
     }
@@ -2826,11 +3292,11 @@ for (i in 1:10){
 ################################################################################
 for (i in 1:10){
   for (j in 1:10){
-    jmi = JMI(SMOTEThinnessMale[[i]][[j]]$data[1:40],
-              SMOTEThinnessMale[[i]][[j]]$data$Thinness,
-              k = 20
+    jmi = JMI(UBStuntingAdolescent[[i]][[j]][1:40],
+              UBStuntingAdolescent[[i]][[j]]$Stunting,
+              k = 10
               )
-    for (k in 1:20){
+    for (k in 1:10){
       factor = names(stunting)[jmi$selection[[k]]]
       FS_JMI[[factor, 7]] = FS_JMI[[factor, 7]] + 1
     }
@@ -2839,11 +3305,11 @@ for (i in 1:10){
 ################################################################################
 for (i in 1:10){
   for (j in 1:10){
-    jmi = JMI(SMOTEThinnessFemale[[i]][[j]]$data[1:40],
-              SMOTEThinnessFemale[[i]][[j]]$data$Thinness,
-              k = 20
+    jmi = JMI(SMOTEThinness[[i]][[j]]$data[1:40],
+              SMOTEThinness[[i]][[j]]$data$Thinness,
+              k = 10
               )
-    for (k in 1:20){
+    for (k in 1:10){
       factor = names(stunting)[jmi$selection[[k]]]
       FS_JMI[[factor, 8]] = FS_JMI[[factor, 8]] + 1
     }
@@ -2852,11 +3318,11 @@ for (i in 1:10){
 ################################################################################
 for (i in 1:10){
   for (j in 1:10){
-    jmi = JMI(SMOTEThinnessUrban[[i]][[j]]$data[1:40],
-              SMOTEThinnessUrban[[i]][[j]]$data$Thinness,
-              k = 20
+    jmi = JMI(SMOTEThinnessMale[[i]][[j]]$data[1:40],
+              SMOTEThinnessMale[[i]][[j]]$data$Thinness,
+              k = 10
               )
-    for (k in 1:20){
+    for (k in 1:10){
       factor = names(stunting)[jmi$selection[[k]]]
       FS_JMI[[factor, 9]] = FS_JMI[[factor, 9]] + 1
     }
@@ -2865,11 +3331,11 @@ for (i in 1:10){
 ################################################################################
 for (i in 1:10){
   for (j in 1:10){
-    jmi = JMI(SMOTEThinnessNotUrban[[i]][[j]]$data[1:40],
-              SMOTEThinnessNotUrban[[i]][[j]]$data$Thinness,
-              k = 20
+    jmi = JMI(SMOTEThinnessFemale[[i]][[j]]$data[1:40],
+              SMOTEThinnessFemale[[i]][[j]]$data$Thinness,
+              k = 10
               )
-    for (k in 1:20){
+    for (k in 1:10){
       factor = names(stunting)[jmi$selection[[k]]]
       FS_JMI[[factor, 10]] = FS_JMI[[factor, 10]] + 1
     }
@@ -2878,11 +3344,11 @@ for (i in 1:10){
 ################################################################################
 for (i in 1:10){
   for (j in 1:10){
-    jmi = JMI(SMOTEWasting[[i]][[j]]$data[1:40],
-              SMOTEWasting[[i]][[j]]$data$Wasting,
-              k = 20
+    jmi = JMI(SMOTEThinnessUrban[[i]][[j]]$data[1:40],
+              SMOTEThinnessUrban[[i]][[j]]$data$Thinness,
+              k = 10
               )
-    for (k in 1:20){
+    for (k in 1:10){
       factor = names(stunting)[jmi$selection[[k]]]
       FS_JMI[[factor, 11]] = FS_JMI[[factor, 11]] + 1
     }
@@ -2891,11 +3357,11 @@ for (i in 1:10){
 ################################################################################
 for (i in 1:10){
   for (j in 1:10){
-    jmi = JMI(SMOTEWastingMale[[i]][[j]]$data[1:40],
-              SMOTEWastingMale[[i]][[j]]$data$Wasting,
-              k = 20
+    jmi = JMI(SMOTEThinnessNotUrban[[i]][[j]]$data[1:40],
+              SMOTEThinnessNotUrban[[i]][[j]]$data$Thinness,
+              k = 10
               )
-    for (k in 1:20){
+    for (k in 1:10){
       factor = names(stunting)[jmi$selection[[k]]]
       FS_JMI[[factor, 12]] = FS_JMI[[factor, 12]] + 1
     }
@@ -2904,11 +3370,11 @@ for (i in 1:10){
 ################################################################################
 for (i in 1:10){
   for (j in 1:10){
-    jmi = JMI(SMOTEWastingFemale[[i]][[j]]$data[1:40],
-              SMOTEWastingFemale[[i]][[j]]$data$Wasting,
-              k = 20
+    jmi = JMI(SMOTEThinnessYouth[[i]][[j]]$data[1:40],
+              SMOTEThinnessYouth[[i]][[j]]$data$Thinness,
+              k = 10
               )
-    for (k in 1:20){
+    for (k in 1:10){
       factor = names(stunting)[jmi$selection[[k]]]
       FS_JMI[[factor, 13]] = FS_JMI[[factor, 13]] + 1
     }
@@ -2917,11 +3383,11 @@ for (i in 1:10){
 ################################################################################
 for (i in 1:10){
   for (j in 1:10){
-    jmi = JMI(SMOTEWastingUrban[[i]][[j]]$data[1:40],
-              SMOTEWastingUrban[[i]][[j]]$data$Wasting,
-              k = 20
+    jmi = JMI(SMOTEThinnessAdolescent[[i]][[j]]$data[1:40],
+              SMOTEThinnessAdolescent[[i]][[j]]$data$Thinness,
+              k = 10
               )
-    for (k in 1:20){
+    for (k in 1:10){
       factor = names(stunting)[jmi$selection[[k]]]
       FS_JMI[[factor, 14]] = FS_JMI[[factor, 14]] + 1
     }
@@ -2930,18 +3396,70 @@ for (i in 1:10){
 ################################################################################
 for (i in 1:10){
   for (j in 1:10){
-    jmi = JMI(SMOTEWastingNotUrban[[i]][[j]]$data[1:40],
-              SMOTEWastingNotUrban[[i]][[j]]$data$Wasting,
-              k = 20
+    jmi = JMI(SMOTEWasting[[i]][[j]]$data[1:40],
+              SMOTEWasting[[i]][[j]]$data$Wasting,
+              k = 10
               )
-    for (k in 1:20){
+    for (k in 1:10){
       factor = names(stunting)[jmi$selection[[k]]]
       FS_JMI[[factor, 15]] = FS_JMI[[factor, 15]] + 1
     }
   }
 }
 ################################################################################
-write.csv(FS_JMI, "FS_JMI.csv")
+for (i in 1:10){
+  for (j in 1:10){
+    jmi = JMI(SMOTEWastingMale[[i]][[j]]$data[1:40],
+              SMOTEWastingMale[[i]][[j]]$data$Wasting,
+              k = 10
+              )
+    for (k in 1:10){
+      factor = names(stunting)[jmi$selection[[k]]]
+      FS_JMI[[factor, 16]] = FS_JMI[[factor, 16]] + 1
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    jmi = JMI(SMOTEWastingFemale[[i]][[j]]$data[1:40],
+              SMOTEWastingFemale[[i]][[j]]$data$Wasting,
+              k = 10
+              )
+    for (k in 1:10){
+      factor = names(stunting)[jmi$selection[[k]]]
+      FS_JMI[[factor, 17]] = FS_JMI[[factor, 17]] + 1
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    jmi = JMI(SMOTEWastingUrban[[i]][[j]]$data[1:40],
+              SMOTEWastingUrban[[i]][[j]]$data$Wasting,
+              k = 10
+              )
+    for (k in 1:10){
+      factor = names(stunting)[jmi$selection[[k]]]
+      FS_JMI[[factor, 18]] = FS_JMI[[factor, 18]] + 1
+    }
+  }
+}
+################################################################################
+for (i in 1:10){
+  for (j in 1:10){
+    jmi = JMI(SMOTEWastingNotUrban[[i]][[j]]$data[1:40],
+              SMOTEWastingNotUrban[[i]][[j]]$data$Wasting,
+              k = 10
+              )
+    for (k in 1:10){
+      factor = names(stunting)[jmi$selection[[k]]]
+      FS_JMI[[factor, 19]] = FS_JMI[[factor, 19]] + 1
+    }
+  }
+}
+################################################################################
+write.csv(FS_JMI, "FS_JMI_10.csv")
 ```
 
 
@@ -2961,12 +3479,16 @@ results = data.frame(StuntingRejects = double(),
                      StuntinFemaleRejects = double(),
                      StuntingUrbanRejects = double(),
                      StuntingNotUrbanRejects = double(),
+                     StuntingYouthRejects = double(),
+                     StuntingAdolescentRejects = double(),
                      
                      ThinnessRejects = double(),
                      ThinnessMaleRejects = double(),
                      StuntinFemaleRejects = double(),
                      ThinnessUrbanRejects = double(),
                      ThinnessNotUrbanRejects = double(),
+                     ThinnessYouthRejects = double(),
+                     ThinnessAdolescentRejects = double(),
                      
                      WastingRejects = double(),
                      WastingMaleRejects = double(),
@@ -3056,13 +3578,12 @@ for (factor in names(stunting)[1:40]){
   }
 }
 ################################################################################
-#Thinness PV-based feature selection & crude odds ratios
 for (factor in names(stunting)[1:40]){
   results[[factor, 6]] = 0
   for (i in 1:10){
     for (j in 1:10){
-        UVLoR = glm(paste0("Thinness","~",factor),
-                    data = SMOTEThinness[[i]][[j]][["data"]],
+        UVLoR = glm(paste0("Stunting","~", factor),
+                    data = UBStuntingYouth[[i]][[j]],
                     family = "binomial"
                     )
         regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
@@ -3077,8 +3598,8 @@ for (factor in names(stunting)[1:40]){
   results[[factor, 7]] = 0
   for (i in 1:10){
     for (j in 1:10){
-        UVLoR = glm(paste0("Thinness","~",factor),
-                    data = SMOTEThinnessMale[[i]][[j]][["data"]],
+        UVLoR = glm(paste0("Stunting","~", factor),
+                    data = UBStuntingAdolescent[[i]][[j]],
                     family = "binomial"
                     )
         regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
@@ -3089,12 +3610,13 @@ for (factor in names(stunting)[1:40]){
   }
 }
 ################################################################################
+#Thinness PV-based feature selection & crude odds ratios
 for (factor in names(stunting)[1:40]){
   results[[factor, 8]] = 0
   for (i in 1:10){
     for (j in 1:10){
         UVLoR = glm(paste0("Thinness","~",factor),
-                    data = SMOTEThinnessFemale[[i]][[j]][["data"]],
+                    data = SMOTEThinness[[i]][[j]][["data"]],
                     family = "binomial"
                     )
         regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
@@ -3110,7 +3632,7 @@ for (factor in names(stunting)[1:40]){
   for (i in 1:10){
     for (j in 1:10){
         UVLoR = glm(paste0("Thinness","~",factor),
-                    data = SMOTEThinnessUrban[[i]][[j]][["data"]],
+                    data = SMOTEThinnessMale[[i]][[j]][["data"]],
                     family = "binomial"
                     )
         regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
@@ -3126,7 +3648,7 @@ for (factor in names(stunting)[1:40]){
   for (i in 1:10){
     for (j in 1:10){
         UVLoR = glm(paste0("Thinness","~",factor),
-                    data = SMOTEThinnessNotUrban[[i]][[j]][["data"]],
+                    data = SMOTEThinnessFemale[[i]][[j]][["data"]],
                     family = "binomial"
                     )
         regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
@@ -3137,13 +3659,12 @@ for (factor in names(stunting)[1:40]){
   }
 }
 ################################################################################
-#WastingYoung PV-based feature selection & crude odds ratios
 for (factor in names(stunting)[1:40]){
   results[[factor, 11]] = 0
   for (i in 1:10){
     for (j in 1:10){
-        UVLoR = glm(paste0("Wasting","~",factor),
-                    data = SMOTEWasting[[i]][[j]][["data"]],
+        UVLoR = glm(paste0("Thinness","~",factor),
+                    data = SMOTEThinnessUrban[[i]][[j]][["data"]],
                     family = "binomial"
                     )
         regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
@@ -3158,8 +3679,8 @@ for (factor in names(stunting)[1:40]){
   results[[factor, 12]] = 0
   for (i in 1:10){
     for (j in 1:10){
-        UVLoR = glm(paste0("Wasting","~",factor),
-                    data = SMOTEWastingMale[[i]][[j]][["data"]],
+        UVLoR = glm(paste0("Thinness","~",factor),
+                    data = SMOTEThinnessNotUrban[[i]][[j]][["data"]],
                     family = "binomial"
                     )
         regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
@@ -3174,8 +3695,8 @@ for (factor in names(stunting)[1:40]){
   results[[factor, 13]] = 0
   for (i in 1:10){
     for (j in 1:10){
-        UVLoR = glm(paste0("Wasting","~",factor),
-                    data = SMOTEWastingFemale[[i]][[j]][["data"]],
+        UVLoR = glm(paste0("Thinness","~",factor),
+                    data = SMOTEThinnessYouth[[i]][[j]][["data"]],
                     family = "binomial"
                     )
         regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
@@ -3190,8 +3711,8 @@ for (factor in names(stunting)[1:40]){
   results[[factor, 14]] = 0
   for (i in 1:10){
     for (j in 1:10){
-        UVLoR = glm(paste0("Wasting","~",factor),
-                    data = SMOTEWastingUrban[[i]][[j]][["data"]],
+        UVLoR = glm(paste0("Thinness","~",factor),
+                    data = SMOTEThinnessAdolescent[[i]][[j]][["data"]],
                     family = "binomial"
                     )
         regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
@@ -3202,8 +3723,73 @@ for (factor in names(stunting)[1:40]){
   }
 }
 ################################################################################
+#WastingYoung PV-based feature selection & crude odds ratios
 for (factor in names(stunting)[1:40]){
   results[[factor, 15]] = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Wasting","~",factor),
+                    data = SMOTEWasting[[i]][[j]][["data"]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 15]] = results[[factor, 15]] + 1
+        }
+    }
+  }
+}
+################################################################################
+for (factor in names(stunting)[1:40]){
+  results[[factor, 16]] = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Wasting","~",factor),
+                    data = SMOTEWastingMale[[i]][[j]][["data"]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 16]] = results[[factor, 16]] + 1
+        }
+    }
+  }
+}
+################################################################################
+for (factor in names(stunting)[1:40]){
+  results[[factor, 17]] = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Wasting","~",factor),
+                    data = SMOTEWastingFemale[[i]][[j]][["data"]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 17]] = results[[factor, 17]] + 1
+        }
+    }
+  }
+}
+################################################################################
+for (factor in names(stunting)[1:40]){
+  results[[factor, 18]] = 0
+  for (i in 1:10){
+    for (j in 1:10){
+        UVLoR = glm(paste0("Wasting","~",factor),
+                    data = SMOTEWastingUrban[[i]][[j]][["data"]],
+                    family = "binomial"
+                    )
+        regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+        if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
+          results[[factor, 18]] = results[[factor, 18]] + 1
+        }
+    }
+  }
+}
+################################################################################
+for (factor in names(stunting)[1:40]){
+  results[[factor, 19]] = 0
   for (i in 1:10){
     for (j in 1:10){
         UVLoR = glm(paste0("Wasting","~",factor),
@@ -3212,7 +3798,7 @@ for (factor in names(stunting)[1:40]){
                     )
         regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
         if (!is.na(regSummary[[2, 5]]) && regSummary[[2, 5]] < 0.05){
-          results[[factor, 15]] = results[[factor, 15]] + 1
+          results[[factor, 19]] = results[[factor, 19]] + 1
         }
     }
   }
@@ -3230,12 +3816,16 @@ results = data.frame(StuntingRejects = double(),
                      StuntinFemaleRejects = double(),
                      StuntingUrbanRejects = double(),
                      StuntingNotUrbanRejects = double(),
+                     StuntingYouthRejects = double(),
+                     StuntingAdolescentRejects = double(),
                      
                      ThinnessRejects = double(),
                      ThinnessMaleRejects = double(),
                      StuntinFemaleRejects = double(),
                      ThinnessUrbanRejects = double(),
                      ThinnessNotUrbanRejects = double(),
+                     ThinnessYouthRejects = double(),
+                     ThinnessAdolescentRejects = double(),
                      
                      WastingRejects = double(),
                      WastingMaleRejects = double(),
@@ -3357,8 +3947,8 @@ for (factor in names(stunting)[1:40]){
 for (i in 1:10){
   for (j in 1:10){
     index = 0
-    UVLoR = glm(Thinness~.,
-                data = SMOTEThinness[[i]][[j]][["data"]],
+    UVLoR = glm(Stunting~.,
+                data = UBStuntingYouth[[i]][[j]],
                 family = "binomial"
                 )
     regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
@@ -3378,8 +3968,8 @@ for (factor in names(stunting)[1:40]){
 for (i in 1:10){
   for (j in 1:10){
     index = 0
-    UVLoR = glm(Thinness~.,
-                data = SMOTEThinnessMale[[i]][[j]][["data"]],
+    UVLoR = glm(Stunting~.,
+                data = UBStuntingAdolescent[[i]][[j]],
                 family = "binomial"
                 )
     regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
@@ -3400,7 +3990,7 @@ for (i in 1:10){
   for (j in 1:10){
     index = 0
     UVLoR = glm(Thinness~.,
-                data = SMOTEThinnessFemale[[i]][[j]][["data"]],
+                data = SMOTEThinness[[i]][[j]][["data"]],
                 family = "binomial"
                 )
     regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
@@ -3421,7 +4011,7 @@ for (i in 1:10){
   for (j in 1:10){
     index = 0
     UVLoR = glm(Thinness~.,
-                data = SMOTEThinnessUrban[[i]][[j]][["data"]],
+                data = SMOTEThinnessMale[[i]][[j]][["data"]],
                 family = "binomial"
                 )
     regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
@@ -3442,14 +4032,14 @@ for (i in 1:10){
   for (j in 1:10){
     index = 0
     UVLoR = glm(Thinness~.,
-                data = SMOTEThinnessNotUrban[[i]][[j]][["data"]],
+                data = SMOTEThinnessFemale[[i]][[j]][["data"]],
                 family = "binomial"
                 )
     regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
     for (factor in names(stunting)[1:40]){
       index = index + 1
       if (!is.na(regSummary[[index, 5]]) && regSummary[[index, 5]] < 0.05){
-        results[[factor, 10]] = results[[factor, 10]] + 1
+        results[[factor, 10]] = results[[factor, 11]] + 1
       }
     }
   }
@@ -3462,8 +4052,8 @@ for (factor in names(stunting)[1:40]){
 for (i in 1:10){
   for (j in 1:10){
     index = 0
-    UVLoR = glm(Wasting~.,
-                data = SMOTEWasting[[i]][[j]][["data"]],
+    UVLoR = glm(Thinness~.,
+                data = SMOTEThinnessUrban[[i]][[j]][["data"]],
                 family = "binomial"
                 )
     regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
@@ -3483,8 +4073,8 @@ for (factor in names(stunting)[1:40]){
 for (i in 1:10){
   for (j in 1:10){
     index = 0
-    UVLoR = glm(Wasting~.,
-                data = SMOTEWastingMale[[i]][[j]][["data"]],
+    UVLoR = glm(Thinness~.,
+                data = SMOTEThinnessNotUrban[[i]][[j]][["data"]],
                 family = "binomial"
                 )
     regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
@@ -3504,8 +4094,8 @@ for (factor in names(stunting)[1:40]){
 for (i in 1:10){
   for (j in 1:10){
     index = 0
-    UVLoR = glm(Wasting~.,
-                data = SMOTEWastingFemale[[i]][[j]][["data"]],
+    UVLoR = glm(Thinness~.,
+                data = SMOTEThinnessYouth[[i]][[j]][["data"]],
                 family = "binomial"
                 )
     regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
@@ -3525,8 +4115,8 @@ for (factor in names(stunting)[1:40]){
 for (i in 1:10){
   for (j in 1:10){
     index = 0
-    UVLoR = glm(Wasting~.,
-                data = SMOTEWastingUrban[[i]][[j]][["data"]],
+    UVLoR = glm(Thinness~.,
+                data = SMOTEThinnessAdolescent[[i]][[j]][["data"]],
                 family = "binomial"
                 )
     regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
@@ -3547,7 +4137,7 @@ for (i in 1:10){
   for (j in 1:10){
     index = 0
     UVLoR = glm(Wasting~.,
-                data = SMOTEWastingNotUrban[[i]][[j]][["data"]],
+                data = SMOTEWasting[[i]][[j]][["data"]],
                 family = "binomial"
                 )
     regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
@@ -3560,17 +4150,102 @@ for (i in 1:10){
   }
 }
 ################################################################################
+for (factor in names(stunting)[1:40]){
+  results[[factor, 16]] = 0 #Must instantiate columns or next lines can't access them
+}
+
+for (i in 1:10){
+  for (j in 1:10){
+    index = 0
+    UVLoR = glm(Wasting~.,
+                data = SMOTEWastingMale[[i]][[j]][["data"]],
+                family = "binomial"
+                )
+    regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+    for (factor in names(stunting)[1:40]){
+      index = index + 1
+      if (!is.na(regSummary[[index, 5]]) && regSummary[[index, 5]] < 0.05){
+        results[[factor, 16]] = results[[factor, 16]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (factor in names(stunting)[1:40]){
+  results[[factor, 17]] = 0 #Must instantiate columns or next lines can't access them
+}
+
+for (i in 1:10){
+  for (j in 1:10){
+    index = 0
+    UVLoR = glm(Wasting~.,
+                data = SMOTEWastingFemale[[i]][[j]][["data"]],
+                family = "binomial"
+                )
+    regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+    for (factor in names(stunting)[1:40]){
+      index = index + 1
+      if (!is.na(regSummary[[index, 5]]) && regSummary[[index, 5]] < 0.05){
+        results[[factor, 17]] = results[[factor, 17]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (factor in names(stunting)[1:40]){
+  results[[factor, 18]] = 0 #Must instantiate columns or next lines can't access them
+}
+
+for (i in 1:10){
+  for (j in 1:10){
+    index = 0
+    UVLoR = glm(Wasting~.,
+                data = SMOTEWastingUrban[[i]][[j]][["data"]],
+                family = "binomial"
+                )
+    regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+    for (factor in names(stunting)[1:40]){
+      index = index + 1
+      if (!is.na(regSummary[[index, 5]]) && regSummary[[index, 5]] < 0.05){
+        results[[factor, 18]] = results[[factor, 18]] + 1
+      }
+    }
+  }
+}
+################################################################################
+for (factor in names(stunting)[1:40]){
+  results[[factor, 19]] = 0 #Must instantiate columns or next lines can't access them
+}
+
+for (i in 1:10){
+  for (j in 1:10){
+    index = 0
+    UVLoR = glm(Wasting~.,
+                data = SMOTEWastingNotUrban[[i]][[j]][["data"]],
+                family = "binomial"
+                )
+    regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+    for (factor in names(stunting)[1:40]){
+      index = index + 1
+      if (!is.na(regSummary[[index, 5]]) && regSummary[[index, 5]] < 0.05){
+        results[[factor, 19]] = results[[factor, 19]] + 1
+      }
+    }
+  }
+}
+################################################################################
 write.csv(results, "FS_R-MVLoR.csv")
 ```
 
 
 
-```{r Literature-Based}
-#This one is pretty quick (it's almost like there's no computations...)
-FS_LB = c(1:3, 4, 6:15, 17:19, 20:25, 27:29, 32:36, 38, 47:54)
-FS_LB = sort(FS_LB)
-for (i in FS_LB){
-  cat(names(stunting)[i],"\n")
+```{r Chi-Square Test}
+for (i in 1:10){
+  for (j in 1:10){
+    for (factor in 1:40){
+      chisq.test()
+    }
+  }
 }
 ```
 
@@ -3587,6 +4262,7 @@ for (i in FS_LB){
 
 
 ```{r Random Forest}
+set.seed(13)
 library(randomForest)
 library(datasets)
 library(caret)
@@ -3596,12 +4272,14 @@ library(caret)
 
 
 ```{r Support Vector Machine}
+set.seed(13)
 
 ```
 
 
 
 ```{r Extreme Gradient Boosting}
+set.seed(13)
 library(xgboost)
 library(caret)
 library(tidyverse)
@@ -4036,6 +4714,7 @@ abline(h = 0)
 #I played around with support and confidence values until I got ~10 rules per iteration of the Apriori algorithm. 
 
 #https://www.geeksforgeeks.org/apriori-algorithm-in-r-programming/
+set.seed(13)
 
 library(arules)
 library(arulesViz)
@@ -4049,71 +4728,57 @@ ruleSet = data.frame(rules = character(),
 ################################################################################
 #Male vs. Female associations on Stunting
 ruleSet[nrow(ruleSet)+1, 1] = "STUNTING:"
-data = data.frame(lapply(UBStunting, as.logical))
+data = data.frame(lapply(stunting, as.logical))
 
 
 ruleSet[nrow(ruleSet)+1, 1] = "FEMALE:"
 female = subset(data, Sex == TRUE)
 female = female[,-2]
 rules = apriori(female, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.38,
-                                 maxlen = 10,
+                parameter = list(support = 0.020,
+                                 confidence = 0.42,
+                                 maxlen = 7,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
                 )
 #append(ruleSet, as(rules, "data.frame"))
 #inspect(rules[1:10])
-ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
+ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "MALE:"
 male = subset(data, Sex == FALSE)
 male = male[,-2]
 rules = apriori(male, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.71,
+                parameter = list(support = 0.02,
+                                 confidence = 0.78,
                                  maxlen = 10,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
                 )
-ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
+ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ################################################################################
-#Rural vs. suburban vs. urban rules on Stunting
-ruleSet[nrow(ruleSet)+1, 1] = "RURAL:"
-# rural = subset(data, Rural == TRUE)
-# rural = rural[,-c(14,15)]
-# rules = apriori(rural,
-#                 parameter = list(support = 0.17,
-#                                  confidence = 0.35,
-#                                  maxlen = 10,
-#                                  target = "rules"),
-#                 appearance = list(default = "lhs", rhs = c("Stunting")
-#                                   )
-#                 )
-# inspect(rules[1:10])
-
-# Rural has too few samples to narrow selection of rules down to ~10 (smallest possible is 23,260); every rule has count = 1
-ruleSet[nrow(ruleSet)+1, 1] = "SUBURBAN:"
-suburban = subset(data, Suburban == TRUE)
-suburban = suburban[,-c(14,15)]
-rules = apriori(suburban, 
-                parameter = list(support = 0.10,
-                                 confidence = 0.5,
-                                 maxlen = 10,
+#Rural & suburban vs. urban rules on Stunting
+ruleSet[nrow(ruleSet)+1, 1] = "NOTURBAN:"
+rural = subset(data, Urban == FALSE)
+rural = rural[,-c(6)]
+rules = apriori(rural,
+                parameter = list(support = 0.04,
+                                 confidence = 0.6,
+                                 maxlen = 9,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
                 )
-#inspect(rules[1:10])
-ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
+#inspect(rules)
+ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "URBAN:"
-urban = subset(data, (Rural == FALSE && Suburban == FALSE))
-urban = urban[,-c(14,15)]
+urban = subset(data, Urban == TRUE)
+urban = urban[,-c(6)]
 rules = apriori(urban, 
-                parameter = list(support = 0.05,
+                parameter = list(support = 0.02,
                                  confidence = 0.45,
                                  maxlen = 10,
                                  target = "rules"),
@@ -4121,381 +4786,234 @@ rules = apriori(urban,
                                   )
                 )
 #inspect(rules[1:8])
-ruleSet = rbind(ruleSet, as(rules[1:8], "data.frame"))
+ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ################################################################################
-#Male vs. Female associations on StuntingYoung
-data = data.frame(lapply(StuntingYoung, as.logical))
-ruleSet[nrow(ruleSet)+1, 1] = "STUNTINGYOUNG:"
+ruleSet[nrow(ruleSet)+1, 1] = "STUNTING OVERALL:"
+rules = apriori(data.frame(lapply(stunting, as.logical)), 
+                parameter = list(support = 0.02,
+                                 confidence = 0.42,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Stunting")
+                                  )
+                )
+#inspect(rules[1:10])
+ruleSet = rbind(ruleSet, as(rules, "data.frame"))
+
+ruleSet[nrow(ruleSet)+1, 1] = "STUNTINGYOUNG OVERALL:"
+
+rules = apriori(data.frame(lapply(subset(stunting, (Age < 11)), as.logical)), 
+                parameter = list(support = 0.031,
+                                 confidence = 0.43,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Stunting")
+                                  )
+                )
+#inspect(rules[1:8])
+ruleSet = rbind(ruleSet, as(rules, "data.frame"))
+
+ruleSet[nrow(ruleSet)+1, 1] = "STUNTINGADOLESCENT OVERALL:"
+
+rules = apriori(data.frame(lapply(subset(stunting, (Age > 10)), as.logical)), 
+                parameter = list(support = 0.035,
+                                 confidence = 0.59,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Stunting")
+                                  )
+                )
+#inspect(rules[1:8])
+ruleSet = rbind(ruleSet, as(rules, "data.frame"))
+```
+
+
+
+```{r Association Rule Learning: Thinness}
+set.seed(13)
+################################################################################
+ruleSet[nrow(ruleSet)+1, 1] = "Thinness:"
+data = data.frame(lapply(thinness, as.logical))
+
 
 ruleSet[nrow(ruleSet)+1, 1] = "FEMALE:"
 female = subset(data, Sex == TRUE)
 female = female[,-2]
 rules = apriori(female, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.31,
-                                 maxlen = 10,
-                                 target = "rules"),
-                appearance = list(default = "lhs", rhs = c("Stunting")
-                                  )
-                )
-#inspect(rules[1:10])
-ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
-
-ruleSet[nrow(ruleSet)+1, 1] = "MALE:"
-male = subset(data, Sex == FALSE)
-male = male[,-2]
-rules = apriori(male, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.42,
-                                 maxlen = 10,
-                                 target = "rules"),
-                appearance = list(default = "lhs", rhs = c("Stunting")
-                                  )
-                )
-#inspect(rules[1:10])
-ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
-################################################################################
-#Rural vs. suburban vs. urban rules on StuntingYoung
-ruleSet[nrow(ruleSet)+1, 1] = "RURAL:"
-# rural = subset(data, Rural == TRUE)
-# rural = rural[,-c(14,15)]
-# rules = apriori(rural, 
-#                 parameter = list(support = 0.14, #Anything above 0.14 returns nothing
-#                                  confidence = 1, #This data is very strange
-#                                  maxlen = 10,
-#                                  target = "rules"),
-#                 appearance = list(default = "lhs", rhs = c("Stunting")
-#                                   )
-#                 )
-# inspect(rules[1:10])
-
-#Much like Stunting's Rural data, I think there's too few samples for accurate analysis. 250k rules is absurd, especially considering the other Rural data had nothing.
-
-ruleSet[nrow(ruleSet)+1, 1] = "SUBURBAN:"
-suburban = subset(data, Suburban == TRUE)
-suburban = suburban[,-c(14,15)]
-rules = apriori(suburban, 
-                parameter = list(support = 0.10,
-                                 confidence = 0.42,
-                                 maxlen = 10,
-                                 target = "rules"),
-                appearance = list(default = "lhs", rhs = c("Stunting")
-                                  )
-                )
-#inspect(rules[1:10])
-ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
-
-ruleSet[nrow(ruleSet)+1, 1] = "URBAN:"
-urban = subset(data, Rural == FALSE)
-urban = subset(data, Suburban == FALSE) #I don't know why this has to be two separate lines of subsetting. Coding is magic, but I am not a wizard.
-urban = urban[,-c(14,15)]
-rules = apriori(urban, 
-                parameter = list(support = 0.05,
-                                 confidence = 0.304,
-                                 maxlen = 10,
-                                 target = "rules"),
-                appearance = list(default = "lhs", rhs = c("Stunting")
-                                  )
-                )
-#inspect(rules[1:8])
-ruleSet = rbind(ruleSet, as(rules[1:8], "data.frame"))
-################################################################################
-#Young (<11) vs adolescent (11+) rules on Stunting & StuntingYouth
-ruleSet[nrow(ruleSet)+1, 1] = "STUNTING v. STUNTINGYOUNG:"
-
-ruleSet[nrow(ruleSet)+1, 1] = "STUNTING OVERALL:"
-rules = apriori(data.frame(lapply(stunting, as.logical)), 
-                parameter = list(support = 0.07,
-                                 confidence = 0.355,
-                                 maxlen = 10,
-                                 target = "rules"),
-                appearance = list(default = "lhs", rhs = c("Stunting")
-                                  )
-                )
-#inspect(rules[1:10])
-ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
-
-ruleSet[nrow(ruleSet)+1, 1] = "STUNTINGYOUNG OVERALL:"
-rules = apriori(data.frame(lapply(StuntingYoung, as.logical)), 
-                parameter = list(support = 0.09,
-                                 confidence = 0.258,
-                                 maxlen = 10,
-                                 target = "rules"),
-                appearance = list(default = "lhs", rhs = c("Stunting")
-                                  )
-                )
-#inspect(rules[1:8])
-ruleSet = rbind(ruleSet, as(rules[1:8], "data.frame"))
-```
-
-
-
-```{r Association Rule Learning: Thinness & ThinnessYoung}
-################################################################################
-#Thinness female vs. male
-ruleSet[nrow(ruleSet)+1, 1] = "THINNESS:"
-data = data.frame(lapply(thinness, as.logical))
-
-ruleSet[nrow(ruleSet)+1, 1] = "FEMALE:"
-# female = subset(data, Sex == TRUE)
-# female = female[,-2]
-# rules = apriori(female, 
-#                 parameter = list(support = 0.01,
-#                                  confidence = 0.01,
-#                                  maxlen = 10,
-#                                  target = "rules"),
-#                 appearance = list(default = "lhs", rhs = c("Thinness")
-#                                   )
-#                 )
-#append(ruleSet, as(rules, "data.frame"))
-#inspect(rules[1:10])
-# ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
-
-ruleSet[nrow(ruleSet)+1, 1] = "MALE:"
-male = subset(data, Sex == FALSE)
-male = male[,-2]
-rules = apriori(male, 
-                parameter = list(support = 0.03,
-                                 confidence = 0.20,
-                                 maxlen = 10,
+                parameter = list(support = 0.005,
+                                 confidence = 0.33,
+                                 maxlen = 9,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
                 )
-#inspect(rules[1:10])
-ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
-################################################################################
-#Rural vs. suburban vs. urban rules on Thinness
-ruleSet[nrow(ruleSet)+1, 1] = "RURAL:"
-# rural = subset(data, Rural == TRUE)
-# rural = rural[,-c(14,15)]
-# rules = apriori(rural,
-#                 parameter = list(support = 0.07,
-#                                  confidence = 0.90,
-#                                  maxlen = 10,
-#                                  target = "rules"),
-#                 appearance = list(default = "lhs", rhs = c("Thinness")
-#                                   )
-#                 )
-# inspect(rules[1:10])
-# Rural has too few samples to narrow selection of rules down to ~10 (smallest possible is 23,260); every rule has count = 1
+#append(ruleSet, as(rules, "data.frame"))
+#inspect(rules)
+ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
-ruleSet[nrow(ruleSet)+1, 1] = "SUBURBAN:"
-suburban = subset(data, Suburban == TRUE)
-suburban = suburban[,-c(14,15)]
-rules = apriori(suburban, 
-                parameter = list(support = 0.02,
-                                 confidence = 0.50,
+ruleSet[nrow(ruleSet)+1, 1] = "MALE:"
+male = subset(data, Sex == FALSE)
+male = male[,-2]
+rules = apriori(male, 
+                parameter = list(support = 0.005,
+                                 confidence = 0.6,
+                                 maxlen = 8,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Thinness")
+                                  )
+                )
+ruleSet = rbind(ruleSet, as(rules, "data.frame"))
+################################################################################
+#Rural & suburban vs. urban rules on Thinness
+ruleSet[nrow(ruleSet)+1, 1] = "NOTURBAN:"
+rural = subset(data, Urban == FALSE)
+rural = rural[,-c(6)]
+rules = apriori(rural,
+                parameter = list(support = 0.005,
+                                 confidence = 0.66,
                                  maxlen = 7,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
                 )
-#inspect(rules[1:10])
-ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
+#inspect(rules)
+ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "URBAN:"
-# urban = subset(data, Rural == FALSE) 
-# urban = subset(urban, Suburban == FALSE)
-# urban = urban[,-c(14,15)]
-# rules = apriori(urban, 
-#                 parameter = list(support = 0.02,
-#                                  confidence = 0.10,
-#                                  maxlen = 10,
-#                                  target = "rules"),
-#                 appearance = list(default = "lhs", rhs = c("Thinness")
-#                                   )
-#                 )
-# #inspect(rules[1:8])
-# ruleSet = rbind(ruleSet, as(rules[1:8], "data.frame"))
-################################################################################
-#Male vs. Female associations on ThinnessYoung
-data = data.frame(lapply(thinnessYoung, as.logical))
-ruleSet[nrow(ruleSet)+1, 1] = "THINNESSYOUNG:"
-
-ruleSet[nrow(ruleSet)+1, 1] = "FEMALE:"
-female = subset(data, Sex == TRUE)
-female = female[,-2]
-rules = apriori(female, 
-                parameter = list(support = 0.02,
-                                 confidence = 0.109,
-                                 maxlen = 10,
-                                 target = "rules"),
-                appearance = list(default = "lhs", rhs = c("Thinness")
-                                  )
-                )
-#inspect(rules[1:10])
-ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
-
-ruleSet[nrow(ruleSet)+1, 1] = "MALE:"
-# male = subset(data, Sex == FALSE)
-# male = male[,-2]
-# rules = apriori(male, 
-#                 parameter = list(support = 0.02,
-#                                  confidence = 0.05,
-#                                  maxlen = 10,
-#                                  target = "rules"),
-#                 appearance = list(default = "lhs", rhs = c("Thinness")
-#                                   )
-#                 )
-# inspect(rules[1:10])
-# ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
-################################################################################
-#Rural vs. suburban vs. urban rules on ThinnessYoung
-ruleSet[nrow(ruleSet)+1, 1] = "RURAL:"
-# rural = subset(data, Rural == TRUE)
-# rural = rural[,-c(14,15)]
-# rules = apriori(rural,
-#                 parameter = list(support = 0.14, #Anything above 0.14 returns nothing
-#                                  confidence = 1, #This data is very strange
-#                                  maxlen = 10,
-#                                  target = "rules"),
-#                 appearance = list(default = "lhs", rhs = c("Thinness")
-#                                   )
-#                 )
-# inspect(rules[1:10])
-ruleSet[nrow(ruleSet)+1, 1] = "NO RURAL ARE THIN"
-#All rural samples are not thin.
-
-ruleSet[nrow(ruleSet)+1, 1] = "SUBURBAN:"
-# suburban = subset(data, Suburban == TRUE)
-# suburban = suburban[,-c(14,15)]
-# rules = apriori(suburban, 
-#                 parameter = list(support = 0.02,
-#                                  confidence = 0.1,
-#                                  maxlen = 10,
-#                                  target = "rules"),
-#                 appearance = list(default = "lhs", rhs = c("Thinness")
-#                                   )
-#                 )
-# inspect(rules[1:10])
-# ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
-
-ruleSet[nrow(ruleSet)+1, 1] = "URBAN:"
-# urban = subset(data, Rural == FALSE)
-# urban = subset(data, Suburban == FALSE) #I don't know why this has to be two separate lines of subsetting. Coding is magic, but I am not a wizard.
-# urban = urban[,-c(14,15)]
-# rules = apriori(urban, 
-#                 parameter = list(support = 0.02,
-#                                  confidence = 0.10,
-#                                  maxlen = 10,
-#                                  target = "rules"),
-#                 appearance = list(default = "lhs", rhs = c("Thinness")
-#                                   )
-#                 )
-# inspect(rules[1:10])
-# ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
-################################################################################
-#Young (<11) vs adolescent (11+) rules on Thinness & ThinnessYouth
-ruleSet[nrow(ruleSet)+1, 1] = "THINNESS v. THINNESSYOUNG:"
-
-ruleSet[nrow(ruleSet)+1, 1] = "THINNESS OVERALL:"
-rules = apriori(data.frame(lapply(thinness, as.logical)), 
-                parameter = list(support = 0.01,
-                                 confidence = 0.35,
-                                 maxlen = 10,
-                                 target = "rules"),
-                appearance = list(default = "lhs", rhs = c("Thinness")
-                                  )
-                )
-#inspect(rules[1:10])
-ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
-
-ruleSet[nrow(ruleSet)+1, 1] = "THINNESSYOUNG OVERALL:"
-rules = apriori(data.frame(lapply(thinnessYoung, as.logical)), 
-                parameter = list(support = 0.02,
-                                 confidence = 0.15,
-                                 maxlen = 10,
+urban = subset(data, Urban == TRUE)
+urban = urban[,-c(6)]
+rules = apriori(urban, 
+                parameter = list(support = 0.002,
+                                 confidence = 1,
+                                 maxlen = 6,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
                 )
 #inspect(rules[1:8])
-ruleSet = rbind(ruleSet, as(rules[1:8], "data.frame"))
+ruleSet = rbind(ruleSet, as(rules, "data.frame"))
+################################################################################
+ruleSet[nrow(ruleSet)+1, 1] = "Thinness OVERALL:"
+rules = apriori(data.frame(lapply(thinness, as.logical)), 
+                parameter = list(support = 0.002,
+                                 confidence = 0.6,
+                                 maxlen = 10,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Thinness")
+                                  )
+                )
+#inspect(rules[1:10])
+ruleSet = rbind(ruleSet, as(rules, "data.frame"))
+
+ruleSet[nrow(ruleSet)+1, 1] = "ThinnessYOUNG OVERALL:"
+
+rules = apriori(data.frame(lapply(subset(thinness, (Age < 11)), as.logical)), 
+                parameter = list(support = 0.002,
+                                 confidence = 1,
+                                 maxlen = 7,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Thinness")
+                                  )
+                )
+#inspect(rules[1:8])
+ruleSet = rbind(ruleSet, as(rules, "data.frame"))
+
+ruleSet[nrow(ruleSet)+1, 1] = "thinnessADOLESCENT OVERALL:"
+
+rules = apriori(data.frame(lapply(subset(thinness, (Age > 10)), as.logical)), 
+                parameter = list(support = 0.004,
+                                 confidence = 0.66,
+                                 maxlen = 7,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Thinness")
+                                  )
+                )
+#inspect(rules[1:8])
+ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ```
+
 
 
 
 ```{r Association Rule Learning: WastingYoung}
+set.seed(13)
 #Pretty quick.
 #Again, same as above two blocks except only conducted on WastingYoung data.
 ################################################################################
-#Male vs. Female associations on WastingYoung
-data = data.frame(lapply(WastingYoung, as.logical))
-ruleSet[nrow(ruleSet)+1, 1] = "WASTINGYOUNG:"
+ruleSet[nrow(ruleSet)+1, 1] = "Wasting:"
+data = data.frame(lapply(wasting, as.logical))
+
 
 ruleSet[nrow(ruleSet)+1, 1] = "FEMALE:"
 female = subset(data, Sex == TRUE)
 female = female[,-2]
 rules = apriori(female, 
-                parameter = list(support = 0.02,
-                                 confidence = 0.33,
+                parameter = list(support = 0.01,
+                                 confidence = 0.66,
                                  maxlen = 10,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
                                   )
                 )
-#inspect(rules[1:10])
-ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
+#append(ruleSet, as(rules, "data.frame"))
+#inspect(rules)
+ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "MALE:"
 male = subset(data, Sex == FALSE)
 male = male[,-2]
-rules = apriori(male,
-                parameter = list(support = 0.02,
-                                 confidence = 0.36,
+rules = apriori(male, 
+                parameter = list(support = 0.01,
+                                 confidence = 0.7,
                                  maxlen = 7,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
                                   )
                 )
-#inspect(rules[1:10])
-ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
+ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ################################################################################
-#Rural vs. suburban vs. urban rules on WastingYoung
-ruleSet[nrow(ruleSet)+1, 1] = "RURAL:"
-# rural = subset(data, Rural == TRUE)
-# rural = rural[,-c(14,15)]
-# rules = apriori(rural,
-#                 parameter = list(support = 0.14, #Anything above 0.14 returns nothing
-#                                  confidence = 1, #This data is very strange
-#                                  maxlen = 10,
-#                                  target = "rules"),
-#                 appearance = list(default = "lhs", rhs = c("Wasting")
-#                                   )
-#                 )
-# inspect(rules[1:10])
-ruleSet[nrow(ruleSet)+1, 1] = "NO RURAL ARE WASTED"
-#All rural samples are not thin.
-
-ruleSet[nrow(ruleSet)+1, 1] = "SUBURBAN:"
-suburban = subset(data, Suburban == TRUE)
-suburban = suburban[,-c(14,15)]
-rules = apriori(suburban,
+#Rural & suburban vs. urban rules on Wasting
+ruleSet[nrow(ruleSet)+1, 1] = "NOTURBAN:"
+rural = subset(data, Urban == FALSE)
+rural = rural[,-c(6)]
+rules = apriori(rural,
                 parameter = list(support = 0.03,
-                                 confidence = 0.50,
-                                 maxlen = 7,
+                                 confidence = 0.6,
+                                 maxlen = 8,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
                                   )
                 )
-#inspect(rules[1:10])
-ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
+#inspect(rules)
+ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "URBAN:"
-urban = subset(data, Rural == FALSE)
-urban = subset(data, Suburban == FALSE) #I don't know why this has to be two separate lines of subsetting. Coding is magic, but I am not a wizard.
-urban = urban[,-c(14,15)]
-rules = apriori(urban,
-                parameter = list(support = 0.02,
-                                 confidence = 0.26,
-                                 maxlen = 10,
+urban = subset(data, Urban == TRUE)
+urban = urban[,-c(6)]
+rules = apriori(urban, 
+                parameter = list(support = 0.008,
+                                 confidence = 0.6,
+                                 maxlen = 9,
+                                 target = "rules"),
+                appearance = list(default = "lhs", rhs = c("Wasting")
+                                  )
+                )
+#inspect(rules[1:8])
+ruleSet = rbind(ruleSet, as(rules, "data.frame"))
+################################################################################
+ruleSet[nrow(ruleSet)+1, 1] = "Wasting OVERALL:"
+rules = apriori(data.frame(lapply(wasting, as.logical)), 
+                parameter = list(support = 0.005,
+                                 confidence = 0.75,
+                                 maxlen = 7,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
                                   )
                 )
 #inspect(rules[1:10])
-ruleSet = rbind(ruleSet, as(rules[1:10], "data.frame"))
+ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ################################################################################
 write.csv(ruleSet, "Association_Rules.csv", row.names = FALSE)
 ```
+
+
