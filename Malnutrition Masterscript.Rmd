@@ -4597,8 +4597,90 @@ write.csv(FS_ChiSq, "FS_ChiSq.csv")
 #####
 ```{r Model Data Preparation}
 #Creating train/test sets of selected features from original datasets for use in classifier modelling.
-TRAINING = list(None, InfoGain, mRMR, JMI, MVLoR, ChiSq)
-
+TRAINING = list(Stunting = list(None = list(),
+                                MVLoR = list(),
+                                IG = list(),
+                                MRMR = list(),
+                                JMI = list()
+                                ),
+                Thinness = list(None = list(),
+                                MVLoR = list(),
+                                IG = list(),
+                                MRMR = list(),
+                                JMI = list()
+                                ),
+                Wasting = list(None = list(),
+                                MVLoR = list(),
+                                IG = list(),
+                                MRMR = list(),
+                                JMI = list()
+                                )
+                )
+################################################################################
+#These are the correct indices of the features we want to keep for our classifier models, but this isn't functional yet. We have to go through all 100 training sets per malnutrition type and subset these indices.
+TRAINING[[1]][["None"]] = UBStunting
+TRAINING[[1]][["MVLoR"]] = UBStunting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[1]][["MVLoR"]][[i]][[j]] = TRAINING[[1]][[2]][[i]][[j]][,c(1,2,4,41)]
+  }
+}
+TRAINING[[1]][["IG"]] = NA #IG
+TRAINING[[1]][["MRMR"]] = UBStunting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[1]][["MRMR"]][[i]][[j]] = TRAINING[[1]][["MRMR"]][[i]][[j]][,c(1,2,4,12,36,41)]
+  }
+}
+TRAINING[[1]][["JMI"]] = UBStunting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[1]][["JMI"]][[i]][[j]] = TRAINING[[1]][["JMI"]][[i]][[j]][,c(1:4,41)]
+  }
+}
+################################################################################
+TRAINING[[2]][["None"]] = SMOTEThinness
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[2]][["None"]][[i]][[j]] = TRAINING[[2]][["None"]][[i]][[j]]$data
+  }
+}
+TRAINING[[2]][["MVLoR"]] = NA
+TRAINING[[2]][["IG"]] = SMOTEThinness
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[2]][["IG"]][[i]][[j]] = TRAINING[[2]][["IG"]][[i]][[j]]$data[,c(5,8,24,41)]
+  }
+}
+TRAINING[[2]][["MRMR"]] = NA
+TRAINING[[2]][["JMI"]] = SMOTEThinness
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[2]][["JMI"]][[i]][[j]] = TRAINING[[2]][["JMI"]][[i]][[j]]$data[,c(5,8,23,41)]
+  }
+}
+#TRAINING[[2]][["JMI"]] = thinness[,c(5, 8, 23, 41)] #JMI
+################################################################################
+TRAINING[[3]][["None"]] = SMOTEWasting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[3]][["None"]][[i]][[j]] = TRAINING[[3]][["None"]][[i]][[j]]$data
+  }
+}
+TRAINING[[3]][["MVLoR"]] = SMOTEWasting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[3]][["MVLoR"]][[i]][[j]] = TRAINING[[3]][["MVLoR"]][[i]][[j]]$data[,c(1,41)]
+  }
+}
+TRAINING[[3]][["IG"]] = TRAINING[[3]][["MVLoR"]]
+TRAINING[[3]][["MRMR"]] = TRAINING[[3]][["MVLoR"]]
+TRAINING[[3]][["JMI"]] = SMOTEWasting #None
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[3]][["JMI"]][[i]][[j]] = TRAINING[[3]][["JMI"]][[i]][[j]]$data[,c(1,12,41)]
+  }
+}
 ```
 
 
