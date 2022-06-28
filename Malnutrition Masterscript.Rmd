@@ -685,6 +685,7 @@ stuntingMale = subset(stunting, Sex == 0)
 stuntingFemale = subset(stunting, Sex == 1)
 stuntingYouth = subset(stunting, Age < 11)
 stuntingAdolescent = subset(stunting, Age > 10)
+StuntingFull = stunting
 
 thinnessUrban = subset(thinness, Urban == 1)
 thinnessNotUrban = subset(thinness, Urban == 0)
@@ -692,11 +693,13 @@ thinnessMale = subset(thinness, Sex == 0)
 thinnessFemale = subset(thinness, Sex == 1)
 thinnessYouth = subset(thinness, Age < 11)
 thinnessAdolescent = subset(thinness, Age > 10)
+ThinnessFull = thinness
 
 wastingUrban = subset(wasting, Urban == 1)
 wastingNotUrban = subset(wasting, Urban == 0)
 wastingMale = subset(wasting, Sex == 0)
 wastingFemale = subset(wasting, Sex == 1)
+WastingFull = wasting
 #No Youth/Adolescent splits for Wasting; it's already limited to samples < 11 years old
 ################################################################################
 # write.csv(stunting, "stunting.csv", row.names = FALSE)
@@ -2200,303 +2203,303 @@ table(SMOTEWastingNotUrban[[1]][[1]]$data$Wasting)[[1]][[1]]/table(SMOTEWastingN
 # prevent overfitting. All feature selection methods should be run on SMOTE-
 # balanced datasets.
 #####
-```{r ReliefF Computations}
-#This one takes ~5 hours to run. Have fun waiting.
-library(FSelectorRcpp)
-
-################################################################################
-FS_RLF_Stunting = list()
-for (i in 1:10){
-  FS_RLF_Stunting[[i]] = list()
-  for (j in 1:10){
-    relF = relief(Stunting~.,
-                as.data.frame(UBStunting[[i]][[j]]),
-                neighboursCount = 5
-                )
-    FS_RLF_Stunting[[i]][[j]] = relF[order(relF$importance), ]
-  }
-}
-################################################################################
-FS_RLF_StuntingMale = list()
-for (i in 1:10){
-  FS_RLF_StuntingMale[[i]] = list()
-  for (j in 1:10){
-    relF = relief(Stunting~.,
-                as.data.frame(UBStuntingMale[[i]][[j]]),
-                neighboursCount = 5
-                )
-    FS_RLF_StuntingMale[[i]][[j]] = relF[order(relF$importance), ]
-  }
-}
-################################################################################
-FS_RLF_StuntingFemale = list()
-for (i in 1:10){
-  FS_RLF_StuntingFemale[[i]] = list()
-  for (j in 1:10){
-    relF = relief(Stunting~.,
-                as.data.frame(SMOTEStuntingFemale[[i]][[j]]$data),
-                neighboursCount = 5
-                )
-    FS_RLF_StuntingFemale[[i]][[j]] = relF[order(relF$importance), ]
-  }
-}
-################################################################################
-FS_RLF_StuntingUrban = list()
-for (i in 1:10){
-  FS_RLF_StuntingUrban[[i]] = list()
-  for (j in 1:10){
-    relF = relief(Stunting~.,
-                as.data.frame(UBStunting[[i]][[j]]),
-                neighboursCount = 5
-                )
-    FS_RLF_StuntingUrban[[i]][[j]] = relF[order(relF$importance), ]
-  }
-}
-################################################################################
-FS_RLF_StuntingNotUrban = list()
-for (i in 1:10){
-  FS_RLF_StuntingNotUrban[[i]] = list()
-  for (j in 1:10){
-    relF = relief(Stunting~.,
-                as.data.frame(UBStunting[[i]][[j]]),
-                neighboursCount = 5
-                )
-    FS_RLF_StuntingNotUrban[[i]][[j]] = relF[order(relF$importance), ]
-  }
-}
-################################################################################
-FS_RLF_Thinness = list()
-for (i in 1:10){
-  FS_RLF_Thinness[[i]] = list()
-  for (j in 1:10){
-    relF = relief(Thinness~.,
-                as.data.frame(SMOTEThinness[[i]][[j]]$data),
-                neighboursCount = 5
-                )
-    FS_RLF_Thinness[[i]][[j]] = relF[order(relF$importance), ]
-  }
-}
-################################################################################
-FS_RLF_ThinnessMale = list()
-for (i in 1:10){
-  FS_RLF_ThinnessMale[[i]] = list()
-  for (j in 1:10){
-    relF = relief(Thinness~.,
-                as.data.frame(SMOTEThinnessMale[[i]][[j]]$data),
-                neighboursCount = 5
-                )
-    FS_RLF_ThinnessMale[[i]][[j]] = relF[order(relF$importance), ]
-  }
-}
-################################################################################
-FS_RLF_ThinnessFemale = list()
-for (i in 1:10){
-  FS_RLF_ThinnessFemale[[i]] = list()
-  for (j in 1:10){
-    relF = relief(Thinness~.,
-                as.data.frame(SMOTEThinnessFemale[[i]][[j]]$data),
-                neighboursCount = 5
-                )
-    FS_RLF_ThinnessFemale[[i]][[j]] = relF[order(relF$importance), ]
-  }
-}
-################################################################################
-FS_RLF_ThinnessUrban = list()
-for (i in 1:10){
-  FS_RLF_ThinnessUrban[[i]] = list()
-  for (j in 1:10){
-    relF = relief(Thinness~.,
-                as.data.frame(SMOTEThinnessUrban[[i]][[j]]$data),
-                neighboursCount = 5
-                )
-    FS_RLF_ThinnessUrban[[i]][[j]] = relF[order(relF$importance), ]
-  }
-}
-################################################################################
-FS_RLF_ThinnessNotUrban = list()
-for (i in 1:10){
-  FS_RLF_ThinnessNotUrban[[i]] = list()
-  for (j in 1:10){
-    relF = relief(Thinness~.,
-                as.data.frame(SMOTEThinnessNotUrban[[i]][[j]]$data),
-                neighboursCount = 5
-                )
-    FS_RLF_ThinnessNotUrban[[i]][[j]] = relF[order(relF$importance), ]
-  }
-}
-################################################################################
-FS_RLF_Wasting = list()
-for (i in 1:10){
-  FS_RLF_Wasting[[i]] = list()
-  for (j in 1:10){
-    relF = relief(Wasting~.,
-                as.data.frame(SMOTEWasting[[i]][[j]]$data),
-                neighboursCount = 5
-                )
-    FS_RLF_Wasting[[i]][[j]] = relF[order(relF$importance), ]
-  }
-}
-################################################################################
-FS_RLF_WastingMale = list()
-for (i in 1:10){
-  FS_RLF_WastingMale[[i]] = list()
-  for (j in 1:10){
-    relF = relief(Wasting~.,
-                as.data.frame(SMOTEWastingMale[[i]][[j]]$data),
-                neighboursCount = 5
-                )
-    FS_RLF_WastingMale[[i]][[j]] = relF[order(relF$importance), ]
-  }
-}
-################################################################################
-FS_RLF_WastingFemale = list()
-for (i in 1:10){
-  FS_RLF_WastingFemale[[i]] = list()
-  for (j in 1:10){
-    relF = relief(Wasting~.,
-                as.data.frame(SMOTEWastingFemale[[i]][[j]]$data),
-                neighboursCount = 5
-                )
-    FS_RLF_WastingFemale[[i]][[j]] = relF[order(relF$importance), ]
-  }
-}
-################################################################################
-FS_RLF_WastingUrban = list()
-for (i in 1:10){
-  FS_RLF_WastingUrban[[i]] = list()
-  for (j in 1:10){
-    relF = relief(Wasting~.,
-                as.data.frame(SMOTEWastingUrban[[i]][[j]]$data),
-                neighboursCount = 5
-                )
-    FS_RLF_WastingUrban[[i]][[j]] = relF[order(relF$importance), ]
-  }
-}
-################################################################################
-FS_RLF_WastingNotUrban = list()
-for (i in 1:10){
-  FS_RLF_WastingNotUrban[[i]] = list()
-  for (j in 1:10){
-    relF = relief(Wasting~.,
-                as.data.frame(SMOTEWastingNotUrban[[i]][[j]]$data),
-                neighboursCount = 5
-                )
-    FS_RLF_WastingNotUrban[[i]][[j]] = relF[order(relF$importance), ]
-  }
-}
-################################################################################
-```
-
-
-
-```{r ReliefF Results}
-#Separated from computations so I don't have to wait an hour and a half to see if my new code can parse the results correctly
-################################################################################
-FS_RLF = data.frame(Stunting = double(),
-                     StuntingMale = double(),
-                     StuntingFemale = double(),
-                     StuntingUrban = double(),
-                     StuntingNotUrban = double(),
-                     
-                     Thinness = double(),
-                     ThinnessMale = double(),
-                     ThinnessFemale = double(),
-                     ThinnessUrban = double(),
-                     ThinnessNotUrban = double(),
-                     
-                     Wasting = double(),
-                     WastingMale = double(),
-                     WastingFemale = double(), 
-                     WastingUrban = double(), 
-                     WastingNotUrban = double()
-                     )
-for (i in 1:40){
- FS_RLF[i,] = 0
-}
-row.names(FS_RLF) = names(stunting)[1:40]
-################################################################################
-COPY = FS_RLF_Stunting
-for (factor in names(stunting)[1:40]){
-  sum = 0
-  for (i in 1:10){
-    for (j in 1:10){
-      index = which(COPY[[i]][[j]]$attributes == factor)
-      if (is.na(COPY[[i]][[j]]$importance[[index]])){
-        next
-      }else{
-        sum = sum + COPY[[i]][[j]]$importance[[index]]
-      }
-    }
-  }
-  AVG_FS_RLF[[factor, 1]] = sum/100
-}
-################################################################################
-COPY = FS_RLF_Thinness
-for (factor in names(thinness)[1:54]){
-  sum = 0
-  for (i in 1:10){
-    for (j in 1:10){
-      index = which(COPY[[i]][[j]]$attributes == factor)
-      if (is.na(COPY[[i]][[j]]$importance[[index]])){
-        next
-      }else{
-        sum = sum + COPY[[i]][[j]]$importance[[index]]
-      }
-    }
-  }
-  AVG_FS_RLF[[factor, 2]] = sum/100
-}
-################################################################################
-COPY = FS_RLF_StuntingYoung
-for (factor in names(StuntingYoung)[1:54]){
-  sum = 0
-  for (i in 1:10){
-    for (j in 1:10){
-      index = which(COPY[[i]][[j]]$attributes == factor)
-      if (is.na(COPY[[i]][[j]]$importance[[index]])){
-        next
-      }else{
-        sum = sum + COPY[[i]][[j]]$importance[[index]]
-      }
-    }
-  }
-  AVG_FS_RLF[[factor, 3]] = sum/100
-}
-################################################################################
-COPY = FS_RLF_ThinnessYoung
-for (factor in names(thinnessYoung)[1:54]){
-  sum = 0
-  for (i in 1:10){
-    for (j in 1:10){
-      index = which(COPY[[i]][[j]]$attributes == factor)
-      if (is.na(COPY[[i]][[j]]$importance[[index]])){
-        next
-      }else{
-        sum = sum + COPY[[i]][[j]]$importance[[index]]
-      }
-    }
-  }
-  AVG_FS_RLF[[factor, 4]] = sum/100
-}
-################################################################################
-COPY = FS_RLF_WastingYoung
-for (factor in names(WastingYoung)[1:54]){
-  sum = 0
-  for (i in 1:10){
-    for (j in 1:10){
-      index = which(COPY[[i]][[j]]$attributes == factor)
-      if (is.na(COPY[[i]][[j]]$importance[[index]])){
-        next
-      }else{
-        sum = sum + COPY[[i]][[j]]$importance[[index]]
-      }
-    }
-  }
-  AVG_FS_RLF[[factor, 5]] = sum/100
-}
-write.csv(AVG_FS_RLF, "FS_RLF_Avg.csv")
-################################################################################
-```
+# ```{r ReliefF Computations}
+# #This one takes ~5 hours to run. Have fun waiting.
+# library(FSelectorRcpp)
+# 
+# ################################################################################
+# FS_RLF_Stunting = list()
+# for (i in 1:10){
+#   FS_RLF_Stunting[[i]] = list()
+#   for (j in 1:10){
+#     relF = relief(Stunting~.,
+#                 as.data.frame(UBStunting[[i]][[j]]),
+#                 neighboursCount = 5
+#                 )
+#     FS_RLF_Stunting[[i]][[j]] = relF[order(relF$importance), ]
+#   }
+# }
+# ################################################################################
+# FS_RLF_StuntingMale = list()
+# for (i in 1:10){
+#   FS_RLF_StuntingMale[[i]] = list()
+#   for (j in 1:10){
+#     relF = relief(Stunting~.,
+#                 as.data.frame(UBStuntingMale[[i]][[j]]),
+#                 neighboursCount = 5
+#                 )
+#     FS_RLF_StuntingMale[[i]][[j]] = relF[order(relF$importance), ]
+#   }
+# }
+# ################################################################################
+# FS_RLF_StuntingFemale = list()
+# for (i in 1:10){
+#   FS_RLF_StuntingFemale[[i]] = list()
+#   for (j in 1:10){
+#     relF = relief(Stunting~.,
+#                 as.data.frame(SMOTEStuntingFemale[[i]][[j]]$data),
+#                 neighboursCount = 5
+#                 )
+#     FS_RLF_StuntingFemale[[i]][[j]] = relF[order(relF$importance), ]
+#   }
+# }
+# ################################################################################
+# FS_RLF_StuntingUrban = list()
+# for (i in 1:10){
+#   FS_RLF_StuntingUrban[[i]] = list()
+#   for (j in 1:10){
+#     relF = relief(Stunting~.,
+#                 as.data.frame(UBStunting[[i]][[j]]),
+#                 neighboursCount = 5
+#                 )
+#     FS_RLF_StuntingUrban[[i]][[j]] = relF[order(relF$importance), ]
+#   }
+# }
+# ################################################################################
+# FS_RLF_StuntingNotUrban = list()
+# for (i in 1:10){
+#   FS_RLF_StuntingNotUrban[[i]] = list()
+#   for (j in 1:10){
+#     relF = relief(Stunting~.,
+#                 as.data.frame(UBStunting[[i]][[j]]),
+#                 neighboursCount = 5
+#                 )
+#     FS_RLF_StuntingNotUrban[[i]][[j]] = relF[order(relF$importance), ]
+#   }
+# }
+# ################################################################################
+# FS_RLF_Thinness = list()
+# for (i in 1:10){
+#   FS_RLF_Thinness[[i]] = list()
+#   for (j in 1:10){
+#     relF = relief(Thinness~.,
+#                 as.data.frame(SMOTEThinness[[i]][[j]]$data),
+#                 neighboursCount = 5
+#                 )
+#     FS_RLF_Thinness[[i]][[j]] = relF[order(relF$importance), ]
+#   }
+# }
+# ################################################################################
+# FS_RLF_ThinnessMale = list()
+# for (i in 1:10){
+#   FS_RLF_ThinnessMale[[i]] = list()
+#   for (j in 1:10){
+#     relF = relief(Thinness~.,
+#                 as.data.frame(SMOTEThinnessMale[[i]][[j]]$data),
+#                 neighboursCount = 5
+#                 )
+#     FS_RLF_ThinnessMale[[i]][[j]] = relF[order(relF$importance), ]
+#   }
+# }
+# ################################################################################
+# FS_RLF_ThinnessFemale = list()
+# for (i in 1:10){
+#   FS_RLF_ThinnessFemale[[i]] = list()
+#   for (j in 1:10){
+#     relF = relief(Thinness~.,
+#                 as.data.frame(SMOTEThinnessFemale[[i]][[j]]$data),
+#                 neighboursCount = 5
+#                 )
+#     FS_RLF_ThinnessFemale[[i]][[j]] = relF[order(relF$importance), ]
+#   }
+# }
+# ################################################################################
+# FS_RLF_ThinnessUrban = list()
+# for (i in 1:10){
+#   FS_RLF_ThinnessUrban[[i]] = list()
+#   for (j in 1:10){
+#     relF = relief(Thinness~.,
+#                 as.data.frame(SMOTEThinnessUrban[[i]][[j]]$data),
+#                 neighboursCount = 5
+#                 )
+#     FS_RLF_ThinnessUrban[[i]][[j]] = relF[order(relF$importance), ]
+#   }
+# }
+# ################################################################################
+# FS_RLF_ThinnessNotUrban = list()
+# for (i in 1:10){
+#   FS_RLF_ThinnessNotUrban[[i]] = list()
+#   for (j in 1:10){
+#     relF = relief(Thinness~.,
+#                 as.data.frame(SMOTEThinnessNotUrban[[i]][[j]]$data),
+#                 neighboursCount = 5
+#                 )
+#     FS_RLF_ThinnessNotUrban[[i]][[j]] = relF[order(relF$importance), ]
+#   }
+# }
+# ################################################################################
+# FS_RLF_Wasting = list()
+# for (i in 1:10){
+#   FS_RLF_Wasting[[i]] = list()
+#   for (j in 1:10){
+#     relF = relief(Wasting~.,
+#                 as.data.frame(SMOTEWasting[[i]][[j]]$data),
+#                 neighboursCount = 5
+#                 )
+#     FS_RLF_Wasting[[i]][[j]] = relF[order(relF$importance), ]
+#   }
+# }
+# ################################################################################
+# FS_RLF_WastingMale = list()
+# for (i in 1:10){
+#   FS_RLF_WastingMale[[i]] = list()
+#   for (j in 1:10){
+#     relF = relief(Wasting~.,
+#                 as.data.frame(SMOTEWastingMale[[i]][[j]]$data),
+#                 neighboursCount = 5
+#                 )
+#     FS_RLF_WastingMale[[i]][[j]] = relF[order(relF$importance), ]
+#   }
+# }
+# ################################################################################
+# FS_RLF_WastingFemale = list()
+# for (i in 1:10){
+#   FS_RLF_WastingFemale[[i]] = list()
+#   for (j in 1:10){
+#     relF = relief(Wasting~.,
+#                 as.data.frame(SMOTEWastingFemale[[i]][[j]]$data),
+#                 neighboursCount = 5
+#                 )
+#     FS_RLF_WastingFemale[[i]][[j]] = relF[order(relF$importance), ]
+#   }
+# }
+# ################################################################################
+# FS_RLF_WastingUrban = list()
+# for (i in 1:10){
+#   FS_RLF_WastingUrban[[i]] = list()
+#   for (j in 1:10){
+#     relF = relief(Wasting~.,
+#                 as.data.frame(SMOTEWastingUrban[[i]][[j]]$data),
+#                 neighboursCount = 5
+#                 )
+#     FS_RLF_WastingUrban[[i]][[j]] = relF[order(relF$importance), ]
+#   }
+# }
+# ################################################################################
+# FS_RLF_WastingNotUrban = list()
+# for (i in 1:10){
+#   FS_RLF_WastingNotUrban[[i]] = list()
+#   for (j in 1:10){
+#     relF = relief(Wasting~.,
+#                 as.data.frame(SMOTEWastingNotUrban[[i]][[j]]$data),
+#                 neighboursCount = 5
+#                 )
+#     FS_RLF_WastingNotUrban[[i]][[j]] = relF[order(relF$importance), ]
+#   }
+# }
+# ################################################################################
+# ```
+# 
+# 
+# 
+# ```{r ReliefF Results}
+# #Separated from computations so I don't have to wait an hour and a half to see if my new code can parse the results correctly
+# ################################################################################
+# FS_RLF = data.frame(Stunting = double(),
+#                      StuntingMale = double(),
+#                      StuntingFemale = double(),
+#                      StuntingUrban = double(),
+#                      StuntingNotUrban = double(),
+#                      
+#                      Thinness = double(),
+#                      ThinnessMale = double(),
+#                      ThinnessFemale = double(),
+#                      ThinnessUrban = double(),
+#                      ThinnessNotUrban = double(),
+#                      
+#                      Wasting = double(),
+#                      WastingMale = double(),
+#                      WastingFemale = double(), 
+#                      WastingUrban = double(), 
+#                      WastingNotUrban = double()
+#                      )
+# for (i in 1:40){
+#  FS_RLF[i,] = 0
+# }
+# row.names(FS_RLF) = names(stunting)[1:40]
+# ################################################################################
+# COPY = FS_RLF_Stunting
+# for (factor in names(stunting)[1:40]){
+#   sum = 0
+#   for (i in 1:10){
+#     for (j in 1:10){
+#       index = which(COPY[[i]][[j]]$attributes == factor)
+#       if (is.na(COPY[[i]][[j]]$importance[[index]])){
+#         next
+#       }else{
+#         sum = sum + COPY[[i]][[j]]$importance[[index]]
+#       }
+#     }
+#   }
+#   AVG_FS_RLF[[factor, 1]] = sum/100
+# }
+# ################################################################################
+# COPY = FS_RLF_Thinness
+# for (factor in names(thinness)[1:54]){
+#   sum = 0
+#   for (i in 1:10){
+#     for (j in 1:10){
+#       index = which(COPY[[i]][[j]]$attributes == factor)
+#       if (is.na(COPY[[i]][[j]]$importance[[index]])){
+#         next
+#       }else{
+#         sum = sum + COPY[[i]][[j]]$importance[[index]]
+#       }
+#     }
+#   }
+#   AVG_FS_RLF[[factor, 2]] = sum/100
+# }
+# ################################################################################
+# COPY = FS_RLF_StuntingYoung
+# for (factor in names(StuntingYoung)[1:54]){
+#   sum = 0
+#   for (i in 1:10){
+#     for (j in 1:10){
+#       index = which(COPY[[i]][[j]]$attributes == factor)
+#       if (is.na(COPY[[i]][[j]]$importance[[index]])){
+#         next
+#       }else{
+#         sum = sum + COPY[[i]][[j]]$importance[[index]]
+#       }
+#     }
+#   }
+#   AVG_FS_RLF[[factor, 3]] = sum/100
+# }
+# ################################################################################
+# COPY = FS_RLF_ThinnessYoung
+# for (factor in names(thinnessYoung)[1:54]){
+#   sum = 0
+#   for (i in 1:10){
+#     for (j in 1:10){
+#       index = which(COPY[[i]][[j]]$attributes == factor)
+#       if (is.na(COPY[[i]][[j]]$importance[[index]])){
+#         next
+#       }else{
+#         sum = sum + COPY[[i]][[j]]$importance[[index]]
+#       }
+#     }
+#   }
+#   AVG_FS_RLF[[factor, 4]] = sum/100
+# }
+# ################################################################################
+# COPY = FS_RLF_WastingYoung
+# for (factor in names(WastingYoung)[1:54]){
+#   sum = 0
+#   for (i in 1:10){
+#     for (j in 1:10){
+#       index = which(COPY[[i]][[j]]$attributes == factor)
+#       if (is.na(COPY[[i]][[j]]$importance[[index]])){
+#         next
+#       }else{
+#         sum = sum + COPY[[i]][[j]]$importance[[index]]
+#       }
+#     }
+#   }
+#   AVG_FS_RLF[[factor, 5]] = sum/100
+# }
+# write.csv(AVG_FS_RLF, "FS_RLF_Avg.csv")
+# ################################################################################
+# ```
 
 
 
@@ -4696,34 +4699,63 @@ library(randomForest)
 library(datasets)
 library(caret)
 
-RF_Accuracy = data.frame(Stunting = double(),
-                     StuntingMale = double(),
-                     StuntingFemale = double(),
-                     StuntingUrban = double(),
-                     StuntingNotUrban = double(),
-                     StuntingYouth = double(),
-                     StuntingAdolescent = double(),
-                     
-                     Thinness = double(),
-                     ThinnessMale = double(),
-                     ThinnessFemale = double(),
-                     ThinnessUrban = double(),
-                     ThinnessNotUrban = double(),
-                     ThinnessYouth = double(),
-                     ThinnessAdolescent = double(),
-                     
-                     Wasting = double(),
-                     WastingMale = double(),
-                     WastingFemale = double(), 
-                     WastingUrban = double(), 
-                     WastingNotUrban = double()
-                     )
+RF_Accuracy = data.frame(StuntingNone = double(),
+                         StuntingMVLoR = double(),
+                         StuntingIG = double(),
+                         StuntingMRMR = double(),
+                         StuntingJMI = double(),
+                         
+                         ThinnessNone = double(),
+                         ThinnessMVLoR = double(),
+                         ThinnessIG = double(),
+                         ThinnessMRMR = double(),
+                         ThinnessJMI = double(),
+                         
+                         WastingNone = double(),
+                         WastingMVLoR = double(),
+                         WastingIG = double(),
+                         WastingMRMR = double(),
+                         WastingJMI = double()
+                         )
 RF_F1 = RF_Accuracy
 
-# control = trainControl(method = "cv",
-#                        number = 100,
-#                        repeats = 100,
-#                        search = "grid")
+control = trainControl(method = "repeatedcv", 
+                       number = 100,
+                       repeats = 100, 
+                       search = 'grid')
+
+control.F1 = trainControl(method = "repeatedcv", 
+                          number = 100,
+                          repeats = 100, 
+                          search = 'grid', 
+                          summaryFunction = prSummary,
+                          savePredictions = TRUE)
+
+tune.grid = expand.grid(.mtry = (1:3))
+################################################################################
+# RF = train(paste0(dep,"~."),
+#       data = train,
+#       method = "rf",
+#       trControl = control.F1,
+#       tuneGrid = tune.grid,
+#       metric = 'F'
+#       )
+#   print(RF$bestTune)
+#   RFPred = predict(as.list(RF), as.data.frame(test))
+#   assign(paste0('cm_',i),
+#          confusionMatrix(RFPred,
+#                          as.factor(test),
+#                          mode = 'everything')
+#          )
+
+# avg_accNoFS = (cm_1$overall[1] + cm_2$overall[1] + cm_3$overall[1] + cm_4$overall[1] + cm_5$overall[1])/5
+# avg_accNoFS
+# 
+# avg_F1NoFS = (cm_1$byClass[7] + cm_2$byClass[7] + cm_3$byClass[7] + cm_4$byClass[7] + cm_5$byClass[7])/5
+# avg_F1NoFS
+
+
+
 
 for (i in 1:3){
   if (i == 1){
@@ -4734,18 +4766,47 @@ for (i in 1:3){
     dep = "Wasting"
   }
   for (j in 1:5){
+    if (is.na(TRAINING[i][j])){
+          next
+    }
     for (k in 1:10){
       for (l in 1:10){
         test = TEST[[i]][[k]]
         test[,ncol(test)] = as.factor(as.character(test[,ncol(test)]))
         train = TRAINING[[i]][[j]][[k]][[l]]
         train[,ncol(train)] = as.factor(as.character(train[,ncol(train)]))
-        RFTrain = randomForest::randomForest(paste0(dep),"~",".",
-                                             data = train,
-                                             proximity = TRUE,
-                                             xtest = test,
-                                             ytest = test[,ncol(test)]
-                                             )
+        RF = train(as.formula(paste0(dep,"~.")),
+                   data = train,
+                   method = "rf",
+                   trControl = control.F1,
+                   tuneGrid = tune.grid,
+                   metric = 'F'
+                   )
+        print(RF$bestTune)
+        RFPred = predict(as.list(RF), as.data.frame(test))
+        assign(paste0('cm_',i),
+               confusionMatrix(RFPred,
+                               as.factor(test),
+                               mode = 'everything'
+                               )
+               )
+        
+        # 
+        # test = TEST[[i]][[k]]
+        # test[,ncol(test)] = as.factor(as.character(test[,ncol(test)]))
+        # train = TRAINING[[i]][[j]][[k]][[l]]
+        # train[,ncol(train)] = as.factor(as.character(train[,ncol(train)]))
+        # RFTrain = train(paste0(dep,"~."),
+        #                 data = train,
+        #                 method = "rf",
+        #                 tuneGrid = tune.Grid
+        #                 )
+        # RFTrain = randomForest::randomForest(paste0(dep,"~."),
+        #                                      data = train,
+        #                                      proximity = TRUE,
+        #                                      xtest = test,
+        #                                      ytest = test[,ncol(test)]
+        #                                      )
         #RFTrain$test$confusion
       }
     }
@@ -4775,7 +4836,16 @@ library(xgboost)
 library(caret)
 library(tidyverse)
 
-
+XGB = train(data = train,
+            max.depth = 2,
+            eta = 1,
+            nthread = 2,
+            nrounds = 2,
+            objective = "binary:logistic",
+            verbose = 0
+            )
+XGBPred = predict(XGB, test)
+XGBPred = as.numeric(XGBPred > 0.5)
 ```
 
 
@@ -4891,312 +4961,312 @@ write.csv(cbind(
 #####
 # ASSOCIATION RULE LEARNING:
 #####
-```{r ARL Data Preparation, warning = FALSE}
-#Preparing SMOTE-balancing of entire datasets for use in association rule learning. Datasets previously balanced with SMOTE were only training data for use in Feature Selection, and thus were subsets of ~81% of the original data. Ours will use the remaining 19% for ARL.
-#I.e. The SMOTE balancing we did before didn't include everything, but we want everything for ARL. So now we have to make new balanced datasets with everything in them.
-
-ARL_Stunting_Older = SMOTE(X = stunting,
-                     target = stunting$Stunting,
-                     K = 5,
-                     dup_size = 2
-                     )
-ARL_Stunting_Older = ARL_Stunting_Older$data
-barplot(prop.table(table(ARL_Stunting_Older$Stunting)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Stunting",
-        names = c("No", "Yes"),
-        main = 'ARL_Stunting_Older SMOTE-Balanced Dataset Class Distribution'
-        )
-abline(h = 0)
-################################################################################
-ARL_Thinness_Older = SMOTE(X = thinness,
-                     target = thinness$Thinness,
-                     K = 5,
-                     dup_size = 22
-                     )
-ARL_Thinness_Older = ARL_Thinness_Older$data
-barplot(prop.table(table(ARL_Thinness_Older$Thinness)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Stunting",
-        names = c("No", "Yes"),
-        main = 'ARL_Thinness_Older SMOTE-Balanced Dataset Class Distribution'
-        )
-abline(h = 0)
-################################################################################
-ARL_Stunting_Young = SMOTE(X = StuntingYoung,
-                     target = StuntingYoung$Stunting,
-                     K = 5,
-                     dup_size = 3
-                     )
-ARL_Stunting_Young = ARL_Stunting_Young$data
-barplot(prop.table(table(ARL_Stunting_Young$Stunting)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Stunting",
-        names = c("No", "Yes"),
-        main = 'ARL_Stunting_Young SMOTE-Balanced Dataset Class Distribution'
-        )
-abline(h = 0)
-################################################################################
-ARL_Thinness_Young = SMOTE(X = thinnessYoung,
-                     target = thinnessYoung$Thinness,
-                     K = 5,
-                     dup_size = 30
-                     )
-ARL_Thinness_Young = ARL_Thinness_Young$data
-barplot(prop.table(table(ARL_Thinness_Young$Thinness)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Stunting",
-        names = c("No", "Yes"),
-        main = 'ARL_Thinness_Young SMOTE-Balanced Dataset Class Distribution'
-        )
-abline(h = 0)
-################################################################################
-ARL_Wasting_Young = SMOTE(X = WastingYoung,
-                     target = WastingYoung$Wasting,
-                     K = 5,
-                     dup_size = 9
-                     )
-ARL_Wasting_Young = ARL_Wasting_Young$data
-barplot(prop.table(table(ARL_Wasting_Young$Wasting)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Stunting",
-        names = c("No", "Yes"),
-        main = 'ARL_Wasting_Young SMOTE-Balanced Dataset Class Distribution'
-        )
-abline(h = 0)
-################################################################################
-ARL_Stunting_Male = subset(StuntingFull, Sex == 0)
-ARL_Stunting_Male = SMOTE(X = ARL_Stunting_Male,
-                     target = ARL_Stunting_Male$Stunting,
-                     K = 5,
-                     dup_size = 2
-                     )
-ARL_Stunting_Male = ARL_Stunting_Male$data
-barplot(prop.table(table(ARL_Stunting_Male$Stunting)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Stunting",
-        names = c("No", "Yes"),
-        main = 'ARL_Stunting_Male SMOTE-Balanced Dataset Class Distribution'
-        )
-abline(h = 0)
-################################################################################
-ARL_Stunting_Female = subset(StuntingFull, Sex == 1)
-ARL_Stunting_Female = SMOTE(X = ARL_Stunting_Female,
-                     target = ARL_Stunting_Female$Stunting,
-                     K = 5,
-                     dup_size = 3
-                     )
-ARL_Stunting_Female = ARL_Stunting_Female$data
-barplot(prop.table(table(ARL_Stunting_Female$Stunting)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Stunting",
-        names = c("No", "Yes"),
-        main = 'ARL_Stunting_Female SMOTE-Balanced Dataset Class Distribution'
-        )
-abline(h = 0)
-################################################################################
-ARL_Thinness_Male = subset(ThinnessFull, Sex == 0)
-ARL_Thinness_Male = SMOTE(X = ARL_Thinness_Male,
-                     target = ARL_Thinness_Male$Thinness,
-                     K = 5,
-                     dup_size = 27
-                     )
-ARL_Thinness_Male = ARL_Thinness_Male$data
-barplot(prop.table(table(ARL_Thinness_Male$Thinness)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Thinness",
-        names = c("No", "Yes"),
-        main = 'ARL_Thinness_Male SMOTE-Balanced Dataset Class Distribution'
-        )
-abline(h = 0)
-################################################################################
-ARL_Thinness_Female = subset(ThinnessFull, Sex == 1)
-ARL_Thinness_Female = SMOTE(X = ARL_Thinness_Female,
-                     target = ARL_Thinness_Female$Thinness,
-                     K = 5,
-                     dup_size = 25
-                     )
-ARL_Thinness_Female = ARL_Thinness_Female$data
-barplot(prop.table(table(ARL_Thinness_Female$Thinness)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Thinness",
-        names = c("No", "Yes"),
-        main = 'ARL_Thinness_Female SMOTE-Balanced Dataset Class Distribution'
-        )
-abline(h = 0)
-################################################################################
-ARL_Wasting_Male = subset(WastingFull, Sex == 0)
-ARL_Wasting_Male = SMOTE(X = ARL_Wasting_Male,
-                     target = ARL_Wasting_Male$Wasting,
-                     K = 5,
-                     dup_size = 7
-                     )
-ARL_Wasting_Male = ARL_Wasting_Male$data
-barplot(prop.table(table(ARL_Wasting_Male$Wasting)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Wasting",
-        names = c("No", "Yes"),
-        main = 'ARL_Wasting_Male SMOTE-Balanced Dataset Class Distribution'
-        )
-abline(h = 0)
-################################################################################
-ARL_Wasting_Female = subset(WastingFull, Sex == 1)
-ARL_Wasting_Female = SMOTE(X = ARL_Wasting_Female,
-                     target = ARL_Wasting_Female$Wasting,
-                     K = 5,
-                     dup_size = 11
-                     )
-ARL_Wasting_Female = ARL_Wasting_Female$data
-barplot(prop.table(table(ARL_Wasting_Female$Wasting)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Wasting",
-        names = c("No", "Yes"),
-        main = 'ARL_Wasting_Female SMOTE-Balanced Dataset Class Distribution'
-        )
-abline(h = 0)
-################################################################################
-ARL_Stunting_NotUrban = subset(StuntingFull, Suburban == 1 | Rural == 1)
-ARL_Stunting_NotUrban = SMOTE(X = ARL_Stunting_NotUrban,
-                     target = ARL_Stunting_NotUrban$Stunting,
-                     K = 5,
-                     dup_size = 2
-                     )
-ARL_Stunting_NotUrban = ARL_Stunting_NotUrban$data
-barplot(prop.table(table(ARL_Stunting_NotUrban$Stunting)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Wasting",
-        names = c("No", "Yes"),
-        main = 'ARL_Stunting_NotUrban SMOTE-Balanced Dataset Class Distribution'
-        )
-abline(h = 0)
-################################################################################
-ARL_Stunting_Urban = subset(StuntingFull, Rural == 0 & Suburban == 0)
-ARL_Stunting_Urban = SMOTE(X = ARL_Stunting_Urban,
-                     target = ARL_Stunting_Urban$Stunting,
-                     K = 5,
-                     dup_size = 2
-                     )
-ARL_Stunting_Urban = ARL_Stunting_Urban$data
-barplot(prop.table(table(ARL_Stunting_Urban$Stunting)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Wasting",
-        names = c("No", "Yes"),
-        main = 'ARL_Stunting_Urban SMOTE-Balanced Dataset Class Distribution'
-        )
-abline(h = 0)
-################################################################################
-ARL_Thinness_NotUrban = subset(ThinnessFull, Suburban == 1 | Rural == 1)
-ARL_Thinness_NotUrban = SMOTE(X = ARL_Thinness_NotUrban,
-                     target = ARL_Thinness_NotUrban$Thinness,
-                     K = 5,
-                     dup_size = 33
-                     )
-ARL_Thinness_NotUrban = ARL_Thinness_NotUrban$data
-barplot(prop.table(table(ARL_Thinness_NotUrban$Thinness)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Wasting",
-        names = c("No", "Yes"),
-        main = 'ARL_Thinness_NotUrban SMOTE-Balanced Dataset Class Distribution'
-        )
-abline(h = 0)
-################################################################################
-ARL_Thinness_Urban = subset(ThinnessFull, Rural == 0 & Suburban == 0)
-ARL_Thinness_Urban = SMOTE(X = ARL_Thinness_Urban,
-                     target = ARL_Thinness_Urban$Thinness,
-                     K = 5,
-                     dup_size = 25
-                     )
-ARL_Thinness_Urban = ARL_Thinness_Urban$data
-barplot(prop.table(table(ARL_Thinness_Urban$Thinness)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Wasting",
-        names = c("No", "Yes"),
-        main = 'ARL_Thinness_Urban SMOTE-Balanced Dataset Class Distribution'
-        )
-abline(h = 0)
-################################################################################
-ARL_Wasting_NotUrban = subset(WastingFull, Suburban == 1 | Rural == 1)
-ARL_Wasting_NotUrban = SMOTE(X = ARL_Wasting_NotUrban,
-                     target = ARL_Wasting_NotUrban$Wasting,
-                     K = 5,
-                     dup_size = 9
-                     )
-ARL_Wasting_NotUrban = ARL_Wasting_NotUrban$data
-barplot(prop.table(table(ARL_Wasting_NotUrban$Wasting)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Wasting",
-        names = c("No", "Yes"),
-        main = 'ARL_Wasting_NotUrban SMOTE-Balanced Dataset Class Distribution'
-        )
-abline(h = 0)
-################################################################################
-ARL_Wasting_Urban = subset(WastingFull, Rural == 0 & Suburban == 0)
-ARL_Wasting_Urban = SMOTE(X = ARL_Wasting_Urban,
-                     target = ARL_Wasting_Urban$Wasting,
-                     K = 5,
-                     dup_size = 9
-                     )
-ARL_Wasting_Urban = ARL_Wasting_Urban$data
-barplot(prop.table(table(ARL_Wasting_Urban$Wasting)),
-        col = c("white", "darkgrey"),
-        ylim = c(0, 1),
-        xlim = c(0, 3),
-        ylab = "Prevalence (%)",
-        xlab = "Wasting",
-        names = c("No", "Yes"),
-        main = 'ARL_Wasting_Urban SMOTE-Balanced Dataset Class Distribution'
-        )
-abline(h = 0)
-################################################################################
-```
+# ```{r ARL Data Preparation, warning = FALSE}
+# #Preparing SMOTE-balancing of entire datasets for use in association rule learning. Datasets previously balanced with SMOTE were only training data for use in Feature Selection, and thus were subsets of ~81% of the original data. Ours will use the remaining 19% for ARL.
+# #I.e. The SMOTE balancing we did before didn't include everything, but we want everything for ARL. So now we have to make new balanced datasets with everything in them.
+# 
+# ARL_Stunting_Older = SMOTE(X = stunting,
+#                      target = stunting$Stunting,
+#                      K = 5,
+#                      dup_size = 2
+#                      )
+# ARL_Stunting_Older = ARL_Stunting_Older$data
+# barplot(prop.table(table(ARL_Stunting_Older$Stunting)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Stunting",
+#         names = c("No", "Yes"),
+#         main = 'ARL_Stunting_Older SMOTE-Balanced Dataset Class Distribution'
+#         )
+# abline(h = 0)
+# ################################################################################
+# ARL_Thinness_Older = SMOTE(X = thinness,
+#                      target = thinness$Thinness,
+#                      K = 5,
+#                      dup_size = 22
+#                      )
+# ARL_Thinness_Older = ARL_Thinness_Older$data
+# barplot(prop.table(table(ARL_Thinness_Older$Thinness)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Stunting",
+#         names = c("No", "Yes"),
+#         main = 'ARL_Thinness_Older SMOTE-Balanced Dataset Class Distribution'
+#         )
+# abline(h = 0)
+# ################################################################################
+# ARL_Stunting_Young = SMOTE(X = StuntingYoung,
+#                      target = StuntingYoung$Stunting,
+#                      K = 5,
+#                      dup_size = 3
+#                      )
+# ARL_Stunting_Young = ARL_Stunting_Young$data
+# barplot(prop.table(table(ARL_Stunting_Young$Stunting)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Stunting",
+#         names = c("No", "Yes"),
+#         main = 'ARL_Stunting_Young SMOTE-Balanced Dataset Class Distribution'
+#         )
+# abline(h = 0)
+# ################################################################################
+# ARL_Thinness_Young = SMOTE(X = thinnessYoung,
+#                      target = thinnessYoung$Thinness,
+#                      K = 5,
+#                      dup_size = 30
+#                      )
+# ARL_Thinness_Young = ARL_Thinness_Young$data
+# barplot(prop.table(table(ARL_Thinness_Young$Thinness)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Stunting",
+#         names = c("No", "Yes"),
+#         main = 'ARL_Thinness_Young SMOTE-Balanced Dataset Class Distribution'
+#         )
+# abline(h = 0)
+# ################################################################################
+# ARL_Wasting_Young = SMOTE(X = WastingYoung,
+#                      target = WastingYoung$Wasting,
+#                      K = 5,
+#                      dup_size = 9
+#                      )
+# ARL_Wasting_Young = ARL_Wasting_Young$data
+# barplot(prop.table(table(ARL_Wasting_Young$Wasting)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Stunting",
+#         names = c("No", "Yes"),
+#         main = 'ARL_Wasting_Young SMOTE-Balanced Dataset Class Distribution'
+#         )
+# abline(h = 0)
+# ################################################################################
+# ARL_Stunting_Male = subset(StuntingFull, Sex == 0)
+# ARL_Stunting_Male = SMOTE(X = ARL_Stunting_Male,
+#                      target = ARL_Stunting_Male$Stunting,
+#                      K = 5,
+#                      dup_size = 2
+#                      )
+# ARL_Stunting_Male = ARL_Stunting_Male$data
+# barplot(prop.table(table(ARL_Stunting_Male$Stunting)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Stunting",
+#         names = c("No", "Yes"),
+#         main = 'ARL_Stunting_Male SMOTE-Balanced Dataset Class Distribution'
+#         )
+# abline(h = 0)
+# ################################################################################
+# ARL_Stunting_Female = subset(StuntingFull, Sex == 1)
+# ARL_Stunting_Female = SMOTE(X = ARL_Stunting_Female,
+#                      target = ARL_Stunting_Female$Stunting,
+#                      K = 5,
+#                      dup_size = 3
+#                      )
+# ARL_Stunting_Female = ARL_Stunting_Female$data
+# barplot(prop.table(table(ARL_Stunting_Female$Stunting)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Stunting",
+#         names = c("No", "Yes"),
+#         main = 'ARL_Stunting_Female SMOTE-Balanced Dataset Class Distribution'
+#         )
+# abline(h = 0)
+# ################################################################################
+# ARL_Thinness_Male = subset(ThinnessFull, Sex == 0)
+# ARL_Thinness_Male = SMOTE(X = ARL_Thinness_Male,
+#                      target = ARL_Thinness_Male$Thinness,
+#                      K = 5,
+#                      dup_size = 27
+#                      )
+# ARL_Thinness_Male = ARL_Thinness_Male$data
+# barplot(prop.table(table(ARL_Thinness_Male$Thinness)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Thinness",
+#         names = c("No", "Yes"),
+#         main = 'ARL_Thinness_Male SMOTE-Balanced Dataset Class Distribution'
+#         )
+# abline(h = 0)
+# ################################################################################
+# ARL_Thinness_Female = subset(ThinnessFull, Sex == 1)
+# ARL_Thinness_Female = SMOTE(X = ARL_Thinness_Female,
+#                      target = ARL_Thinness_Female$Thinness,
+#                      K = 5,
+#                      dup_size = 25
+#                      )
+# ARL_Thinness_Female = ARL_Thinness_Female$data
+# barplot(prop.table(table(ARL_Thinness_Female$Thinness)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Thinness",
+#         names = c("No", "Yes"),
+#         main = 'ARL_Thinness_Female SMOTE-Balanced Dataset Class Distribution'
+#         )
+# abline(h = 0)
+# ################################################################################
+# ARL_Wasting_Male = subset(WastingFull, Sex == 0)
+# ARL_Wasting_Male = SMOTE(X = ARL_Wasting_Male,
+#                      target = ARL_Wasting_Male$Wasting,
+#                      K = 5,
+#                      dup_size = 7
+#                      )
+# ARL_Wasting_Male = ARL_Wasting_Male$data
+# barplot(prop.table(table(ARL_Wasting_Male$Wasting)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Wasting",
+#         names = c("No", "Yes"),
+#         main = 'ARL_Wasting_Male SMOTE-Balanced Dataset Class Distribution'
+#         )
+# abline(h = 0)
+# ################################################################################
+# ARL_Wasting_Female = subset(WastingFull, Sex == 1)
+# ARL_Wasting_Female = SMOTE(X = ARL_Wasting_Female,
+#                      target = ARL_Wasting_Female$Wasting,
+#                      K = 5,
+#                      dup_size = 11
+#                      )
+# ARL_Wasting_Female = ARL_Wasting_Female$data
+# barplot(prop.table(table(ARL_Wasting_Female$Wasting)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Wasting",
+#         names = c("No", "Yes"),
+#         main = 'ARL_Wasting_Female SMOTE-Balanced Dataset Class Distribution'
+#         )
+# abline(h = 0)
+# ################################################################################
+# ARL_Stunting_NotUrban = subset(StuntingFull, Suburban == 1 | Rural == 1)
+# ARL_Stunting_NotUrban = SMOTE(X = ARL_Stunting_NotUrban,
+#                      target = ARL_Stunting_NotUrban$Stunting,
+#                      K = 5,
+#                      dup_size = 2
+#                      )
+# ARL_Stunting_NotUrban = ARL_Stunting_NotUrban$data
+# barplot(prop.table(table(ARL_Stunting_NotUrban$Stunting)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Wasting",
+#         names = c("No", "Yes"),
+#         main = 'ARL_Stunting_NotUrban SMOTE-Balanced Dataset Class Distribution'
+#         )
+# abline(h = 0)
+# ################################################################################
+# ARL_Stunting_Urban = subset(StuntingFull, Rural == 0 & Suburban == 0)
+# ARL_Stunting_Urban = SMOTE(X = ARL_Stunting_Urban,
+#                      target = ARL_Stunting_Urban$Stunting,
+#                      K = 5,
+#                      dup_size = 2
+#                      )
+# ARL_Stunting_Urban = ARL_Stunting_Urban$data
+# barplot(prop.table(table(ARL_Stunting_Urban$Stunting)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Wasting",
+#         names = c("No", "Yes"),
+#         main = 'ARL_Stunting_Urban SMOTE-Balanced Dataset Class Distribution'
+#         )
+# abline(h = 0)
+# ################################################################################
+# ARL_Thinness_NotUrban = subset(ThinnessFull, Suburban == 1 | Rural == 1)
+# ARL_Thinness_NotUrban = SMOTE(X = ARL_Thinness_NotUrban,
+#                      target = ARL_Thinness_NotUrban$Thinness,
+#                      K = 5,
+#                      dup_size = 33
+#                      )
+# ARL_Thinness_NotUrban = ARL_Thinness_NotUrban$data
+# barplot(prop.table(table(ARL_Thinness_NotUrban$Thinness)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Wasting",
+#         names = c("No", "Yes"),
+#         main = 'ARL_Thinness_NotUrban SMOTE-Balanced Dataset Class Distribution'
+#         )
+# abline(h = 0)
+# ################################################################################
+# ARL_Thinness_Urban = subset(ThinnessFull, Rural == 0 & Suburban == 0)
+# ARL_Thinness_Urban = SMOTE(X = ARL_Thinness_Urban,
+#                      target = ARL_Thinness_Urban$Thinness,
+#                      K = 5,
+#                      dup_size = 25
+#                      )
+# ARL_Thinness_Urban = ARL_Thinness_Urban$data
+# barplot(prop.table(table(ARL_Thinness_Urban$Thinness)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Wasting",
+#         names = c("No", "Yes"),
+#         main = 'ARL_Thinness_Urban SMOTE-Balanced Dataset Class Distribution'
+#         )
+# abline(h = 0)
+# ################################################################################
+# ARL_Wasting_NotUrban = subset(WastingFull, Suburban == 1 | Rural == 1)
+# ARL_Wasting_NotUrban = SMOTE(X = ARL_Wasting_NotUrban,
+#                      target = ARL_Wasting_NotUrban$Wasting,
+#                      K = 5,
+#                      dup_size = 9
+#                      )
+# ARL_Wasting_NotUrban = ARL_Wasting_NotUrban$data
+# barplot(prop.table(table(ARL_Wasting_NotUrban$Wasting)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Wasting",
+#         names = c("No", "Yes"),
+#         main = 'ARL_Wasting_NotUrban SMOTE-Balanced Dataset Class Distribution'
+#         )
+# abline(h = 0)
+# ################################################################################
+# ARL_Wasting_Urban = subset(WastingFull, Rural == 0 & Suburban == 0)
+# ARL_Wasting_Urban = SMOTE(X = ARL_Wasting_Urban,
+#                      target = ARL_Wasting_Urban$Wasting,
+#                      K = 5,
+#                      dup_size = 9
+#                      )
+# ARL_Wasting_Urban = ARL_Wasting_Urban$data
+# barplot(prop.table(table(ARL_Wasting_Urban$Wasting)),
+#         col = c("white", "darkgrey"),
+#         ylim = c(0, 1),
+#         xlim = c(0, 3),
+#         ylab = "Prevalence (%)",
+#         xlab = "Wasting",
+#         names = c("No", "Yes"),
+#         main = 'ARL_Wasting_Urban SMOTE-Balanced Dataset Class Distribution'
+#         )
+# abline(h = 0)
+# ################################################################################
+# ```
 
 
 
@@ -5226,9 +5296,9 @@ ruleSet[nrow(ruleSet)+1, 1] = "FEMALE:"
 female = subset(data, Sex == TRUE)
 female = female[,-2]
 rules = apriori(female, 
-                parameter = list(support = 0.020,
-                                 confidence = 0.42,
-                                 maxlen = 7,
+                parameter = list(support = 0.01,
+                                 confidence = 0.4,
+                                 maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
@@ -5241,9 +5311,9 @@ ruleSet[nrow(ruleSet)+1, 1] = "MALE:"
 male = subset(data, Sex == FALSE)
 male = male[,-2]
 rules = apriori(male, 
-                parameter = list(support = 0.02,
-                                 confidence = 0.78,
-                                 maxlen = 10,
+                parameter = list(support = 0.01,
+                                 confidence = 0.62,
+                                 maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
@@ -5255,9 +5325,9 @@ ruleSet[nrow(ruleSet)+1, 1] = "NOTURBAN:"
 rural = subset(data, Urban == FALSE)
 rural = rural[,-c(6)]
 rules = apriori(rural,
-                parameter = list(support = 0.04,
-                                 confidence = 0.6,
-                                 maxlen = 9,
+                parameter = list(support = 0.02,
+                                 confidence = 0.46,
+                                 maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
@@ -5269,9 +5339,9 @@ ruleSet[nrow(ruleSet)+1, 1] = "URBAN:"
 urban = subset(data, Urban == TRUE)
 urban = urban[,-c(6)]
 rules = apriori(urban, 
-                parameter = list(support = 0.02,
-                                 confidence = 0.45,
-                                 maxlen = 10,
+                parameter = list(support = 0.01,
+                                 confidence = 0.42,
+                                 maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
@@ -5281,9 +5351,9 @@ ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ################################################################################
 ruleSet[nrow(ruleSet)+1, 1] = "STUNTING OVERALL:"
 rules = apriori(data.frame(lapply(stunting, as.logical)), 
-                parameter = list(support = 0.02,
-                                 confidence = 0.42,
-                                 maxlen = 10,
+                parameter = list(support = 0.01,
+                                 confidence = 0.39,
+                                 maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
@@ -5294,9 +5364,9 @@ ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ruleSet[nrow(ruleSet)+1, 1] = "STUNTINGYOUNG OVERALL:"
 
 rules = apriori(data.frame(lapply(subset(stunting, (Age < 11)), as.logical)), 
-                parameter = list(support = 0.031,
-                                 confidence = 0.43,
-                                 maxlen = 10,
+                parameter = list(support = 0.01,
+                                 confidence = 0.54,
+                                 maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
@@ -5307,9 +5377,9 @@ ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ruleSet[nrow(ruleSet)+1, 1] = "STUNTINGADOLESCENT OVERALL:"
 
 rules = apriori(data.frame(lapply(subset(stunting, (Age > 10)), as.logical)), 
-                parameter = list(support = 0.035,
-                                 confidence = 0.59,
-                                 maxlen = 10,
+                parameter = list(support = 0.01,
+                                 confidence = 0.6,
+                                 maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
@@ -5331,9 +5401,9 @@ ruleSet[nrow(ruleSet)+1, 1] = "FEMALE:"
 female = subset(data, Sex == TRUE)
 female = female[,-2]
 rules = apriori(female, 
-                parameter = list(support = 0.005,
-                                 confidence = 0.33,
-                                 maxlen = 9,
+                parameter = list(support = 0.002,
+                                 confidence = 0.3,
+                                 maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
@@ -5346,9 +5416,9 @@ ruleSet[nrow(ruleSet)+1, 1] = "MALE:"
 male = subset(data, Sex == FALSE)
 male = male[,-2]
 rules = apriori(male, 
-                parameter = list(support = 0.005,
-                                 confidence = 0.6,
-                                 maxlen = 8,
+                parameter = list(support = 0.002,
+                                 confidence = 0.3,
+                                 maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
@@ -5361,8 +5431,8 @@ rural = subset(data, Urban == FALSE)
 rural = rural[,-c(6)]
 rules = apriori(rural,
                 parameter = list(support = 0.005,
-                                 confidence = 0.66,
-                                 maxlen = 7,
+                                 confidence = 0.25,
+                                 maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
@@ -5375,8 +5445,8 @@ urban = subset(data, Urban == TRUE)
 urban = urban[,-c(6)]
 rules = apriori(urban, 
                 parameter = list(support = 0.002,
-                                 confidence = 1,
-                                 maxlen = 6,
+                                 confidence = 0.25,
+                                 maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
@@ -5386,9 +5456,9 @@ ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ################################################################################
 ruleSet[nrow(ruleSet)+1, 1] = "Thinness OVERALL:"
 rules = apriori(data.frame(lapply(thinness, as.logical)), 
-                parameter = list(support = 0.002,
-                                 confidence = 0.6,
-                                 maxlen = 10,
+                parameter = list(support = 0.001,
+                                 confidence = 0.2,
+                                 maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
@@ -5400,8 +5470,8 @@ ruleSet[nrow(ruleSet)+1, 1] = "ThinnessYOUNG OVERALL:"
 
 rules = apriori(data.frame(lapply(subset(thinness, (Age < 11)), as.logical)), 
                 parameter = list(support = 0.002,
-                                 confidence = 1,
-                                 maxlen = 7,
+                                 confidence = 0.25,
+                                 maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
@@ -5412,9 +5482,9 @@ ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ruleSet[nrow(ruleSet)+1, 1] = "thinnessADOLESCENT OVERALL:"
 
 rules = apriori(data.frame(lapply(subset(thinness, (Age > 10)), as.logical)), 
-                parameter = list(support = 0.004,
-                                 confidence = 0.66,
-                                 maxlen = 7,
+                parameter = list(support = 0.003,
+                                 confidence = 0.2,
+                                 maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
@@ -5440,8 +5510,8 @@ female = subset(data, Sex == TRUE)
 female = female[,-2]
 rules = apriori(female, 
                 parameter = list(support = 0.01,
-                                 confidence = 0.66,
-                                 maxlen = 10,
+                                 confidence = 0.25,
+                                 maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
                                   )
@@ -5455,8 +5525,8 @@ male = subset(data, Sex == FALSE)
 male = male[,-2]
 rules = apriori(male, 
                 parameter = list(support = 0.01,
-                                 confidence = 0.7,
-                                 maxlen = 7,
+                                 confidence = 0.35,
+                                 maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
                                   )
@@ -5468,9 +5538,9 @@ ruleSet[nrow(ruleSet)+1, 1] = "NOTURBAN:"
 rural = subset(data, Urban == FALSE)
 rural = rural[,-c(6)]
 rules = apriori(rural,
-                parameter = list(support = 0.03,
-                                 confidence = 0.6,
-                                 maxlen = 8,
+                parameter = list(support = 0.01,
+                                 confidence = 0.4,
+                                 maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
                                   )
@@ -5482,9 +5552,9 @@ ruleSet[nrow(ruleSet)+1, 1] = "URBAN:"
 urban = subset(data, Urban == TRUE)
 urban = urban[,-c(6)]
 rules = apriori(urban, 
-                parameter = list(support = 0.008,
-                                 confidence = 0.6,
-                                 maxlen = 9,
+                parameter = list(support = 0.005,
+                                 confidence = 0.23,
+                                 maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
                                   )
@@ -5495,8 +5565,8 @@ ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ruleSet[nrow(ruleSet)+1, 1] = "Wasting OVERALL:"
 rules = apriori(data.frame(lapply(wasting, as.logical)), 
                 parameter = list(support = 0.005,
-                                 confidence = 0.75,
-                                 maxlen = 7,
+                                 confidence = 0.25,
+                                 maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
                                   )
