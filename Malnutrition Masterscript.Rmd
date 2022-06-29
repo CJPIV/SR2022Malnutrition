@@ -4906,18 +4906,22 @@ library(caret)
 library(tidyverse)
 
 # Esto se trata de usar XGBoost para regressión o classificación. Todavía tengo que implementar este algoritmo, pero supongo que yo sé los fundamentales.
-
+# Я тоже хочу сделать что-то о тех, что мы расговаривали. Наш модель ещё не работает достаточно хорошо за публикировации, и так мне надо эту сделать лучше.
 
 # Fitting XGBoost to the Training set
 classifier = xgboost(data = as.matrix(train[-41]), #elimina la que buscamos
                      label = train[,41], #consigue la última variable
-                     nrounds = 10
+                     nrounds = 15,
+                     gamma = 0, 
+                     eta = 0.7
                      )
 
 # Predicting the Test set results
 y_pred = predict(classifier, newdata = as.matrix(test[-41]))
 y_pred = 1*(y_pred >= 0.5)
 
+table(y_pred)
+table(test[,41])
 # Making the Confusion Matrix
 cm = table(test[, 41], y_pred)
 
@@ -4944,12 +4948,14 @@ XGB = function(training_set, test_set, x){
   
   classifier = xgboost(data = as.matrix(training[-x]), #Matrix of independent vars.
                        label = training[,x], #Location of dependent var
-                       nrounds = 10 
+                       nrounds = 15,
+                       gamma = 0,
+                       eta = 1
+                       
                        ) 
   y_pred = predict(classifier, newdata = as.matrix(test[-x])) #Predict by using classifier on newdata's independent vars.
   y_pred = 1*(y_pred >= 0.5) #Binarize. The logic equation turns continuous results into TRUE/FALSE, and the "1*" converts it to 1/0
   cm = table(test[,x], y_pred)
-  cm
   accuracy = (cm[1,1] + cm[2,2]) / (cm[1,1] + cm[2,2] + cm[1,2] + cm[2,1])
   return(accuracy)
 }
