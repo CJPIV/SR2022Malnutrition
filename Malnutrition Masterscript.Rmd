@@ -4820,12 +4820,81 @@ for (i in 1:3){
 ```{r Support Vector Machine}
 set.seed(13)
 library(e1071)
- 
-classifier = svm(formula = Stunting~.,
+library(Matrix)
+
+#Create varying sets of possible hyperparameters
+#Run SVM with training+validation sets using each setting for hyperparameters
+#   - But how do I actually do this part?
+#   - How do I run SVM with a validation set?
+#Test on test data
+#Keep the set with the best results (accuracy/F1 scores)
+
+# # Feature Scaling
+# training_set[-3] = scale(training_set[-3])
+# test_set[-3] = scale(test_set[-3])
+
+# Fitting SVM to the Training set
+# install.packages('e1071')
+
+for (i in 1:3){
+  if (i == 1){
+    dep = "Stunting"
+  }else if (i == 2){
+    dep = "Thinness"
+  }else{
+    dep = "Wasting"
+  }
+  for (j in 1:5){ #each of 5 FS methods
+    for (k in 1:10){ #x-coordinate of this training data
+      for (l in 1:10){ #y-coordinate of this training data
+        train = TRAINING[[i]][[j]][[k]][[l]]
+        test = TEST[[i]][[j]][[k]][[l]]
+      }
+    }
+  }
+}
+library(e1071)
+classifier = svm(formula = paste0(dep, "~."),
                  data = train,
                  type = 'C-classification',
                  kernel = 'linear')
-y = predict(classifier, test)
+
+# Predicting the Test set results
+y_pred = predict(classifier, newdata = test_set[-3])
+
+# Making the Confusion Matrix
+cm = table(test_set[, 3], y_pred)
+
+# Visualising the Training set results
+library(ElemStatLearn)
+set = training_set
+X1 = seq(min(set[, 1]) - 1, max(set[, 1]) + 1, by = 0.01)
+X2 = seq(min(set[, 2]) - 1, max(set[, 2]) + 1, by = 0.01)
+grid_set = expand.grid(X1, X2)
+colnames(grid_set) = c('Age', 'EstimatedSalary')
+y_grid = predict(classifier, newdata = grid_set)
+plot(set[, -3],
+     main = 'SVM (Training set)',
+     xlab = 'Age', ylab = 'Estimated Salary',
+     xlim = range(X1), ylim = range(X2))
+contour(X1, X2, matrix(as.numeric(y_grid), length(X1), length(X2)), add = TRUE)
+points(grid_set, pch = '.', col = ifelse(y_grid == 1, 'springgreen3', 'tomato'))
+points(set, pch = 21, bg = ifelse(set[, 3] == 1, 'green4', 'red3'))
+
+# Visualising the Test set results
+library(ElemStatLearn)
+set = test_set
+X1 = seq(min(set[, 1]) - 1, max(set[, 1]) + 1, by = 0.01)
+X2 = seq(min(set[, 2]) - 1, max(set[, 2]) + 1, by = 0.01)
+grid_set = expand.grid(X1, X2)
+colnames(grid_set) = c('Age', 'EstimatedSalary')
+y_grid = predict(classifier, newdata = grid_set)
+plot(set[, -3], main = 'SVM (Test set)',
+     xlab = 'Age', ylab = 'Estimated Salary',
+     xlim = range(X1), ylim = range(X2))
+contour(X1, X2, matrix(as.numeric(y_grid), length(X1), length(X2)), add = TRUE)
+points(grid_set, pch = '.', col = ifelse(y_grid == 1, 'springgreen3', 'tomato'))
+points(set, pch = 21, bg = ifelse(set[, 3] == 1, 'green4', 'red3'))
 ```
 
 
@@ -4836,16 +4905,56 @@ library(xgboost)
 library(caret)
 library(tidyverse)
 
-XGB = train(data = train,
-            max.depth = 2,
-            eta = 1,
-            nthread = 2,
-            nrounds = 2,
-            objective = "binary:logistic",
-            verbose = 0
-            )
-XGBPred = predict(XGB, test)
-XGBPred = as.numeric(XGBPred > 0.5)
+# Esto se trata de usar XGBoost para regressión o classificación. Todavía tengo que implementar este algoritmo, pero supongo que yo sé los fundamentales.
+
+
+# Fitting XGBoost to the Training set
+classifier = xgboost(data = as.matrix(train[-41]), #elimina la que buscamos
+                     label = train[,41], #consigue la última variable
+                     nrounds = 10
+                     )
+
+# Predicting the Test set results
+y_pred = predict(classifier, newdata = as.matrix(test[-41]))
+y_pred = 1*(y_pred >= 0.5)
+
+# Making the Confusion Matrix
+cm = table(test[, 41], y_pred)
+
+# Applying k-Fold Cross Validation
+# install.packages('caret')
+library(caret)
+#folds = createFolds(training_set$Exited, k = 10)
+#cv = lapply(folds, function(x) {
+#  training_fold = training_set[-x, ]
+#  test_fold = training_set[x, ]
+
+#   classifier = xgboost(data = as.matrix(training_fold[-11]), label = training_fold$Exited, nrounds = 10)
+#   y_pred = predict(classifier, newdata = as.matrix(test_fold[-11]))
+#   y_pred = (y_pred >= 0.5)
+#   cm = table(test_fold[, 11], y_pred)
+#   accuracy = (cm[1,1] + cm[2,2]) / (cm[1,1] + cm[2,2] + cm[1,2] + cm[2,1])
+# accuracy = mean(as.numeric(cv))
+
+
+XGB = function(training_set, test_set, x){
+  training = training_set[-x, ]
+  test = test_set[x, ]
+  factor = names(training)[x]
+  
+  classifier = xgboost(data = as.matrix(training[-x]), #Matrix of independent vars.
+                       label = training[,x], #Location of dependent var
+                       nrounds = 10 
+                       ) 
+  y_pred = predict(classifier, newdata = as.matrix(test[-x])) #Predict by using classifier on newdata's independent vars.
+  y_pred = 1*(y_pred >= 0.5) #Binarize. The logic equation turns continuous results into TRUE/FALSE, and the "1*" converts it to 1/0
+  cm = table(test[,x], y_pred)
+  cm
+  accuracy = (cm[1,1] + cm[2,2]) / (cm[1,1] + cm[2,2] + cm[1,2] + cm[2,1])
+  return(accuracy)
+}
+
+XGB(train, test, 41)
 ```
 
 
@@ -4956,6 +5065,74 @@ write.csv(cbind(
           "MVLiR_SW_Wasting.csv"
           )
 
+```
+
+
+
+```{r Univariate Logistic Regression (OR)}
+#Stunting PV-based feature selection & crude odds ratios
+
+results = data.frame(Stunting_PV = double(),
+                     Stunting_COR = double(),
+                     "Stunting_2.5" = double(),
+                     "Stunting_97.5" = double(),
+                     
+                     Thinness_PV = double(),
+                     Thinness_COR = double(),
+                     "Thinness_2.5" = double(),
+                     "Thinness_97.5" = double(),
+                     
+                     Wasting_PV = double(),
+                     Wasting_COR = double(),
+                     "Wasting_2.5" = double(),
+                     "Wasting_97.5" = double()
+                     )
+for (i in 1:40){
+ results[i,] = 0
+}
+row.names(results) = names(stunting)[1:40]
+################################################################################
+for (i in 1:40){
+    UVLoR = glm(paste0("Stunting~",names(stunting)[i]),
+                data = stunting,
+                family = "binomial"
+                )
+    regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+    results[[1]][[i]] = regSummary[[2,"p.value"]]
+    results[[2]][[i]] = regSummary[[2, "estimate"]]
+    results[[3]][[i]] = confint(UVLoR)[[2,1]]
+    results[[4]][[i]] = confint(UVLoR)[[2,2]]
+    
+}
+################################################################################
+for (i in 1:40){
+    UVLoR = glm(paste0("Thinness~",names(stunting)[i]),
+                data = thinness,
+                family = "binomial"
+                )
+    regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+    results[[5]][[i]] = regSummary[[2,"p.value"]]
+    results[[6]][[i]] = regSummary[[2, "estimate"]]
+    results[[7]][[i]] = confint(UVLoR)[[2,1]]
+    results[[8]][[i]] = confint(UVLoR)[[2,2]]
+    
+}
+################################################################################
+for (i in 1:40){
+    UVLoR = glm(paste0("Wasting~",names(stunting)[i]),
+                data = wasting,
+                family = "binomial"
+                )
+    regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+    results[[9]][[i]] = regSummary[[2,"p.value"]]
+    results[[10]][[i]] = regSummary[[2, "estimate"]]
+    results[[11]][[i]] = confint(UVLoR)[[2,1]]
+    results[[12]][[i]] = confint(UVLoR)[[2,2]]
+    
+}
+
+################################################################################
+write.csv(results, "UVLoR.csv")
 ```
 
 #####
