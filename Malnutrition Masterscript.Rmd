@@ -624,8 +624,8 @@ names(processed)[[39]] = "RadioTV"
 
 ```{r Dependent Variable Calculations}
 #Derive WAZ/HAZ/BAZ for specific analysis
-#WAZ: Weight-relative-to-age Z-score
-#HAZ: Height-relative-to-age Z-score (WHO says unreliable for ages 11+, so ignore older kids)
+#WAZ: Weight-relative-to-age Z-score (WHO says unreliable for ages 11+, so ignore older kids)
+#HAZ: Height-relative-to-age Z-score 
 #BAZ: BMI-relative-to-age Z-score
 
 library(anthroplus)
@@ -4602,21 +4602,27 @@ write.csv(FS_ChiSq, "FS_ChiSq.csv")
 #Creating train sets of selected features from original datasets for use in classifier modelling.
 TRAINING = list(Stunting = list(None = list(),
                                 MVLoR = list(),
+                                UVLoR = list(),
                                 IG = list(),
                                 MRMR = list(),
-                                JMI = list()
+                                JMI = list(),
+                                ChiSq = list()
                                 ),
                 Thinness = list(None = list(),
                                 MVLoR = list(),
+                                UVLoR = list(),
                                 IG = list(),
                                 MRMR = list(),
-                                JMI = list()
+                                JMI = list(),
+                                ChiSq = list()
                                 ),
                 Wasting = list(None = list(),
                                 MVLoR = list(),
+                                UVLoR = list(),
                                 IG = list(),
                                 MRMR = list(),
-                                JMI = list()
+                                JMI = list(),
+                                ChiSq = list()
                                 )
                 )
 ################################################################################
@@ -4624,7 +4630,13 @@ TRAINING[[1]][["None"]] = UBStunting
 TRAINING[[1]][["MVLoR"]] = UBStunting
 for (i in 1:10){
   for (j in 1:10){
-    TRAINING[[1]][["MVLoR"]][[i]][[j]] = TRAINING[[1]][[2]][[i]][[j]][,c(1,2,4,41)]
+    TRAINING[[1]][["MVLoR"]][[i]][[j]] = TRAINING[[1]][["MVLoR"]][[i]][[j]][,c(1,2,4,41)]
+  }
+}
+TRAINING[[1]][["UVLoR"]] = UBStunting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[1]][["UVLoR"]][[i]][[j]] = TRAINING[[1]][["UVLoR"]][[i]][[j]][,c(1,4,41)]
   }
 }
 TRAINING[[1]][["IG"]] = NA #IG
@@ -4640,6 +4652,7 @@ for (i in 1:10){
     TRAINING[[1]][["JMI"]][[i]][[j]] = TRAINING[[1]][["JMI"]][[i]][[j]][,c(1:4,41)]
   }
 }
+TRAINING[[1]][["ChiSq"]] = NA
 ################################################################################
 TRAINING[[2]][["None"]] = SMOTEThinness
 for (i in 1:10){
@@ -4647,7 +4660,18 @@ for (i in 1:10){
     TRAINING[[2]][["None"]][[i]][[j]] = TRAINING[[2]][["None"]][[i]][[j]]$data
   }
 }
-TRAINING[[2]][["MVLoR"]] = NA
+TRAINING[[2]][["MVLoR"]] = SMOTEThinness
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[2]][["MVLoR"]][[i]][[j]] = TRAINING[[2]][["MVLoR"]][[i]][[j]]$data[,c(11,17,41)]
+  }
+}
+TRAINING[[2]][["UVLoR"]] = SMOTEThinness
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[2]][["UVLoR"]][[i]][[j]] = TRAINING[[2]][["UVLoR"]][[i]][[j]]$data[,c(3,8,28,29,41)]
+  }
+}
 TRAINING[[2]][["IG"]] = SMOTEThinness
 for (i in 1:10){
   for (j in 1:10){
@@ -4661,6 +4685,12 @@ for (i in 1:10){
     TRAINING[[2]][["JMI"]][[i]][[j]] = TRAINING[[2]][["JMI"]][[i]][[j]]$data[,c(5,8,23,41)]
   }
 }
+TRAINING[[2]][["ChiSq"]] = SMOTEThinness
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[2]][["ChiSq"]][[i]][[j]] = TRAINING[[2]][["ChiSq"]][[i]][[j]]$data[,c(1,3,8,20,29,32,33,41)]
+  }
+}
 #TRAINING[[2]][["JMI"]] = thinness[,c(5, 8, 23, 41)] #JMI
 ################################################################################
 TRAINING[[3]][["None"]] = SMOTEWasting
@@ -4672,15 +4702,32 @@ for (i in 1:10){
 TRAINING[[3]][["MVLoR"]] = SMOTEWasting
 for (i in 1:10){
   for (j in 1:10){
-    TRAINING[[3]][["MVLoR"]][[i]][[j]] = TRAINING[[3]][["MVLoR"]][[i]][[j]]$data[,c(1,41)]
+    TRAINING[[3]][["MVLoR"]][[i]][[j]] = TRAINING[[3]][["MVLoR"]][[i]][[j]]$data[,c(2,17,41)]
   }
 }
-TRAINING[[3]][["IG"]] = TRAINING[[3]][["MVLoR"]]
-TRAINING[[3]][["MRMR"]] = TRAINING[[3]][["MVLoR"]]
+TRAINING[[3]][["UVLoR"]] = SMOTEWasting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[3]][["UVLoR"]][[i]][[j]] = TRAINING[[3]][["UVLoR"]][[i]][[j]]$data[,c(1,16,41)]
+  }
+}
+TRAINING[[3]][["IG"]] = SMOTEWasting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[3]][["IG"]][[i]][[j]] = TRAINING[[3]][["IG"]][[i]][[j]]$data[,c(1,41)]
+  }
+}
+TRAINING[[3]][["MRMR"]] = TRAINING[[3]][["IG"]]
 TRAINING[[3]][["JMI"]] = SMOTEWasting #None
 for (i in 1:10){
   for (j in 1:10){
-    TRAINING[[3]][["JMI"]][[i]][[j]] = TRAINING[[3]][["JMI"]][[i]][[j]]$data[,c(1,12,41)]
+    TRAINING[[3]][["JMI"]][[i]][[j]] = TRAINING[[3]][["JMI"]][[i]][[j]]$data[,c(1,5,12,41)]
+  }
+}
+TRAINING[[3]][["ChiSq"]] = SMOTEWasting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[3]][["ChiSq"]][[i]][[j]] = TRAINING[[3]][["ChiSq"]][[i]][[j]]$data[,c(1,16,20,41)]
   }
 }
 ```
@@ -4691,21 +4738,27 @@ for (i in 1:10){
 #Creating validation sets of selected features from original datasets for use in classifier modelling.
 VALID = list(Stunting = list(None = list(),
                                 MVLoR = list(),
+                                UVLoR = list(),
                                 IG = list(),
                                 MRMR = list(),
-                                JMI = list()
+                                JMI = list(),
+                                ChiSq = list()
                                 ),
                 Thinness = list(None = list(),
                                 MVLoR = list(),
+                                UVLoR = list(),
                                 IG = list(),
                                 MRMR = list(),
-                                JMI = list()
+                                JMI = list(),
+                                ChiSq = list()
                                 ),
                 Wasting = list(None = list(),
                                 MVLoR = list(),
+                                UVLoR = list(),
                                 IG = list(),
                                 MRMR = list(),
-                                JMI = list()
+                                JMI = list(),
+                                ChiSq = list()
                                 )
                 )
 ################################################################################
@@ -4721,6 +4774,12 @@ for (i in 1:10){
     VALID[[1]][["MVLoR"]][[i]][[j]] = stunting[VALID[[1]][[2]][[i]][[j]],][,c(1,2,4,41)]
   }
 }
+VALID[[1]][["UVLoR"]] = validSetsStunting
+for (i in 1:10){
+  for (j in 1:10){
+    VALID[[1]][["UVLoR"]][[i]][[j]] = stunting[VALID[[1]][["UVLoR"]][[i]][[j]],][,c(1,4,41)]
+  }
+}
 VALID[[1]][["IG"]] = NA #IG
 VALID[[1]][["MRMR"]] = validSetsStunting
 for (i in 1:10){
@@ -4734,6 +4793,7 @@ for (i in 1:10){
     VALID[[1]][["JMI"]][[i]][[j]] = stunting[VALID[[1]][["JMI"]][[i]][[j]],][,c(1:4,41)]
   }
 }
+VALID[[1]][["ChiSq"]] = NA
 ################################################################################
 VALID[[2]][["None"]] = validSetsThinness
 for (i in 1:10){
@@ -4741,7 +4801,18 @@ for (i in 1:10){
     VALID[[2]][["None"]][[i]][[j]] = thinness[VALID[[2]][["None"]][[i]][[j]],]
   }
 }
-VALID[[2]][["MVLoR"]] = NA
+VALID[[2]][["MVLoR"]] = validSetsThinness
+for (i in 1:10){
+  for (j in 1:10){
+    VALID[[2]][["MVLoR"]][[i]][[j]] = thinness[VALID[[2]][["MVLoR"]][[i]][[j]],][,c(11,17,41)]
+  }
+}
+VALID[[2]][["UVLoR"]] = validSetsThinness
+for (i in 1:10){
+  for (j in 1:10){
+    VALID[[2]][["UVLoR"]][[i]][[j]] = thinness[VALID[[2]][["UVLoR"]][[i]][[j]],][,c(3,8,28,29,41)]
+  }
+}
 VALID[[2]][["IG"]] = validSetsThinness
 for (i in 1:10){
   for (j in 1:10){
@@ -4755,7 +4826,12 @@ for (i in 1:10){
     VALID[[2]][["JMI"]][[i]][[j]] = thinness[VALID[[2]][["JMI"]][[i]][[j]],][,c(5,8,23,41)]
   }
 }
-#TRAINING[[2]][["JMI"]] = thinness[,c(5, 8, 23, 41)] #JMI
+VALID[[2]][["ChiSq"]] = validSetsThinness
+for (i in 1:10){
+  for (j in 1:10){
+    VALID[[2]][["ChiSq"]][[i]][[j]] = thinness[VALID[[2]][["ChiSq"]][[i]][[j]],][,c(1,3,8,20,29,32,33,41)]
+  }
+}
 ################################################################################
 VALID[[3]][["None"]] = validSetsWasting
 for (i in 1:10){
@@ -4766,15 +4842,32 @@ for (i in 1:10){
 VALID[[3]][["MVLoR"]] = validSetsWasting
 for (i in 1:10){
   for (j in 1:10){
-    VALID[[3]][["MVLoR"]][[i]][[j]] = wasting[VALID[[3]][["MVLoR"]][[i]][[j]],][,c(1,41)]
+    VALID[[3]][["MVLoR"]][[i]][[j]] = wasting[VALID[[3]][["MVLoR"]][[i]][[j]],][,c(2,17,41)]
   }
 }
-VALID[[3]][["IG"]] = VALID[[3]][["MVLoR"]]
-VALID[[3]][["MRMR"]] = VALID[[3]][["MVLoR"]]
+VALID[[3]][["UVLoR"]] = validSetsWasting
+for (i in 1:10){
+  for (j in 1:10){
+    VALID[[3]][["UVLoR"]][[i]][[j]] = wasting[VALID[[3]][["UVLoR"]][[i]][[j]],][,c(1,16,41)]
+  }
+}
+VALID[[3]][["IG"]] = validSetsWasting
+for (i in 1:10){
+  for (j in 1:10){
+    VALID[[3]][["IG"]][[i]][[j]] = wasting[VALID[[3]][["IG"]][[i]][[j]],][,c(1,41)]
+  }
+}
+VALID[[3]][["MRMR"]] = VALID[[3]][["IG"]]
 VALID[[3]][["JMI"]] = validSetsWasting #None
 for (i in 1:10){
   for (j in 1:10){
-    VALID[[3]][["JMI"]][[i]][[j]] = wasting[VALID[[3]][["JMI"]][[i]][[j]],][,c(1,12,41)]
+    VALID[[3]][["JMI"]][[i]][[j]] = wasting[VALID[[3]][["JMI"]][[i]][[j]],][,c(1,5,12,41)]
+  }
+}
+VALID[[3]][["ChiSq"]] = validSetsWasting #None
+for (i in 1:10){
+  for (j in 1:10){
+    VALID[[3]][["ChiSq"]][[i]][[j]] = wasting[VALID[[3]][["ChiSq"]][[i]][[j]],][,c(1,16,20,41)]
   }
 }
 ```
@@ -4785,21 +4878,27 @@ for (i in 1:10){
 #Creating test sets of selected features from original datasets for use in classifier modelling.
 TEST = list(Stunting = list(None = list(),
                                 MVLoR = list(),
+                                UVLoR = list(),
                                 IG = list(),
                                 MRMR = list(),
-                                JMI = list()
+                                JMI = list(),
+                                ChiSq = list()
                                 ),
                 Thinness = list(None = list(),
                                 MVLoR = list(),
+                                UVLoR = list(),
                                 IG = list(),
                                 MRMR = list(),
-                                JMI = list()
+                                JMI = list(),
+                                ChiSq = list()
                                 ),
                 Wasting = list(None = list(),
                                 MVLoR = list(),
+                                UVLoR = list(),
                                 IG = list(),
                                 MRMR = list(),
-                                JMI = list()
+                                JMI = list(),
+                                ChiSq = list()
                                 )
                 )
 ################################################################################
@@ -4808,7 +4907,12 @@ TEST[[1]][["MVLoR"]] = testSetsStunting
 for (i in 1:10){
     TEST[[1]][["MVLoR"]][[i]] = TEST[[1]][["MVLoR"]][[i]][,c(1,2,4,41)]
 }
+TEST[[1]][["UVLoR"]] = testSetsStunting
+for (i in 1:10){
+    TEST[[1]][["UVLoR"]][[i]] = TEST[[1]][["UVLoR"]][[i]][,c(1,4,41)]
+}
 TEST[[1]][["IG"]] = NA #IG
+
 TEST[[1]][["MRMR"]] = testSetsStunting
 for (i in 1:10){
     TEST[[1]][["MRMR"]][[i]] = TEST[[1]][["MRMR"]][[i]][,c(1,2,4,12,36,41)]
@@ -4817,12 +4921,20 @@ TEST[[1]][["JMI"]] = testSetsStunting
 for (i in 1:10){
     TEST[[1]][["JMI"]][[i]] = TEST[[1]][["JMI"]][[i]][,c(1:4,41)]
 }
+TEST[[1]][["ChiSq"]] = NA
 ################################################################################
 TEST[[2]][["None"]] = testSetsThinness
 for (i in 1:10){
     TEST[[2]][["None"]][[i]] = TEST[[2]][["None"]][[i]]
 }
-TEST[[2]][["MVLoR"]] = NA
+TEST[[2]][["MVLoR"]] = testSetsThinness
+for (i in 1:10){
+    TEST[[2]][["MVLoR"]][[i]] = TEST[[2]][["MVLoR"]][[i]][,c(11,17,41)]
+}
+TEST[[2]][["UVLoR"]] = testSetsThinness
+for (i in 1:10){
+    TEST[[2]][["UVLoR"]][[i]] = TEST[[2]][["UVLoR"]][[i]][,c(3,8,28,29,41)]
+}
 TEST[[2]][["IG"]] = testSetsThinness
 for (i in 1:10){
     TEST[[2]][["IG"]][[i]] = TEST[[2]][["IG"]][[i]][,c(5,8,24,41)]
@@ -4832,6 +4944,10 @@ TEST[[2]][["JMI"]] = testSetsThinness
 for (i in 1:10){
     TEST[[2]][["JMI"]][[i]] = TEST[[2]][["JMI"]][[i]][,c(5,8,23,41)]
 }
+TEST[[2]][["ChiSq"]] = testSetsThinness
+for (i in 1:10){
+    TEST[[2]][["ChiSq"]][[i]] = TEST[[2]][["ChiSq"]][[i]][,c(1,3,8,20,29,32,33,41)]
+}
 ################################################################################
 TEST[[3]][["None"]] = testSetsWasting
 for (i in 1:10){
@@ -4839,14 +4955,132 @@ for (i in 1:10){
 }
 TEST[[3]][["MVLoR"]] = testSetsWasting
 for (i in 1:10){
-    TEST[[3]][["MVLoR"]][[i]] = TEST[[3]][["MVLoR"]][[i]][,c(1,41)]
+    TEST[[3]][["MVLoR"]][[i]] = TEST[[3]][["MVLoR"]][[i]][,c(2,17,41)]
 }
-TEST[[3]][["IG"]] = TEST[[3]][["MVLoR"]]
-TEST[[3]][["MRMR"]] = TEST[[3]][["MVLoR"]]
+TEST[[3]][["UVLoR"]] = testSetsWasting
+for (i in 1:10){
+    TEST[[3]][["UVLoR"]][[i]] = TEST[[3]][["UVLoR"]][[i]][,c(1,16,41)]
+}
+TEST[[3]][["IG"]] = testSetsWasting
+for (i in 1:10){
+    TEST[[3]][["IG"]][[i]] = TEST[[3]][["IG"]][[i]][,c(1,41)]
+}
+TEST[[3]][["MRMR"]] = TEST[[3]][["IG"]]
 TEST[[3]][["JMI"]] = testSetsWasting #None
 for (i in 1:10){
-    TEST[[3]][["JMI"]][[i]] = TEST[[3]][["JMI"]][[i]][,c(1,12,41)]
+    TEST[[3]][["JMI"]][[i]] = TEST[[3]][["JMI"]][[i]][,c(1,5,12,41)]
 }
+TEST[[3]][["ChiSq"]] = testSetsWasting #None
+for (i in 1:10){
+    TEST[[3]][["ChiSq"]][[i]] = TEST[[3]][["ChiSq"]][[i]][,c(1,16,20,41)]
+}
+```
+
+
+
+```{r Multivariate Logistic Regression for Classification, warning = FALSE}
+set.seed(13)
+library(broom)
+library(car)
+library(performance)
+library(MASS)
+library(leaps)
+library(MLeval)
+
+f1 <- function(data, lev = NULL, model = NULL) {
+        f1_val <- MLmetrics::F1_Score(y_pred = data$pred,
+                                      y_true = data$obs,
+                                      positive = lev[1])
+        c(F1 = f1_val)
+}
+
+Scores_MVLoR = list(Stunting = list(None = list(Accuracy = 0, F1 = 0),
+                                MVLoR = list(Accuracy = 0, F1 = 0),
+                                UVLoR = list(Accuracy = 0, F1 = 0),
+                                IG = list(Accuracy = 0, F1 = 0),
+                                MRMR = list(Accuracy = 0, F1 = 0),
+                                JMI = list(Accuracy = 0, F1 = 0),
+                                ChiSq = list(Accuracy = 0, F1 = 0)
+                                ),
+                Thinness = list(None = list(Accuracy = 0, F1 = 0),
+                                MVLoR = list(Accuracy = 0, F1 = 0),
+                                UVLoR = list(Accuracy = 0, F1 = 0),
+                                IG = list(Accuracy = 0, F1 = 0),
+                                MRMR = list(Accuracy = 0, F1 = 0),
+                                JMI = list(Accuracy = 0, F1 = 0),
+                                ChiSq = list(Accuracy = 0, F1 = 0)
+                                ),
+                Wasting = list(None = list(Accuracy = 0, F1 = 0),
+                                MVLoR = list(Accuracy = 0, F1 = 0),
+                                UVLoR = list(Accuracy = 0, F1 = 0),
+                                IG = list(Accuracy = 0, F1 = 0),
+                                MRMR = list(Accuracy = 0, F1 = 0),
+                                JMI = list(Accuracy = 0, F1 = 0),
+                                ChiSq = list(Accuracy = 0, F1 = 0)
+                                )
+                )
+
+best = list(accuracy = 0,
+            RS = 0,
+            FS = 0,  
+            test = 0,
+            trainvalid = 0,
+            F1 = 0
+            )
+
+for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
+  #if (i > 1){break}
+  for (j in 1:7){ #5 feature selection (FS) sets
+    if (is.na(TRAINING[[i]][[j]])){
+      next
+    }
+    for (k in 1:10){ #10 test sets total
+      for (l in 1:10){ #10 train/validation sets per test set
+        train = TRAINING[[i]][[j]][[k]][[l]] #Import & coerce to matrix in order to scale
+        train[,ncol(train)] = as.factor(train[,ncol(train)]) #Set response as factor
+        
+        test = VALID[[i]][[j]][[k]][[l]] #Prepare test; 1 test set for 10 train/valid sets (seen below)
+        test[,ncol(test)] = as.factor(test[,ncol(test)])
+
+        MVLoR = glm(paste0(names(train)[ncol(train)], "~."),
+                    data = train,
+                    family = "binomial"
+                    )
+        y_pred = predict(MVLoR, newdata = test[-ncol(test)], type = "response")
+        y_pred <- ifelse(y_pred > 0.5,1,0) 
+
+        # Making the Confusion Matrix
+        cm = table(test[, ncol(test)], y_pred)
+        if (ncol(cm) < 2 | nrow(cm) < 2){ #Assumed all test are majority class
+          accuracy = 0
+          F1 = 0
+        }else{
+          accuracy = (cm[1,1] + cm[2,2]) / (cm[1,1] + cm[2,2] + cm[1,2] + cm[2,1])
+          TN = cm[1,1]
+          FN = cm[2,1]
+          FP = cm[1,2]
+          TP = cm[2,2]
+          precision = TP/(TP+FP)
+          recall = TP/(TP+FN)
+          F1 = 2*precision*recall/(precision+recall)
+          if (is.na(F1)){
+            F1 = 0
+          }
+        }
+        Scores_MVLoR[[i]][[j]][[1]] = Scores_MVLoR[[i]][[j]][[1]] + accuracy
+        Scores_MVLoR[[i]][[j]][[2]] = Scores_MVLoR[[i]][[j]][[2]] + F1
+        if(F1 > best$F1){
+          best$accuracy = accuracy
+          best$RS = i
+          best$FS = j
+          best$test = k
+          best$trainvalid = l
+          best$F1 = F1
+        }
+      }}
+      Scores_MVLoR[[i]][[j]][[1]] = Scores_MVLoR[[i]][[j]][[1]]/100
+      Scores_MVLoR[[i]][[j]][[2]] = Scores_MVLoR[[i]][[j]][[2]]/100
+    }}
 ```
 
 
@@ -4856,24 +5090,38 @@ set.seed(13)
 library(randomForest)
 library(datasets)
 library(caret)
+library(MLmetrics)
+
+f1 <- function(data, lev = NULL, model = NULL) {
+        f1_val <- MLmetrics::F1_Score(y_pred = data$pred,
+                                      y_true = data$obs,
+                                      positive = lev[1])
+        c(F1 = f1_val)
+}
 
 Scores_RF = list(Stunting = list(None = list(Accuracy = 0, F1 = 0),
                                 MVLoR = list(Accuracy = 0, F1 = 0),
+                                UVLoR = list(Accuracy = 0, F1 = 0),
                                 IG = list(Accuracy = 0, F1 = 0),
                                 MRMR = list(Accuracy = 0, F1 = 0),
-                                JMI = list(Accuracy = 0, F1 = 0)
+                                JMI = list(Accuracy = 0, F1 = 0),
+                                ChiSq = list(Accuracy = 0, F1 = 0)
                                 ),
                 Thinness = list(None = list(Accuracy = 0, F1 = 0),
                                 MVLoR = list(Accuracy = 0, F1 = 0),
+                                UVLoR = list(Accuracy = 0, F1 = 0),
                                 IG = list(Accuracy = 0, F1 = 0),
                                 MRMR = list(Accuracy = 0, F1 = 0),
-                                JMI = list(Accuracy = 0, F1 = 0)
+                                JMI = list(Accuracy = 0, F1 = 0),
+                                ChiSq = list(Accuracy = 0, F1 = 0)
                                 ),
                 Wasting = list(None = list(Accuracy = 0, F1 = 0),
                                 MVLoR = list(Accuracy = 0, F1 = 0),
+                                UVLoR = list(Accuracy = 0, F1 = 0),
                                 IG = list(Accuracy = 0, F1 = 0),
                                 MRMR = list(Accuracy = 0, F1 = 0),
-                                JMI = list(Accuracy = 0, F1 = 0)
+                                JMI = list(Accuracy = 0, F1 = 0),
+                                ChiSq = list(Accuracy = 0, F1 = 0)
                                 )
                 )
 
@@ -4886,31 +5134,35 @@ best = list(accuracy = 0,
             )
 
 for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
-  for (j in 1:5){ #5 feature selection (FS) sets
+  for (j in 1:7){ #5 feature selection (FS) sets
     if (is.na(TRAINING[[i]][[j]])){
       next
     }
     for (k in 1:10){ #10 test sets total
-      test = TEST[[i]][[j]][[k]] #Prepare test; 1 test set for 10 train/valid sets (seen below)
-      #test = as.matrix(test)
-      #test[-ncol(test)] = as.data.frame(scale(test[-ncol(test)]))
-      test[,ncol(test)] = as.factor(test[,ncol(test)])
-      
       for (l in 1:10){ #10 train/validation sets per test set
         train = TRAINING[[i]][[j]][[k]][[l]] #Import & coerce to matrix in order to scale
-        #train = as.matrix(train)
-        #train[-ncol(train)] = as.data.frame(scale(train[-ncol(train)])) #Scale, coerce to DF
+        valid = VALID[[i]][[j]][[k]][[l]]
         train[,ncol(train)] = as.factor(train[,ncol(train)]) #Set response as factor
+        valid[,ncol(valid)] = as.factor(valid[,ncol(valid)])
 
-        classifier = randomForest(x = train[-ncol(train)],
-                                  y = train[,ncol(train)],
-                                  ntree = 500)
-        
-        y_pred = predict(classifier, newdata = test[-ncol(test)])
+        control = trainControl(method = "repeatedcv",
+                               number = 10,
+                               repeats = 10,
+                               summaryFunction = f1
+                               )
+        rfGrid = expand.grid(.mtry = 2)
+        RF = train(x = train[-ncol(train)],
+                           y = train[,ncol(train)],
+                           method = 'rf',
+                           metric = 'F1',
+                           #tuneGrid = rfGrid,
+                           trControl = control
+                           )
+        y_pred = predict(RF, newdata = valid[-ncol(valid)])
         
         # Making the Confusion Matrix
-        cm = table(test[, ncol(test)], y_pred)
-        if (ncol(cm) == 1){ #Assumed all test are majority class
+        cm = table(valid[, ncol(valid)], y_pred)
+        if (ncol(cm) < 2 | nrow(cm) < 2){ #Assumed all test are majority class
           accuracy = 0
           F1 = 0
         }else{
@@ -4947,6 +5199,7 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
 
 
 
+
 ```{r Support Vector Machine, warning = FALSE}
 set.seed(13)
 library(e1071)
@@ -4954,27 +5207,33 @@ library(Matrix)
 
 Scores_SVM = list(Stunting = list(None = list(Accuracy = 0, F1 = 0),
                                 MVLoR = list(Accuracy = 0, F1 = 0),
+                                UVLoR = list(Accuracy = 0, F1 = 0),
                                 IG = list(Accuracy = 0, F1 = 0),
                                 MRMR = list(Accuracy = 0, F1 = 0),
-                                JMI = list(Accuracy = 0, F1 = 0)
+                                JMI = list(Accuracy = 0, F1 = 0),
+                                ChiSq = list(Accuracy = 0, F1 = 0)
                                 ),
                 Thinness = list(None = list(Accuracy = 0, F1 = 0),
                                 MVLoR = list(Accuracy = 0, F1 = 0),
+                                UVLoR = list(Accuracy = 0, F1 = 0),
                                 IG = list(Accuracy = 0, F1 = 0),
                                 MRMR = list(Accuracy = 0, F1 = 0),
-                                JMI = list(Accuracy = 0, F1 = 0)
+                                JMI = list(Accuracy = 0, F1 = 0),
+                                ChiSq = list(Accuracy = 0, F1 = 0)
                                 ),
                 Wasting = list(None = list(Accuracy = 0, F1 = 0),
                                 MVLoR = list(Accuracy = 0, F1 = 0),
+                                UVLoR = list(Accuracy = 0, F1 = 0),
                                 IG = list(Accuracy = 0, F1 = 0),
                                 MRMR = list(Accuracy = 0, F1 = 0),
-                                JMI = list(Accuracy = 0, F1 = 0)
+                                JMI = list(Accuracy = 0, F1 = 0),
+                                ChiSq = list(Accuracy = 0, F1 = 0)
                                 )
                 )
 
 best = list(accuracy = 0,
             RS = 0,
-            FS = 0,
+            FS = 0,  
             test = 0,
             trainvalid = 0,
             F1 = 0
@@ -4982,7 +5241,7 @@ best = list(accuracy = 0,
 
 for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
   #if (i > 1){break}
-  for (j in 1:5){ #5 feature selection (FS) sets
+  for (j in 1:7){ #5 feature selection (FS) sets
     if (is.na(TRAINING[[i]][[j]])){
       next
     }
@@ -4998,18 +5257,31 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
         #train[-ncol(train)] = as.data.frame(scale(train[-ncol(train)])) #Scale, coerce to DF
         train[,ncol(train)] = as.factor(train[,ncol(train)]) #Set response as factor
 
-        classifier = svm(x = train[-ncol(train)],
-                         y = train[,ncol(train)],
-                         #data = train,
-                         type = 'C-classification',
-                         kernel = 'linear'
-                         )
-        
-        y_pred = predict(classifier, newdata = test[-ncol(test)])
+        # classifier = svm(x = train[-ncol(train)],
+        #                  y = train[,ncol(train)],
+        #                  #data = train,
+        #                  type = 'C-classification',
+        #                  kernel = 'linear'
+        #                  )
+        control = trainControl(method = "repeatedcv",
+                               number = 10,
+                               repeats = 10,
+                               summaryFunction = f1
+                               )
+        svmGrid = expand.grid(C = 0.15
+                              )
+        SVM = train(x = train[-ncol(train)],
+                           y = train[,ncol(train)],
+                           method = 'svmLinear',
+                           metric = 'F1',
+                           tuneGrid = svmGrid,
+                           trControl = control
+                           )
+        y_pred = predict(SVM, newdata = test[-ncol(test)])
         
         # Making the Confusion Matrix
         cm = table(test[, ncol(test)], y_pred)
-        if (ncol(cm) == 1){ #Assumed all test are majority class
+        if (ncol(cm) != 2 | nrow(cm) != 2){ #Must be 2x2 CM, otherwise unusable
           accuracy = 0
           F1 = 0
         }else{
@@ -5043,7 +5315,7 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
 
 
 
-```{r Extreme Gradient Boosting, results = FALSE}
+```{r Extreme Gradient Boosting, results = FALSE, warning = FALSE}
 set.seed(13)
 library(xgboost)
 library(caret)
@@ -5054,21 +5326,27 @@ library(tidyverse)
 
 Scores_XGB = list(Stunting = list(None = list(Accuracy = 0, F1 = 0),
                                 MVLoR = list(Accuracy = 0, F1 = 0),
+                                UVLoR = list(Accuracy = 0, F1 = 0),
                                 IG = list(Accuracy = 0, F1 = 0),
                                 MRMR = list(Accuracy = 0, F1 = 0),
-                                JMI = list(Accuracy = 0, F1 = 0)
+                                JMI = list(Accuracy = 0, F1 = 0),
+                                ChiSq = list(Accuracy = 0, F1 = 0)
                                 ),
                 Thinness = list(None = list(Accuracy = 0, F1 = 0),
                                 MVLoR = list(Accuracy = 0, F1 = 0),
+                                UVLoR = list(Accuracy = 0, F1 = 0),
                                 IG = list(Accuracy = 0, F1 = 0),
                                 MRMR = list(Accuracy = 0, F1 = 0),
-                                JMI = list(Accuracy = 0, F1 = 0)
+                                JMI = list(Accuracy = 0, F1 = 0),
+                                ChiSq = list(Accuracy = 0, F1 = 0)
                                 ),
                 Wasting = list(None = list(Accuracy = 0, F1 = 0),
                                 MVLoR = list(Accuracy = 0, F1 = 0),
+                                UVLoR = list(Accuracy = 0, F1 = 0),
                                 IG = list(Accuracy = 0, F1 = 0),
                                 MRMR = list(Accuracy = 0, F1 = 0),
-                                JMI = list(Accuracy = 0, F1 = 0)
+                                JMI = list(Accuracy = 0, F1 = 0),
+                                ChiSq = list(Accuracy = 0, F1 = 0)
                                 )
                 )
 
@@ -5083,7 +5361,7 @@ best = list(accuracy = 0,
             )
 for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
   #if (i > 1){break}
-  for (j in 1:5){ #5 feature selection (FS) sets
+  for (j in 1:7){ #5 feature selection (FS) sets
     if (is.na(TRAINING[[i]][[j]])){
       next
     }
@@ -5099,42 +5377,45 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
         #train[-ncol(train)] = as.data.frame(scale(train[-ncol(train)])) #Scale, coerce to DF
         train[,ncol(train)] = as.factor(train[,ncol(train)]) #Set response as factor
         
-for (eta in c(0.5)){
-  for (gamma in c(0.1)){
-    for (max_depth in c(12)){
-      for (scale_pos_weight in c(2)){
-        for (lambda in c(1.1)){
-          for (alpha in c(0)){
-        
-        parameters = list(eta = eta,
-                          gamma = gamma,
-                          max_depth = max_depth,
-                          scale_pos_weight = scale_pos_weight,
-                          lambda = lambda,
-                          alpha = alpha,
-                          subsample = 0.5,
-                          colsample_bytree = 0.5,
-                          eval_metric = "error",
-                          objective = "binary:logistic"
-                          )
-        classifier = xgboost(data = as.matrix(train[-ncol(train)]), #elimina la que buscamos
-                     label = as.numeric(as.character(train[,ncol(train)])), #consigue la última variable
-                     nrounds = 13,
-                     params = parameters
-                     )
+        # classifier = xgboost(data = as.matrix(train[-ncol(train)]), #elimina la que buscamos
+        #              label = as.numeric(as.character(train[,ncol(train)])), #consigue la última variable
+        #              nrounds = 13,
+        #              params = parameters
+        #              )
         #cat(i)
         #cat(j)
         #cat(k)
         #cat(l)
-
+        control = trainControl(method = "repeatedcv",
+                               number = 10,
+                               repeats = 10,
+                               summaryFunction = f1
+                               )
+        xgbGrid <- expand.grid(nrounds = c(100),#,200),  
+                       max_depth = c(10),#, 15, 20, 25),
+                       colsample_bytree = seq(0.5),#, 0.9, length.out = 5),
+                       ## The values below are default values in the sklearn-api. 
+                       eta = 0.1,
+                       gamma=0,
+                       min_child_weight = 1,
+                       subsample = 1
+                      )
+        
+        XGB = train(x = train[-ncol(train)],
+                           y = train[,ncol(train)],
+                           method = 'xgbTree',
+                           metric = 'F1',
+                           tuneGrid = xgbGrid,
+                           trControl = control
+                           )
         # Predicting the Test set results
-        y_pred = predict(classifier, newdata = as.matrix(test[-ncol(test)]))
+        y_pred = predict(XGB, newdata = as.matrix(test[-ncol(test)]))
         y_pred = 1*(y_pred >= 0.5)
         #table(y_pred)
         #table(test[,41])
         # Making the Confusion Matrix
         cm = table(test[, ncol(test)], y_pred)
-        if (ncol(cm) == 1){ #Assumed all test are majority class
+        if (ncol(cm) < 2 | nrow(cm) < 2){ #Assumed all test are majority class
           accuracy = 0
           F1 = 0
         }else{
@@ -5160,48 +5441,75 @@ for (eta in c(0.5)){
           best$trainvalid = l
           best$F1 = F1
         } 
-          }}}}}}}}
+          }}
     Scores_XGB[[i]][[j]][[1]] = Scores_XGB[[i]][[j]][[1]]/100
     Scores_XGB[[i]][[j]][[2]] = Scores_XGB[[i]][[j]][[2]]/100
     }}
 #best
 ```
-# Applying k-Fold Cross Validation
-# install.packages('caret')
-library(caret)
-#folds = createFolds(training_set$Exited, k = 10)
-#cv = lapply(folds, function(x) {
-#  training_fold = training_set[-x, ]
-#  test_fold = training_set[x, ]
-
-#   classifier = xgboost(data = as.matrix(training_fold[-11]), label = training_fold$Exited, nrounds = 10)
-#   y_pred = predict(classifier, newdata = as.matrix(test_fold[-11]))
-#   y_pred = (y_pred >= 0.5)
-#   cm = table(test_fold[, 11], y_pred)
-#   accuracy = (cm[1,1] + cm[2,2]) / (cm[1,1] + cm[2,2] + cm[1,2] + cm[2,1])
-# accuracy = mean(as.numeric(cv))
 
 
-XGB = function(training_set, test_set, x){
-  training = training_set[-x, ]
-  test = test_set[x, ]
-  factor = names(training)[x]
-  
-  classifier = xgboost(data = as.matrix(training[-x]), #Matrix of independent vars.
-                       label = training[,x], #Location of dependent var
-                       nrounds = 15,
-                       gamma = 0,
-                       eta = 1
-                       
-                       ) 
-  y_pred = predict(classifier, newdata = as.matrix(test[-x])) #Predict by using classifier on newdata's independent vars.
-  y_pred = 1*(y_pred >= 0.5) #Binarize. The logic equation turns continuous results into TRUE/FALSE, and the "1*" converts it to 1/0
-  cm = table(test[,x], y_pred)
-  accuracy = (cm[1,1] + cm[2,2]) / (cm[1,1] + cm[2,2] + cm[1,2] + cm[2,1])
-  return(accuracy)
+
+```{r Classifier Heat Maps}
+library("ggplot2")                                       
+
+mapdata = data.frame(FS = c(rep("None", 4),
+                            rep("MVLoR", 4),
+                            rep("UVLoR", 4),
+                            rep("ChiSq", 4),
+                            rep("MRMR", 4),
+                            rep("JMI", 4),
+                            rep("IG", 4)
+                            ),
+                     classifiers = c(rep(c("RF", "SVM", "XGB", "MVLoR"), 7))
+                     )
+for (i in 1:3){ #For each response set
+  for (j in 1:4){ #For each classifier
+    for (k in 1:7){ #For each FS method
+      
+    }
+  }
 }
 
-XGB(train, test, 41)
+heatmap = ggplot(mapdata, aes(FS, classifiers))
+heatmap =  heatmap + geom_text(aes(label = values), col = 'black') + scale_fill_gradient(low = 'yellow', high = 'red')
+heatmap = heatmap + ggtitle("Accuracy (%) on Stunting Test Set from Confusion Matrix Using Grid Search")
+heatmap + theme(text = element_text(size = 15))
+heatmap
+################################################################################
+### Accuracy ###
+'
+  - Values are correlated across columns
+      - For example: 68.81 refers to SVM_SMOTE/IG, 74.51 refers to RF_SMOTE, RelF
+'
+
+data = data.frame(Feature_Selection = c("IG", "IG", "IG", "IG",
+                                        "RelF", "RelF", "RelF", "RelF",
+                                        "LinReg", "LinReg", "LinReg", "LinReg",
+                                        "Manual", "Manual", "Manual","Manual",
+                                        "No FS", "No FS", "No FS", "No FS",
+                                        "Comb FS", "Comb FS", "Comb FS", "Comb FS"), 
+                  Classifiers = c("SVM_SMOTE", "RF_SMOTE", "SVM_Z", "RF_Z", 
+                                  "SVM_SMOTE", "RF_SMOTE", "SVM_Z", "RF_Z",
+                                  "SVM_SMOTE", "RF_SMOTE", "SVM_Z", "RF_Z",
+                                  "SVM_SMOTE", "RF_SMOTE", "SVM_Z", "RF_Z",
+                                  "SVM_SMOTE", "RF_SMOTE", "SVM_Z", "RF_Z",
+                                  "SVM_SMOTE", "RF_SMOTE", "SVM_Z", "RF_Z"), 
+                  values = c(68.81,	73.84,	61.39,	60.91,
+                             68.24,	74.51,	61.39,	61.20,
+                             67.37,	74.23,	59.07,	60.71,
+                             67.37,	64.28,	61.29,	61.20,
+                             65.53,	76.35,	56.86,	61.39,
+                             69.30,	70.65,	61.39,	60.61))
+
+ggp <- ggplot(data, aes(Feature_Selection, Classifiers)) + geom_tile(aes(fill = values)) # Creates default heatmap
+ggp <- ggp + geom_text(aes(label = values))          # Add value labels to 
+ggp <-  ggp + geom_text(aes(label = values), col = 'black') + scale_fill_gradient(low = 'yellow', high = 'red') # colors can be changed
+ggp <- ggp + ggtitle("Accuracy (%) on Stunting Test Set from Confusion Matrix Using Grid Search")
+
+ggp + theme(text = element_text(size = 15))     # Changes the font size of the axes labels and title              
+
+
 ```
 
 
@@ -5381,316 +5689,6 @@ for (i in 1:40){
 ################################################################################
 write.csv(results, "UVLoR.csv")
 ```
-
-#####
-# ASSOCIATION RULE LEARNING:
-#####
-# ```{r ARL Data Preparation, warning = FALSE}
-# #Preparing SMOTE-balancing of entire datasets for use in association rule learning. Datasets previously balanced with SMOTE were only training data for use in Feature Selection, and thus were subsets of ~81% of the original data. Ours will use the remaining 19% for ARL.
-# #I.e. The SMOTE balancing we did before didn't include everything, but we want everything for ARL. So now we have to make new balanced datasets with everything in them.
-# 
-# ARL_Stunting_Older = SMOTE(X = stunting,
-#                      target = stunting$Stunting,
-#                      K = 5,
-#                      dup_size = 2
-#                      )
-# ARL_Stunting_Older = ARL_Stunting_Older$data
-# barplot(prop.table(table(ARL_Stunting_Older$Stunting)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Stunting",
-#         names = c("No", "Yes"),
-#         main = 'ARL_Stunting_Older SMOTE-Balanced Dataset Class Distribution'
-#         )
-# abline(h = 0)
-# ################################################################################
-# ARL_Thinness_Older = SMOTE(X = thinness,
-#                      target = thinness$Thinness,
-#                      K = 5,
-#                      dup_size = 22
-#                      )
-# ARL_Thinness_Older = ARL_Thinness_Older$data
-# barplot(prop.table(table(ARL_Thinness_Older$Thinness)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Stunting",
-#         names = c("No", "Yes"),
-#         main = 'ARL_Thinness_Older SMOTE-Balanced Dataset Class Distribution'
-#         )
-# abline(h = 0)
-# ################################################################################
-# ARL_Stunting_Young = SMOTE(X = StuntingYoung,
-#                      target = StuntingYoung$Stunting,
-#                      K = 5,
-#                      dup_size = 3
-#                      )
-# ARL_Stunting_Young = ARL_Stunting_Young$data
-# barplot(prop.table(table(ARL_Stunting_Young$Stunting)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Stunting",
-#         names = c("No", "Yes"),
-#         main = 'ARL_Stunting_Young SMOTE-Balanced Dataset Class Distribution'
-#         )
-# abline(h = 0)
-# ################################################################################
-# ARL_Thinness_Young = SMOTE(X = thinnessYoung,
-#                      target = thinnessYoung$Thinness,
-#                      K = 5,
-#                      dup_size = 30
-#                      )
-# ARL_Thinness_Young = ARL_Thinness_Young$data
-# barplot(prop.table(table(ARL_Thinness_Young$Thinness)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Stunting",
-#         names = c("No", "Yes"),
-#         main = 'ARL_Thinness_Young SMOTE-Balanced Dataset Class Distribution'
-#         )
-# abline(h = 0)
-# ################################################################################
-# ARL_Wasting_Young = SMOTE(X = WastingYoung,
-#                      target = WastingYoung$Wasting,
-#                      K = 5,
-#                      dup_size = 9
-#                      )
-# ARL_Wasting_Young = ARL_Wasting_Young$data
-# barplot(prop.table(table(ARL_Wasting_Young$Wasting)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Stunting",
-#         names = c("No", "Yes"),
-#         main = 'ARL_Wasting_Young SMOTE-Balanced Dataset Class Distribution'
-#         )
-# abline(h = 0)
-# ################################################################################
-# ARL_Stunting_Male = subset(StuntingFull, Sex == 0)
-# ARL_Stunting_Male = SMOTE(X = ARL_Stunting_Male,
-#                      target = ARL_Stunting_Male$Stunting,
-#                      K = 5,
-#                      dup_size = 2
-#                      )
-# ARL_Stunting_Male = ARL_Stunting_Male$data
-# barplot(prop.table(table(ARL_Stunting_Male$Stunting)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Stunting",
-#         names = c("No", "Yes"),
-#         main = 'ARL_Stunting_Male SMOTE-Balanced Dataset Class Distribution'
-#         )
-# abline(h = 0)
-# ################################################################################
-# ARL_Stunting_Female = subset(StuntingFull, Sex == 1)
-# ARL_Stunting_Female = SMOTE(X = ARL_Stunting_Female,
-#                      target = ARL_Stunting_Female$Stunting,
-#                      K = 5,
-#                      dup_size = 3
-#                      )
-# ARL_Stunting_Female = ARL_Stunting_Female$data
-# barplot(prop.table(table(ARL_Stunting_Female$Stunting)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Stunting",
-#         names = c("No", "Yes"),
-#         main = 'ARL_Stunting_Female SMOTE-Balanced Dataset Class Distribution'
-#         )
-# abline(h = 0)
-# ################################################################################
-# ARL_Thinness_Male = subset(ThinnessFull, Sex == 0)
-# ARL_Thinness_Male = SMOTE(X = ARL_Thinness_Male,
-#                      target = ARL_Thinness_Male$Thinness,
-#                      K = 5,
-#                      dup_size = 27
-#                      )
-# ARL_Thinness_Male = ARL_Thinness_Male$data
-# barplot(prop.table(table(ARL_Thinness_Male$Thinness)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Thinness",
-#         names = c("No", "Yes"),
-#         main = 'ARL_Thinness_Male SMOTE-Balanced Dataset Class Distribution'
-#         )
-# abline(h = 0)
-# ################################################################################
-# ARL_Thinness_Female = subset(ThinnessFull, Sex == 1)
-# ARL_Thinness_Female = SMOTE(X = ARL_Thinness_Female,
-#                      target = ARL_Thinness_Female$Thinness,
-#                      K = 5,
-#                      dup_size = 25
-#                      )
-# ARL_Thinness_Female = ARL_Thinness_Female$data
-# barplot(prop.table(table(ARL_Thinness_Female$Thinness)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Thinness",
-#         names = c("No", "Yes"),
-#         main = 'ARL_Thinness_Female SMOTE-Balanced Dataset Class Distribution'
-#         )
-# abline(h = 0)
-# ################################################################################
-# ARL_Wasting_Male = subset(WastingFull, Sex == 0)
-# ARL_Wasting_Male = SMOTE(X = ARL_Wasting_Male,
-#                      target = ARL_Wasting_Male$Wasting,
-#                      K = 5,
-#                      dup_size = 7
-#                      )
-# ARL_Wasting_Male = ARL_Wasting_Male$data
-# barplot(prop.table(table(ARL_Wasting_Male$Wasting)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Wasting",
-#         names = c("No", "Yes"),
-#         main = 'ARL_Wasting_Male SMOTE-Balanced Dataset Class Distribution'
-#         )
-# abline(h = 0)
-# ################################################################################
-# ARL_Wasting_Female = subset(WastingFull, Sex == 1)
-# ARL_Wasting_Female = SMOTE(X = ARL_Wasting_Female,
-#                      target = ARL_Wasting_Female$Wasting,
-#                      K = 5,
-#                      dup_size = 11
-#                      )
-# ARL_Wasting_Female = ARL_Wasting_Female$data
-# barplot(prop.table(table(ARL_Wasting_Female$Wasting)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Wasting",
-#         names = c("No", "Yes"),
-#         main = 'ARL_Wasting_Female SMOTE-Balanced Dataset Class Distribution'
-#         )
-# abline(h = 0)
-# ################################################################################
-# ARL_Stunting_NotUrban = subset(StuntingFull, Suburban == 1 | Rural == 1)
-# ARL_Stunting_NotUrban = SMOTE(X = ARL_Stunting_NotUrban,
-#                      target = ARL_Stunting_NotUrban$Stunting,
-#                      K = 5,
-#                      dup_size = 2
-#                      )
-# ARL_Stunting_NotUrban = ARL_Stunting_NotUrban$data
-# barplot(prop.table(table(ARL_Stunting_NotUrban$Stunting)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Wasting",
-#         names = c("No", "Yes"),
-#         main = 'ARL_Stunting_NotUrban SMOTE-Balanced Dataset Class Distribution'
-#         )
-# abline(h = 0)
-# ################################################################################
-# ARL_Stunting_Urban = subset(StuntingFull, Rural == 0 & Suburban == 0)
-# ARL_Stunting_Urban = SMOTE(X = ARL_Stunting_Urban,
-#                      target = ARL_Stunting_Urban$Stunting,
-#                      K = 5,
-#                      dup_size = 2
-#                      )
-# ARL_Stunting_Urban = ARL_Stunting_Urban$data
-# barplot(prop.table(table(ARL_Stunting_Urban$Stunting)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Wasting",
-#         names = c("No", "Yes"),
-#         main = 'ARL_Stunting_Urban SMOTE-Balanced Dataset Class Distribution'
-#         )
-# abline(h = 0)
-# ################################################################################
-# ARL_Thinness_NotUrban = subset(ThinnessFull, Suburban == 1 | Rural == 1)
-# ARL_Thinness_NotUrban = SMOTE(X = ARL_Thinness_NotUrban,
-#                      target = ARL_Thinness_NotUrban$Thinness,
-#                      K = 5,
-#                      dup_size = 33
-#                      )
-# ARL_Thinness_NotUrban = ARL_Thinness_NotUrban$data
-# barplot(prop.table(table(ARL_Thinness_NotUrban$Thinness)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Wasting",
-#         names = c("No", "Yes"),
-#         main = 'ARL_Thinness_NotUrban SMOTE-Balanced Dataset Class Distribution'
-#         )
-# abline(h = 0)
-# ################################################################################
-# ARL_Thinness_Urban = subset(ThinnessFull, Rural == 0 & Suburban == 0)
-# ARL_Thinness_Urban = SMOTE(X = ARL_Thinness_Urban,
-#                      target = ARL_Thinness_Urban$Thinness,
-#                      K = 5,
-#                      dup_size = 25
-#                      )
-# ARL_Thinness_Urban = ARL_Thinness_Urban$data
-# barplot(prop.table(table(ARL_Thinness_Urban$Thinness)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Wasting",
-#         names = c("No", "Yes"),
-#         main = 'ARL_Thinness_Urban SMOTE-Balanced Dataset Class Distribution'
-#         )
-# abline(h = 0)
-# ################################################################################
-# ARL_Wasting_NotUrban = subset(WastingFull, Suburban == 1 | Rural == 1)
-# ARL_Wasting_NotUrban = SMOTE(X = ARL_Wasting_NotUrban,
-#                      target = ARL_Wasting_NotUrban$Wasting,
-#                      K = 5,
-#                      dup_size = 9
-#                      )
-# ARL_Wasting_NotUrban = ARL_Wasting_NotUrban$data
-# barplot(prop.table(table(ARL_Wasting_NotUrban$Wasting)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Wasting",
-#         names = c("No", "Yes"),
-#         main = 'ARL_Wasting_NotUrban SMOTE-Balanced Dataset Class Distribution'
-#         )
-# abline(h = 0)
-# ################################################################################
-# ARL_Wasting_Urban = subset(WastingFull, Rural == 0 & Suburban == 0)
-# ARL_Wasting_Urban = SMOTE(X = ARL_Wasting_Urban,
-#                      target = ARL_Wasting_Urban$Wasting,
-#                      K = 5,
-#                      dup_size = 9
-#                      )
-# ARL_Wasting_Urban = ARL_Wasting_Urban$data
-# barplot(prop.table(table(ARL_Wasting_Urban$Wasting)),
-#         col = c("white", "darkgrey"),
-#         ylim = c(0, 1),
-#         xlim = c(0, 3),
-#         ylab = "Prevalence (%)",
-#         xlab = "Wasting",
-#         names = c("No", "Yes"),
-#         main = 'ARL_Wasting_Urban SMOTE-Balanced Dataset Class Distribution'
-#         )
-# abline(h = 0)
-# ################################################################################
-# ```
 
 
 
