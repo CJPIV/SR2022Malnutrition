@@ -4630,7 +4630,7 @@ TRAINING[[1]][["None"]] = UBStunting
 TRAINING[[1]][["MVLoR"]] = UBStunting
 for (i in 1:10){
   for (j in 1:10){
-    TRAINING[[1]][["MVLoR"]][[i]][[j]] = TRAINING[[1]][["MVLoR"]][[i]][[j]][,c(1,2,4,41)]
+    TRAINING[[1]][["MVLoR"]][[i]][[j]] = TRAINING[[1]][["MVLoR"]][[i]][[j]][,c(2,3,5,41)]
   }
 }
 TRAINING[[1]][["UVLoR"]] = UBStunting
@@ -4639,17 +4639,17 @@ for (i in 1:10){
     TRAINING[[1]][["UVLoR"]][[i]][[j]] = TRAINING[[1]][["UVLoR"]][[i]][[j]][,c(1,4,41)]
   }
 }
-TRAINING[[1]][["IG"]] = NA #IG
+TRAINING[[1]][["IG"]] = NA #IG]]
 TRAINING[[1]][["MRMR"]] = UBStunting
 for (i in 1:10){
   for (j in 1:10){
-    TRAINING[[1]][["MRMR"]][[i]][[j]] = TRAINING[[1]][["MRMR"]][[i]][[j]][,c(1,2,4,12,36,41)]
+    TRAINING[[1]][["MRMR"]][[i]][[j]] = TRAINING[[1]][["MRMR"]][[i]][[j]][,c(1:4,12,24,26,35,40,41)]
   }
 }
 TRAINING[[1]][["JMI"]] = UBStunting
 for (i in 1:10){
   for (j in 1:10){
-    TRAINING[[1]][["JMI"]][[i]][[j]] = TRAINING[[1]][["JMI"]][[i]][[j]][,c(1:4,41)]
+    TRAINING[[1]][["JMI"]][[i]][[j]] = TRAINING[[1]][["JMI"]][[i]][[j]][,c(1:4,8,12,13,41)]
   }
 }
 TRAINING[[1]][["ChiSq"]] = NA
@@ -4675,20 +4675,25 @@ for (i in 1:10){
 TRAINING[[2]][["IG"]] = SMOTEThinness
 for (i in 1:10){
   for (j in 1:10){
-    TRAINING[[2]][["IG"]][[i]][[j]] = TRAINING[[2]][["IG"]][[i]][[j]]$data[,c(5,8,24,41)]
+    TRAINING[[2]][["IG"]][[i]][[j]] = TRAINING[[2]][["IG"]][[i]][[j]]$data[,c(13,29,5,24,8,38,23,28,41)]
   }
 }
-TRAINING[[2]][["MRMR"]] = NA
+TRAINING[[2]][["MRMR"]] = SMOTEThinness
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[2]][["MRMR"]][[i]][[j]] = TRAINING[[2]][["MRMR"]][[i]][[j]]$data[,c(36,15,3,26,39,35,20,33,41)]
+  }
+}
 TRAINING[[2]][["JMI"]] = SMOTEThinness
 for (i in 1:10){
   for (j in 1:10){
-    TRAINING[[2]][["JMI"]][[i]][[j]] = TRAINING[[2]][["JMI"]][[i]][[j]]$data[,c(5,8,23,41)]
+    TRAINING[[2]][["JMI"]][[i]][[j]] = TRAINING[[2]][["JMI"]][[i]][[j]]$data[,c(1,28,40,12,13,29,34,4,5,24,35,8,38,35,21,41)]
   }
 }
 TRAINING[[2]][["ChiSq"]] = SMOTEThinness
 for (i in 1:10){
   for (j in 1:10){
-    TRAINING[[2]][["ChiSq"]][[i]][[j]] = TRAINING[[2]][["ChiSq"]][[i]][[j]]$data[,c(1,3,8,20,29,32,33,41)]
+    TRAINING[[2]][["ChiSq"]][[i]][[j]] = TRAINING[[2]][["ChiSq"]][[i]][[j]]$data[,c(1,3,29,39,8,32,33,41)]
   }
 }
 #TRAINING[[2]][["JMI"]] = thinness[,c(5, 8, 23, 41)] #JMI
@@ -4717,11 +4722,16 @@ for (i in 1:10){
     TRAINING[[3]][["IG"]][[i]][[j]] = TRAINING[[3]][["IG"]][[i]][[j]]$data[,c(1,41)]
   }
 }
-TRAINING[[3]][["MRMR"]] = TRAINING[[3]][["IG"]]
+TRAINING[[3]][["MRMR"]] = SMOTEWasting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[3]][["MRMR"]][[i]][[j]] = TRAINING[[3]][["MRMR"]][[i]][[j]]$data[,c(1,36,10,11,15,26,17,20,41)]
+  }
+}
 TRAINING[[3]][["JMI"]] = SMOTEWasting #None
 for (i in 1:10){
   for (j in 1:10){
-    TRAINING[[3]][["JMI"]][[i]][[j]] = TRAINING[[3]][["JMI"]][[i]][[j]]$data[,c(1,5,12,41)]
+    TRAINING[[3]][["JMI"]][[i]][[j]] = TRAINING[[3]][["JMI"]][[i]][[j]]$data[,c(1,2,28,40,11,12,13,29,34,5,24,35,8,38,23,21,41)]
   }
 }
 TRAINING[[3]][["ChiSq"]] = SMOTEWasting
@@ -5030,7 +5040,7 @@ best = list(accuracy = 0,
 
 for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
   #if (i > 1){break}
-  for (j in 1:7){ #5 feature selection (FS) sets
+  for (j in 1:7){ #7 feature selection (FS) sets
     if (is.na(TRAINING[[i]][[j]])){
       next
     }
@@ -5125,7 +5135,7 @@ best = list(accuracy = 0,
             )
 
 for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
-  for (j in 1:5){ #5 feature selection (FS) sets
+  for (j in 1:7){ #7 feature selection (FS) sets
     if (is.na(TRAINING[[i]][[j]])){
       next
     }
@@ -5222,9 +5232,9 @@ best = list(accuracy = 0,
             F1 = 0
             )
 
-for (i in 1){ #3 response sets (Stunting, Thinness, Wasting)
+for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
   #if (i > 1){break}
-  for (j in 1:7){ #5 feature selection (FS) sets
+  for (j in 1:7){ #7 feature selection (FS) sets
     if (is.na(TRAINING[[i]][[j]])){
       next
     }
@@ -5387,48 +5397,52 @@ for (i in 1){ #3 response sets (Stunting, Thinness, Wasting)
 library("ggplot2") 
 library("viridis")
 
-SVMSet = read.csv("Scores_SVM.csv")
-Scores_SVM = list(Stunting = list(None = list(Accuracy = 0, F1 = 0),
-                                MVLoR = list(Accuracy = 0, F1 = 0),
-                                UVLoR = list(Accuracy = 0, F1 = 0),
-                                IG = list(Accuracy = 0, F1 = 0),
-                                MRMR = list(Accuracy = 0, F1 = 0),
-                                JMI = list(Accuracy = 0, F1 = 0),
-                                ChiSq = list(Accuracy = 0, F1 = 0)
-                                ),
-                Thinness = list(None = list(Accuracy = 0, F1 = 0),
-                                MVLoR = list(Accuracy = 0, F1 = 0),
-                                UVLoR = list(Accuracy = 0, F1 = 0),
-                                IG = list(Accuracy = 0, F1 = 0),
-                                MRMR = list(Accuracy = 0, F1 = 0),
-                                JMI = list(Accuracy = 0, F1 = 0),
-                                ChiSq = list(Accuracy = 0, F1 = 0)
-                                ),
-                Wasting = list(None = list(Accuracy = 0, F1 = 0),
-                                MVLoR = list(Accuracy = 0, F1 = 0),
-                                UVLoR = list(Accuracy = 0, F1 = 0),
-                                IG = list(Accuracy = 0, F1 = 0),
-                                MRMR = list(Accuracy = 0, F1 = 0),
-                                JMI = list(Accuracy = 0, F1 = 0),
-                                ChiSq = list(Accuracy = 0, F1 = 0)
-                                )
-                )
-#The below script reads results and rewrites them to the correct format needed.
-index = 2
-for (i in 1:3){
-  for (j in 1:7){
-    for (k in 1:2){
-        Scores_SVM[[i]][[j]][[k]] = SVMSet[[index]]
-        index = index + 1
-    }
-  }
-}
+# XGBSet = read.csv("Scores_XGB.csv")
+# Scores_XGB = list(Stunting = list(None = list(Accuracy = 0, F1 = 0),
+#                                 MVLoR = list(Accuracy = 0, F1 = 0),
+#                                 UVLoR = list(Accuracy = 0, F1 = 0),
+#                                 IG = list(Accuracy = 0, F1 = 0),
+#                                 MRMR = list(Accuracy = 0, F1 = 0),
+#                                 JMI = list(Accuracy = 0, F1 = 0),
+#                                 ChiSq = list(Accuracy = 0, F1 = 0)
+#                                 ),
+#                 Thinness = list(None = list(Accuracy = 0, F1 = 0),
+#                                 MVLoR = list(Accuracy = 0, F1 = 0),
+#                                 UVLoR = list(Accuracy = 0, F1 = 0),
+#                                 IG = list(Accuracy = 0, F1 = 0),
+#                                 MRMR = list(Accuracy = 0, F1 = 0),
+#                                 JMI = list(Accuracy = 0, F1 = 0),
+#                                 ChiSq = list(Accuracy = 0, F1 = 0)
+#                                 ),
+#                 Wasting = list(None = list(Accuracy = 0, F1 = 0),
+#                                 MVLoR = list(Accuracy = 0, F1 = 0),
+#                                 UVLoR = list(Accuracy = 0, F1 = 0),
+#                                 IG = list(Accuracy = 0, F1 = 0),
+#                                 MRMR = list(Accuracy = 0, F1 = 0),
+#                                 JMI = list(Accuracy = 0, F1 = 0),
+#                                 ChiSq = list(Accuracy = 0, F1 = 0)
+#                                 )
+#                 )
+# #The below script reads results and rewrites them to the correct format needed.
+# index = 2
+# for (i in 1:3){
+#   for (j in 1:7){
+#     for (k in 1:2){
+#         Scores_XGB[[i]][[j]][[k]] = XGBSet[[index]]
+#         index = index + 1
+#     }
+#   }
+# }
 ################################################################################
 for (score in c("Accuracy", "F1")){
   for (response in c("Stunting", "Thinness", "Wasting")){
     SVM = c()
     for (i in 1:7){
       SVM[i] = round(Scores_SVM[[response]][[i]][[score]], 3) #Round to 3 decimal places
+    }
+    XGB = c()
+    for (i in 1:7){
+      XGB[i] = round(Scores_XGB[[response]][[i]][[score]], 3) #Round to 3 decimal places
     }
     LogReg = c()
     for (i in 1:7){
@@ -5440,9 +5454,9 @@ for (score in c("Accuracy", "F1")){
                                          rep("MVLoR", 7)
                                          ),
                          FS = c(rep(c("None","MVLoR","UVLoR","IG","MRMR","JMI","ChiSq"), 4)),
-                         values = c(rep(1, 7),
+                         values = c(rep(0, 7),
                                     SVM,
-                                    rep(1, 7),
+                                    XGB,
                                     LogReg
                                     )
                          )
@@ -5450,9 +5464,9 @@ for (score in c("Accuracy", "F1")){
     heatmap = heatmap + geom_text(aes(label = values))
     #heatmap =  heatmap + geom_text(aes(label = values), col = 'black') + scale_fill_gradient(low = 'darkmagenta', high = 'gold')
     heatmap =  heatmap + geom_text(aes(label = values), col = 'black') +
-      scale_fill_gradient2(low = rgb(163, 29, 42, maxColorValue = 255),
-                           mid = rgb(254, 249, 192, maxColorValue = 255),
-                           high = rgb(2,105,56, maxColorValue = 255),
+      scale_fill_gradient2(low = "red",#rgb(163, 29, 42, maxColorValue = 255),
+                           mid = "yellow",#rgb(254, 249, 192, maxColorValue = 255),
+                           high = "green",#rgb(2,105,56, maxColorValue = 255),
                            midpoint = 0.5
                            )
     heatmap = heatmap + ggtitle(paste0(score," (%) on ", response))  #from Confusion Matrix Using Grid Search"))
