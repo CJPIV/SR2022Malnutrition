@@ -5040,6 +5040,11 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
         train[,ncol(train)] = as.factor(train[,ncol(train)]) #Set response as factor
         
         test = VALID[[i]][[j]][[k]][[l]] #Prepare test; 1 test set for 10 train/valid sets (seen below)
+        if (length(range(test[,ncol(test)])) != 2){ #Should be both 0s and 1s as response vars
+          next
+        }else if (range(test[,ncol(test)])[2] != 1){
+          next
+        }
         test[,ncol(test)] = as.factor(test[,ncol(test)])
 
         MVLoR = glm(paste0(names(train)[ncol(train)], "~."),
@@ -5047,26 +5052,12 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
                     family = "binomial"
                     )
         y_pred = predict(MVLoR, newdata = test[-ncol(test)], type = "response")
-        y_pred <- ifelse(y_pred > 0.5,1,0) 
-
-        # Making the Confusion Matrix
-        cm = table(test[, ncol(test)], y_pred)
-        if (ncol(cm) < 2 | nrow(cm) < 2){ #Assumed all test are majority class
-          accuracy = 0
-          F1 = 0
-        }else{
-          accuracy = (cm[1,1] + cm[2,2]) / (cm[1,1] + cm[2,2] + cm[1,2] + cm[2,1])
-          TN = cm[1,1]
-          FN = cm[2,1]
-          FP = cm[1,2]
-          TP = cm[2,2]
-          precision = TP/(TP+FP)
-          recall = TP/(TP+FN)
-          F1 = 2*precision*recall/(precision+recall)
-          if (is.na(F1)){
-            F1 = 0
-          }
-        }
+        y_pred = unname(1*(y_pred >= 0.5))
+        CM = confusionMatrix(data = as.factor(y_pred),
+                             reference = test[,ncol(test)]
+                             )
+        accuracy = CM$overall[["Accuracy"]]
+        F1 = CM$byClass[["F1"]]
         Scores_MVLoR[[i]][[j]][[1]] = Scores_MVLoR[[i]][[j]][[1]] + accuracy
         Scores_MVLoR[[i]][[j]][[2]] = Scores_MVLoR[[i]][[j]][[2]] + F1
         if(F1 > best$F1){
@@ -5134,7 +5125,7 @@ best = list(accuracy = 0,
             )
 
 for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
-  for (j in 1:7){ #5 feature selection (FS) sets
+  for (j in 1:5){ #5 feature selection (FS) sets
     if (is.na(TRAINING[[i]][[j]])){
       next
     }
@@ -5142,6 +5133,11 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
       for (l in 1:10){ #10 train/validation sets per test set
         train = TRAINING[[i]][[j]][[k]][[l]] #Import & coerce to matrix in order to scale
         valid = VALID[[i]][[j]][[k]][[l]]
+        if (length(range(valid[,ncol(valid)])) != 2){ #Should be both 0s and 1s as response vars
+          next
+        }else if (range(valid[,ncol(valid)])[2] != 1){
+          next
+        }
         train[,ncol(train)] = as.factor(train[,ncol(train)]) #Set response as factor
         valid[,ncol(valid)] = as.factor(valid[,ncol(valid)])
 
@@ -5158,26 +5154,13 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
                            #tuneGrid = rfGrid,
                            trControl = control
                            )
-        y_pred = predict(RF, newdata = valid[-ncol(valid)])
-        
-        # Making the Confusion Matrix
-        cm = table(valid[, ncol(valid)], y_pred)
-        if (ncol(cm) < 2 | nrow(cm) < 2){ #Assumed all test are majority class
-          accuracy = 0
-          F1 = 0
-        }else{
-          accuracy = (cm[1,1] + cm[2,2]) / (cm[1,1] + cm[2,2] + cm[1,2] + cm[2,1])
-          TN = cm[1,1]
-          FN = cm[2,1]
-          FP = cm[1,2]
-          TP = cm[2,2]
-          precision = TP/(TP+FP)
-          recall = TP/(TP+FN)
-          F1 = 2*precision*recall/(precision+recall)
-          if (is.na(F1)){
-            F1 = 0
-          }
-        }
+        y_pred = predict(RF, newdata = as.matrix(test[-ncol(test)]))
+        #y_pred = 1*(y_pred >= 0.5)
+        CM = confusionMatrix(data = y_pred,
+                             reference = as.factor(test[,ncol(test)])
+                             )
+        accuracy = CM$overall[["Accuracy"]]
+        F1 = CM$byClass[["F1"]]
         #cat(accuracy)
         #cat(F1)
         Scores_RF[[i]][[j]][[1]] = Scores_RF[[i]][[j]][[1]] + accuracy
@@ -5239,30 +5222,23 @@ best = list(accuracy = 0,
             F1 = 0
             )
 
-for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
+for (i in 1){ #3 response sets (Stunting, Thinness, Wasting)
   #if (i > 1){break}
   for (j in 1:7){ #5 feature selection (FS) sets
     if (is.na(TRAINING[[i]][[j]])){
       next
     }
     for (k in 1:10){ #10 test sets total
-      test = TEST[[i]][[j]][[k]] #Prepare test; 1 test set for 10 train/valid sets (seen below)
-      #test = as.matrix(test)
-      #test[-ncol(test)] = as.data.frame(scale(test[-ncol(test)]))
-      test[,ncol(test)] = as.factor(test[,ncol(test)])
-      
       for (l in 1:10){ #10 train/validation sets per test set
         train = TRAINING[[i]][[j]][[k]][[l]] #Import & coerce to matrix in order to scale
-        #train = as.matrix(train)
-        #train[-ncol(train)] = as.data.frame(scale(train[-ncol(train)])) #Scale, coerce to DF
+        valid = VALID[[i]][[j]][[k]][[l]]
+        if (length(range(valid[,ncol(valid)])) != 2){ #Should be both 0s and 1s as response vars
+          next
+        }else if (range(valid[,ncol(valid)])[2] != 1){
+          next
+        }
         train[,ncol(train)] = as.factor(train[,ncol(train)]) #Set response as factor
-
-        # classifier = svm(x = train[-ncol(train)],
-        #                  y = train[,ncol(train)],
-        #                  #data = train,
-        #                  type = 'C-classification',
-        #                  kernel = 'linear'
-        #                  )
+        valid[,ncol(valid)] = as.factor(valid[,ncol(valid)])
         control = trainControl(method = "repeatedcv",
                                number = 10,
                                repeats = 10,
@@ -5277,26 +5253,13 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
                            tuneGrid = svmGrid,
                            trControl = control
                            )
-        y_pred = predict(SVM, newdata = test[-ncol(test)])
-        
-        # Making the Confusion Matrix
-        cm = table(test[, ncol(test)], y_pred)
-        if (ncol(cm) != 2 | nrow(cm) != 2){ #Must be 2x2 CM, otherwise unusable
-          accuracy = 0
-          F1 = 0
-        }else{
-          accuracy = (cm[1,1] + cm[2,2]) / (cm[1,1] + cm[2,2] + cm[1,2] + cm[2,1])
-          TN = cm[1,1]
-          FN = cm[2,1]
-          FP = cm[1,2]
-          TP = cm[2,2]
-          precision = TP/(TP+FP)
-          recall = TP/(TP+FN)
-          F1 = 2*precision*recall/(precision+recall)
-          if (is.na(F1)){
-            F1 = 0
-          }
-        }
+        y_pred = predict(SVM, newdata = as.matrix(valid[-ncol(valid)]))
+        #y_pred = 1*(y_pred >= 0.5)
+        CM = confusionMatrix(data = y_pred,
+                             reference = as.factor(valid[,ncol(valid)])
+                             )
+        accuracy = CM$overall[["Accuracy"]]
+        F1 = CM$byClass[["F1"]]
         Scores_SVM[[i]][[j]][[1]] = Scores_SVM[[i]][[j]][[1]] + accuracy
         Scores_SVM[[i]][[j]][[2]] = Scores_SVM[[i]][[j]][[2]] + F1
         if(F1 > best$F1){
@@ -5359,41 +5322,26 @@ best = list(accuracy = 0,
             trainvalid = 0,
             F1 = 0
             )
-for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
-  #if (i > 1){break}
-  for (j in 1:7){ #5 feature selection (FS) sets
+for (i in 1){ #3 response sets (Stunting, Thinness, Wasting)
+  for (j in 1){ #7 feature selection (FS) sets
     if (is.na(TRAINING[[i]][[j]])){
       next
     }
     for (k in 1:10){ #10 test sets total
       test = TEST[[i]][[j]][[k]] #Prepare test; 1 test set for 10 train/valid sets (seen below)
-      #test = as.matrix(test)
-      #test[-ncol(test)] = as.data.frame(scale(test[-ncol(test)]))
       test[,ncol(test)] = as.factor(test[,ncol(test)])
       
       for (l in 1:10){ #10 train/validation sets per test set
         train = TRAINING[[i]][[j]][[k]][[l]] #Import & coerce to matrix in order to scale
-        #train = as.matrix(train)
-        #train[-ncol(train)] = as.data.frame(scale(train[-ncol(train)])) #Scale, coerce to DF
         train[,ncol(train)] = as.factor(train[,ncol(train)]) #Set response as factor
-        
-        # classifier = xgboost(data = as.matrix(train[-ncol(train)]), #elimina la que buscamos
-        #              label = as.numeric(as.character(train[,ncol(train)])), #consigue la última variable
-        #              nrounds = 13,
-        #              params = parameters
-        #              )
-        #cat(i)
-        #cat(j)
-        #cat(k)
-        #cat(l)
         control = trainControl(method = "repeatedcv",
                                number = 10,
-                               repeats = 10,
+                               repeats = 1,
                                summaryFunction = f1
                                )
-        xgbGrid <- expand.grid(nrounds = c(100),#,200),  
-                       max_depth = c(10),#, 15, 20, 25),
-                       colsample_bytree = seq(0.5),#, 0.9, length.out = 5),
+        xgbGrid <- expand.grid(nrounds = c(50),#,100),  
+                       max_depth = c(5),#, 10, 15, 20),
+                       colsample_bytree = seq(0.1),#, 0.5, length.out = 5),
                        ## The values below are default values in the sklearn-api. 
                        eta = 0.1,
                        gamma=0,
@@ -5410,27 +5358,12 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
                            )
         # Predicting the Test set results
         y_pred = predict(XGB, newdata = as.matrix(test[-ncol(test)]))
-        y_pred = 1*(y_pred >= 0.5)
-        #table(y_pred)
-        #table(test[,41])
-        # Making the Confusion Matrix
-        cm = table(test[, ncol(test)], y_pred)
-        if (ncol(cm) < 2 | nrow(cm) < 2){ #Assumed all test are majority class
-          accuracy = 0
-          F1 = 0
-        }else{
-          accuracy = (cm[1,1] + cm[2,2]) / (cm[1,1] + cm[2,2] + cm[1,2] + cm[2,1])
-          TN = cm[1,1]
-          FN = cm[2,1]
-          FP = cm[1,2]
-          TP = cm[2,2]
-          precision = TP/(TP+FP)
-          recall = TP/(TP+FN)
-          F1 = 2*precision*recall/(precision+recall)
-          if (is.na(F1)){
-            F1 = 0
-          }
-        }
+        #y_pred = 1*(y_pred >= 0.5)
+        CM = confusionMatrix(data = y_pred,
+                             reference = as.factor(test[,ncol(test)])
+                             )
+        accuracy = CM$overall[["Accuracy"]]
+        F1 = CM$byClass[["F1"]]
         Scores_XGB[[i]][[j]][[1]] = Scores_XGB[[i]][[j]][[1]] + accuracy
         Scores_XGB[[i]][[j]][[2]] = Scores_XGB[[i]][[j]][[2]] + F1
         if(F1 > best$F1){
@@ -5451,65 +5384,82 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
 
 
 ```{r Classifier Heat Maps}
-library("ggplot2")                                       
+library("ggplot2") 
+library("viridis")
 
-mapdata = data.frame(FS = c(rep("None", 4),
-                            rep("MVLoR", 4),
-                            rep("UVLoR", 4),
-                            rep("ChiSq", 4),
-                            rep("MRMR", 4),
-                            rep("JMI", 4),
-                            rep("IG", 4)
-                            ),
-                     classifiers = c(rep(c("RF", "SVM", "XGB", "MVLoR"), 7))
-                     )
-for (i in 1:3){ #For each response set
-  for (j in 1:4){ #For each classifier
-    for (k in 1:7){ #For each FS method
-      
+SVMSet = read.csv("Scores_SVM.csv")
+Scores_SVM = list(Stunting = list(None = list(Accuracy = 0, F1 = 0),
+                                MVLoR = list(Accuracy = 0, F1 = 0),
+                                UVLoR = list(Accuracy = 0, F1 = 0),
+                                IG = list(Accuracy = 0, F1 = 0),
+                                MRMR = list(Accuracy = 0, F1 = 0),
+                                JMI = list(Accuracy = 0, F1 = 0),
+                                ChiSq = list(Accuracy = 0, F1 = 0)
+                                ),
+                Thinness = list(None = list(Accuracy = 0, F1 = 0),
+                                MVLoR = list(Accuracy = 0, F1 = 0),
+                                UVLoR = list(Accuracy = 0, F1 = 0),
+                                IG = list(Accuracy = 0, F1 = 0),
+                                MRMR = list(Accuracy = 0, F1 = 0),
+                                JMI = list(Accuracy = 0, F1 = 0),
+                                ChiSq = list(Accuracy = 0, F1 = 0)
+                                ),
+                Wasting = list(None = list(Accuracy = 0, F1 = 0),
+                                MVLoR = list(Accuracy = 0, F1 = 0),
+                                UVLoR = list(Accuracy = 0, F1 = 0),
+                                IG = list(Accuracy = 0, F1 = 0),
+                                MRMR = list(Accuracy = 0, F1 = 0),
+                                JMI = list(Accuracy = 0, F1 = 0),
+                                ChiSq = list(Accuracy = 0, F1 = 0)
+                                )
+                )
+#The below script reads results and rewrites them to the correct format needed.
+index = 2
+for (i in 1:3){
+  for (j in 1:7){
+    for (k in 1:2){
+        Scores_SVM[[i]][[j]][[k]] = SVMSet[[index]]
+        index = index + 1
     }
   }
 }
-
-heatmap = ggplot(mapdata, aes(FS, classifiers))
-heatmap =  heatmap + geom_text(aes(label = values), col = 'black') + scale_fill_gradient(low = 'yellow', high = 'red')
-heatmap = heatmap + ggtitle("Accuracy (%) on Stunting Test Set from Confusion Matrix Using Grid Search")
-heatmap + theme(text = element_text(size = 15))
-heatmap
 ################################################################################
-### Accuracy ###
-'
-  - Values are correlated across columns
-      - For example: 68.81 refers to SVM_SMOTE/IG, 74.51 refers to RF_SMOTE, RelF
-'
-
-data = data.frame(Feature_Selection = c("IG", "IG", "IG", "IG",
-                                        "RelF", "RelF", "RelF", "RelF",
-                                        "LinReg", "LinReg", "LinReg", "LinReg",
-                                        "Manual", "Manual", "Manual","Manual",
-                                        "No FS", "No FS", "No FS", "No FS",
-                                        "Comb FS", "Comb FS", "Comb FS", "Comb FS"), 
-                  Classifiers = c("SVM_SMOTE", "RF_SMOTE", "SVM_Z", "RF_Z", 
-                                  "SVM_SMOTE", "RF_SMOTE", "SVM_Z", "RF_Z",
-                                  "SVM_SMOTE", "RF_SMOTE", "SVM_Z", "RF_Z",
-                                  "SVM_SMOTE", "RF_SMOTE", "SVM_Z", "RF_Z",
-                                  "SVM_SMOTE", "RF_SMOTE", "SVM_Z", "RF_Z",
-                                  "SVM_SMOTE", "RF_SMOTE", "SVM_Z", "RF_Z"), 
-                  values = c(68.81,	73.84,	61.39,	60.91,
-                             68.24,	74.51,	61.39,	61.20,
-                             67.37,	74.23,	59.07,	60.71,
-                             67.37,	64.28,	61.29,	61.20,
-                             65.53,	76.35,	56.86,	61.39,
-                             69.30,	70.65,	61.39,	60.61))
-
-ggp <- ggplot(data, aes(Feature_Selection, Classifiers)) + geom_tile(aes(fill = values)) # Creates default heatmap
-ggp <- ggp + geom_text(aes(label = values))          # Add value labels to 
-ggp <-  ggp + geom_text(aes(label = values), col = 'black') + scale_fill_gradient(low = 'yellow', high = 'red') # colors can be changed
-ggp <- ggp + ggtitle("Accuracy (%) on Stunting Test Set from Confusion Matrix Using Grid Search")
-
-ggp + theme(text = element_text(size = 15))     # Changes the font size of the axes labels and title              
-
-
+for (score in c("Accuracy", "F1")){
+  for (response in c("Stunting", "Thinness", "Wasting")){
+    SVM = c()
+    for (i in 1:7){
+      SVM[i] = round(Scores_SVM[[response]][[i]][[score]], 3) #Round to 3 decimal places
+    }
+    LogReg = c()
+    for (i in 1:7){
+      LogReg[i] = round(Scores_MVLoR[[response]][[i]][[score]], 3) #Round to 3 decimal places
+    }
+    mapdata = data.frame(Classifier = c(rep("RF", 7),
+                                         rep("SVM", 7),
+                                         rep("XGB", 7),
+                                         rep("MVLoR", 7)
+                                         ),
+                         FS = c(rep(c("None","MVLoR","UVLoR","IG","MRMR","JMI","ChiSq"), 4)),
+                         values = c(rep(1, 7),
+                                    SVM,
+                                    rep(1, 7),
+                                    LogReg
+                                    )
+                         )
+    heatmap = ggplot(mapdata, aes(FS, Classifier, fill = values)) + geom_tile(color = "white", size = 0.5)
+    heatmap = heatmap + geom_text(aes(label = values))
+    #heatmap =  heatmap + geom_text(aes(label = values), col = 'black') + scale_fill_gradient(low = 'darkmagenta', high = 'gold')
+    heatmap =  heatmap + geom_text(aes(label = values), col = 'black') +
+      scale_fill_gradient2(low = rgb(163, 29, 42, maxColorValue = 255),
+                           mid = rgb(254, 249, 192, maxColorValue = 255),
+                           high = rgb(2,105,56, maxColorValue = 255),
+                           midpoint = 0.5
+                           )
+    heatmap = heatmap + ggtitle(paste0(score," (%) on ", response))  #from Confusion Matrix Using Grid Search"))
+    heatmap = heatmap + theme(text = element_text(size = 12), 
+                              plot.title = element_text(hjust = 0.5))
+    print(heatmap)
+  }}
 ```
 
 
