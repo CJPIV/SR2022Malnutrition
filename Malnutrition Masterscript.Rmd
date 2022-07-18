@@ -386,29 +386,35 @@ library(fastDummies)
 ################################################################################
 #DEAL WITH CATEGORICALS
 #impute ordinal categoricals
-imputed = kNN(reducedSurvey, variable = colnames(reducedSurvey), k = 5, impNA = TRUE)
-imputed = subset(imputed, select = AL:WaterFromTank)
+#imputed = kNN(reducedSurvey, variable = colnames(reducedSurvey), k = 5, impNA = TRUE)
+#imputed = subset(imputed, select = AL:WaterFromTank)
 
 #1HE nominal categoricals
 #I already encoded some of these by hand in the last code block, but the remainder can be handled by this imported function
-oneHotEncoded = dummy_cols(.data = imputed,
+oneHotEncoded = dummy_cols(.data = reducedSurvey,
                      ignore_na = TRUE,
                      remove_first_dummy =  TRUE,
                      split = ",")
 oneHotEncoded = oneHotEncoded[,-c(48, 123)] #One category got broken up and the other was created to account for a sample answer that got misinput as both
-oneHotEncoded[[843, 121]] = 1
+#[[843, 121]] = 1
 
 ```
 
 
 
-```{r Final Layer of Data Handling}
+```{r Final Layer of Data Handling, warning = FALSE}
 #Handle variables we decided to remove or calculate differently after I wrote 300 lines of code. I'm not mad - I'm not just rewriting everything above to account for new index values.
 processed = oneHotEncoded[, -c(1:5, 11, 13:14, 18, 20, 22, 25:26, 30:44, 49, 52:56, 61, 66, 70, 73:75, 83, 86, 92, 94, 99:104, 107:112, 114, 119:121, 127)]
 
 #Encode mother's education
 for (i in 1:1036){
   education = processed[[i, 19]]
+  if (is.na(education)){
+    processed$momFinishedPrimary[[i]] = NA
+    processed$momFinishedSecondary[[i]] = NA
+    processed$momFinishedTertiary[[i]] = NA
+    next
+  }
   processed$momFinishedPrimary[[i]] = 0
   processed$momFinishedSecondary[[i]] = 0
   processed$momFinishedTertiary[[i]] = 0
@@ -428,6 +434,10 @@ processed = processed[, -19]
 
 #Convert house floor materials into a binary for whether that floor is dust or not
 for (i in 1:1036){
+  if (is.na(sum(processed[i,61:65]))){
+    processed$houseDustFloor[[i]] = NA
+    next
+  }
   if (sum(processed[i,61:65]) > 0){
     processed$houseDustFloor[[i]] = 0
   }else{
@@ -440,6 +450,9 @@ processed = processed[,-c(61:65)]
 #Converting 1/2 binaries to 0/1
 for (sample in 1:1036){
   for (factor in 53:56){
+    if(is.na(processed[sample,factor])){
+      next
+    }
     if (processed[sample, factor] == 2){
       processed[sample, factor] = 0
     }
@@ -452,11 +465,21 @@ processed = processed[,-3]
 
 #1HE washing hands after lat into "never", "with water", and "with soap" groups
 for (i in 1:1036){
-  if (processed[[i,38]] == 2){
+  if (is.na(processed[[i,38]])){
+    processed$washHandsLatWater[[i]] = NA
+    processed$washHandsLatWaterSoap[[i]] = NA
+    next
+  }
+  else if (processed[[i,38]] == 2){
     processed$washHandsLatWater[[i]] = 0
     processed$washHandsLatWaterSoap[[i]] = 0
   }else{
-    if (processed[[i, 39]] == 0){
+    if (is.na(processed[[i,39]])){
+      processed$washHandsLatWater[[i]] = NA
+      processed$washHandsLatWaterSoap[[i]] = NA
+      next
+    }
+    else if (processed[[i, 39]] == 0){
       processed$washHandsLatWater[[i]] = 1
       processed$washHandsLatWaterSoap[[i]] = 0
     }else if (processed[[i, 39]] == 1){
@@ -471,11 +494,21 @@ processed = processed[, -c(38:39)]
 
 #1HE washing hands before eat into "never", "with water", "with soap" groups
 for (i in 1:1036){
-  if (processed[[i,38]] == 2){
+  if (is.na(processed[[i,38]])){
+    processed$washHandsWaterB4Eat[[i]] = NA
+    processed$washHandsSoapB4Eat[[i]] = NA
+    next
+  }
+  else if (processed[[i,38]] == 2){
     processed$washHandsWaterB4Eat[[i]] = 0
     processed$washHandsSoapB4Eat[[i]] = 0
   }else{
-    if (processed[[i, 39]] == 0){
+    if (is.na(processed[[i,39]])){
+      processed$washHandsWaterB4Eat[[i]] = NA
+      processed$washHandsSoapB4Eat[[i]] = NA
+      next
+    }
+    else if (processed[[i, 39]] == 0){
       processed$washHandsWaterB4Eat[[i]] = 1
       processed$washHandsSoapB4Eat[[i]] = 0
     }else if (processed[[i, 39]] == 1){
@@ -491,7 +524,11 @@ processed = processed[, -c(38:39)]
 #Change ternary variables into binaries based on biological significance
 for (sample in 1:1036){
   for (factor in c(33:37)){
-    if (processed[[sample, factor]] == 2){
+    if (is.na(processed[[sample, factor]])){
+      processed[[sample, factor]] = NA
+      next
+    }
+    else if (processed[[sample, factor]] == 2){
       processed[[sample, factor]] = 0
     }else{
       processed[[sample, factor]] = 1
@@ -502,7 +539,11 @@ names(processed)[[33]] = "RiverBathing"
 names(processed)[[34]] = "RiverLaundry"
 
 for (sample in 1:1036){
- if (processed[[sample, 38]] == 1){
+  if (is.na(processed[[sample, 38]])){
+    processed[[sample, 38]] = NA
+    next
+  }
+ else if (processed[[sample, 38]] == 1){
    processed[[sample, 38]] = 0
  }else{
    processed[[sample, 38]] = 1
@@ -510,7 +551,11 @@ for (sample in 1:1036){
 }
 
 for (sample in 1:1036){
-  if (processed[[sample, 39]] != 0){
+  if (is.na(processed[[sample, 39]])){
+    processed[[sample, 39]] = NA
+    next
+  }
+  else if (processed[[sample, 39]] != 0){
     processed[[sample, 39]] = 0
   }else if (processed[[sample, 39]] == 0){
     processed[[sample, 39]] = 1
@@ -521,7 +566,11 @@ names(processed)[[39]] = "NeverWashFruit"
 #More ternary variables, but split differently according to biological significance
 for (sample in 1:1036){
   for (factor in c(40:42)){
-    if (processed[[sample, factor]] != 0){
+    if (is.na(processed[[sample, factor]])){
+      processed[[sample, factor]] = NA
+      next
+    }
+    else if (processed[[sample, factor]] != 0){
       processed[[sample, factor]] = 1
     }else{
       processed[[sample, factor]] = 0
@@ -532,7 +581,11 @@ for (sample in 1:1036){
 #This loop below does two things: it re-formats data so 0 is false and 1 is true, OR turns already-correct but useless data into correctly-encoded data (i.e. "NoPhone" and "NoWaterInHouse")
 for (sample in 1:1036){
   for (factor in c(11,13,23,31,32,36,37)){
-    if (processed[[sample, factor]] == 1){
+    if (is.na(processed[[sample, factor]])){
+      processed[[sample, factor]] = NA
+      next
+    }
+    else if (processed[[sample, factor]] == 1){
       processed[[sample, factor]] = 0
     }else{
       processed[[sample, factor]] = 1
@@ -550,8 +603,12 @@ names(processed)[[36]] = "DontUseSchoolLat"
 names(processed)[[37]] = "DontUseTP"
 
 for (i in 1:1036){
-  if (processed[[i,8]] == 1 | processed[[i,9]] == 1 | processed[[i,10]] == 1){
+  if ((!is.na(processed[[i,8]] & processed[[i,8]] == 1)) |
+      (!is.na(processed[[i,9]] & processed[[i,9]] == 1)) |
+      (!is.na(processed[[i,10]] & processed[[i,10]] == 1))){
     processed$SickLast2Weeks[i] = 1
+  }else if (is.na(processed[[i,8]]) | is.na(processed[[i,9]]) | is.na(processed[[i,10]])){
+    processed$SickLast2Weeks[i] = NA
   }else{
     processed$SickLast2Weeks[i] = 0
   }
@@ -559,27 +616,36 @@ for (i in 1:1036){
 processed = processed[,-c(8:10)]
 
 for (i in 1:1036){
-  if (processed[[i,8]] == 1 | processed[[i,9]] == 1) {
+  if ((!is.na(processed[[i,8]] & processed[[i,8]] == 1)) |
+      (!is.na(processed[[i,9]] & processed[[i,9]] == 1))){
     processed$NailsMaintained[i] = 0
+  }else if (is.na(processed[[i,8]]) | is.na(processed[[i,9]])){
+    processed$NailsMaintained[i] = NA
   }else{
-    processed$NailsMaintained[i] = 1
+    processed$NailsMaintained[i] = 0
   }
 }
 processed = processed[,-c(8:10)]
 
 for (i in 1:1036){
-  if (processed[[i,8]] == 1 | processed[[i,9]] == 1) {
+  if ((!is.na(processed[[i,8]] & processed[[i,8]] == 1)) |
+      (!is.na(processed[[i,9]] & processed[[i,9]] == 1))){
     processed$SchoolLatClean[i] = 0
+  }else if (is.na(processed[[i,8]]) | is.na(processed[[i,9]])){
+    processed$SchoolLatClean[i] = NA
   }else{
-    processed$SchoolLatClean[i] = 1
+    processed$SchoolLatClean[i] = 0
   }
 }
 processed = processed[,-c(8:9, 11)]
 processed = processed[,-c(10)]
 
 for (i in 1:1036){
-  if (processed[[i,11]] == 1 | processed[[i,12]] == 1) {
+  if ((!is.na(processed[[i,11]] & processed[[i,11]] == 1)) |
+      (!is.na(processed[[i,12]] & processed[[i,12]] == 1))){
     processed$"Radio/TV"[i] = 1
+  }else if (is.na(processed[[i,11]]) | is.na(processed[[i,12]])){
+    processed$"Radio/TV"[i] = NA
   }else{
     processed$"Radio/TV"[i] = 0
   }
@@ -590,8 +656,11 @@ processed = processed[,-11]
 processed = processed[,-c(16, 18)]
 
 for (i in 1:1036){
-  if (processed[[i,18]] == 1 | processed[[i,19]] == 1) {
+  if ((!is.na(processed[[i,18]] & processed[[i,18]] == 1)) |
+      (!is.na(processed[[i,19]] & processed[[i,19]] == 1))){
     processed$RiverCleaning[i] = 1
+  }else if (is.na(processed[[i,18]]) | is.na(processed[[i,19]])){
+    processed$RiverCleaning[i] = NA
   }else{
     processed$RiverCleaning[i] = 0
   }
@@ -599,8 +668,11 @@ for (i in 1:1036){
 processed = processed[,-c(18,19)]
 
 for (i in 1:1036){
-  if (processed[[i,28]] == 1 | processed[[i,29]] == 1) {
+  if ((!is.na(processed[[i,28]] & processed[[i,28]] == 1)) |
+      (!is.na(processed[[i,29]] & processed[[i,29]] == 1))){
     processed$OtherMeds[i] = 1
+  }else if (is.na(processed[[i,28]]) | is.na(processed[[i,29]])){
+    processed$OtherMeds[i] = NA
   }else{
     processed$OtherMeds[i] = 0
   }
@@ -610,8 +682,11 @@ processed = processed[,-28]
 processed = processed[,-c(30:34)]
 
 for (i in 1:1036){
-  if (processed[[i,31]] == 1 | processed[[i,32]] == 1) {
+  if ((!is.na(processed[[i,31]] & processed[[i,31]] == 1)) |
+      (!is.na(processed[[i,32]] & processed[[i,32]] == 1))){
     processed$"momFinished2Up"[i] = 1
+  }else if (is.na(processed[[i,31]]) | is.na(processed[[i,32]])){
+    processed$"momFinished2Up"[i] = NA
   }else{
     processed$"momFinished2Up"[i] = 0
   }
@@ -673,11 +748,14 @@ for (i in 1:1036){
 
 
 ```{r Saving Preprocessing}
-stunting = processed[,-c(3, 4, 43, 45:48)]
-thinness = processed[,-c(3, 4, 43:45, 47:48)]
-wasting = processed[,-c(3, 4, 43:47)]
-wasting = subset(wasting, Age < 11)
-wasting$Wasting = as.numeric(as.character(wasting$Wasting))
+Stunting = processed[,-c(3, 4, 43, 45:48)]
+Thinness = processed[,-c(3, 4, 43:45, 47:48)]
+Wasting = processed[,-c(3, 4, 43:47)]
+Wasting = subset(Wasting, Age < 11)
+Wasting$Wasting = as.numeric(as.character(Wasting$Wasting))
+stunting = Stunting
+thinness = Thinness
+wasting = Wasting
 ################################################################################
 stuntingUrban = subset(stunting, Urban == 1)
 stuntingNotUrban = subset(stunting, Urban == 0)
@@ -724,27 +802,47 @@ WastingFull = wasting
 library(caret)
 library(tidyverse)
 library(smotefamily)
+library(VIM)
 
 set.seed(13)
-testFolds = createFolds(stunting$Stunting, k = 10) #Create k splits
-testSetsStunting = list(stunting[testFolds$Fold01, ], stunting[testFolds$Fold02, ],
-                        stunting[testFolds$Fold03, ], stunting[testFolds$Fold04, ],
-                        stunting[testFolds$Fold05, ], stunting[testFolds$Fold06, ],
-                        stunting[testFolds$Fold07, ], stunting[testFolds$Fold08, ],
-                        stunting[testFolds$Fold09, ], stunting[testFolds$Fold10, ]
+################################################################################
+#TEST data
+imputed = kNN(stunting, variable = colnames(stunting), k = 5, impNA = TRUE) 
+imputed = subset(imputed, select = 1:41)
+testFolds = createFolds(imputed$Stunting, k = 10) #Create k splits
+
+TestStunting = list(imputed[testFolds$Fold01, ], imputed[testFolds$Fold02, ],
+                        imputed[testFolds$Fold03, ], imputed[testFolds$Fold04, ],
+                        imputed[testFolds$Fold05, ], imputed[testFolds$Fold06, ],
+                        imputed[testFolds$Fold07, ], imputed[testFolds$Fold08, ],
+                        imputed[testFolds$Fold09, ], imputed[testFolds$Fold10, ]
                         )
-sansTestStunting = list(stunting[-testFolds$Fold01, ], stunting[-testFolds$Fold02, ],
+################################################################################
+
+TrainValidStunting = list(stunting[-testFolds$Fold01, ], stunting[-testFolds$Fold02, ],
                         stunting[-testFolds$Fold03, ], stunting[-testFolds$Fold04, ],
                         stunting[-testFolds$Fold05, ], stunting[-testFolds$Fold06, ],
                         stunting[-testFolds$Fold07, ], stunting[-testFolds$Fold08, ],
                         stunting[-testFolds$Fold09, ], stunting[-testFolds$Fold10, ]
                         )
 UBStunting = list()
-validSetsStunting = list()
+ValidStunting = list()
 for (i in 1:10){
-  curSet = sansTestStunting[[i]]
-  validationFolds = createFolds(sansTestStunting[[i]]$Stunting, k = 10)
-  validSetsStunting[[i]] = validationFolds
+  curSet = TrainValidStunting[[i]]
+  imputed = kNN(curSet, variable = colnames(stunting), k = 5, impNA = TRUE) 
+  imputed = subset(imputed, select = 1:41)
+  validationFolds = createFolds(TrainValidStunting[[i]]$Stunting, k = 10)
+  ValidStunting[[i]] = list(imputed[validationFolds$Fold01, ],
+                         imputed[validationFolds$Fold02, ],
+                         imputed[validationFolds$Fold03, ],
+                         imputed[validationFolds$Fold04, ],
+                         imputed[validationFolds$Fold05, ],
+                         imputed[validationFolds$Fold06, ],
+                         imputed[validationFolds$Fold07, ],
+                         imputed[validationFolds$Fold08, ],
+                         imputed[validationFolds$Fold09, ],
+                         imputed[validationFolds$Fold10, ]
+                         )
   UBStunting[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -756,18 +854,34 @@ for (i in 1:10){
                          curSet[-validationFolds$Fold09, ],
                          curSet[-validationFolds$Fold10, ]
                          )
-}
-SMOTEStunting = list()
-for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
-  SMOTEStunting[[i]] = list()
+  TrainValidStunting[[i]] = imputed
   for (j in 1:10){
-    SMOTEStunting[[i]][[j]] = SMOTE(X = as.data.frame(UBStunting[[i]][[j]]),
+    curSet = UBStunting[[i]][[j]]
+    imputed = kNN(curSet, variable = colnames(stunting), k = 5, impNA = TRUE) 
+    imputed = subset(imputed, select = 1:41)
+    UBStunting[[i]][[j]] = imputed
+  }
+}
+SMOTETrainStunting = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTETrainStunting[[i]] = list()
+  for (j in 1:10){
+    SMOTETrainStunting[[i]][[j]] = SMOTE(X = as.data.frame(UBStunting[[i]][[j]]),
                               target = UBStunting[[i]][[j]]$Stunting,
                               K = 5,
                               dup_size = 1
                               )
-     SMOTEStunting[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+     SMOTETrainStunting[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
+}
+SMOTETrainValidStunting = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTETrainValidStunting[[i]]  = SMOTE(X = as.data.frame(TrainValidStunting[[i]]),
+                              target = TrainValidStunting[[i]]$Stunting,
+                              K = 5,
+                              dup_size = 1
+                              )
+     SMOTETrainValidStunting[[i]]$data$class = NULL #Extra random variable, breaks modelling
 }
 ################################################################################
 barplot(prop.table(table(UBStunting[[1]][[1]]$Stunting)),
@@ -780,7 +894,7 @@ barplot(prop.table(table(UBStunting[[1]][[1]]$Stunting)),
         main = 'Stunting Training Set Class Distribution (Unbalanced)')
 abline(h = 0)
 
-barplot(prop.table(table(SMOTEStunting[[1]][[1]]$data$Stunting)),
+barplot(prop.table(table(SMOTETrainStunting[[1]][[1]]$data$Stunting)),
         col = c("white", "darkgrey"),
         ylim = c(0, 1),
         xlim = c(0, 3),
@@ -793,9 +907,16 @@ abline(h = 0)
 table(UBStunting[[1]][[1]]$Stunting)[[1]][[1]]
 table(UBStunting[[1]][[1]]$Stunting)[[2]][[1]]
 table(UBStunting[[1]][[1]]$Stunting)[[1]][[1]]/table(UBStunting[[1]][[1]]$Stunting)[[2]][[1]]
-table(SMOTEStunting[[1]][[1]]$data$Stunting)[[1]][[1]]
-table(SMOTEStunting[[1]][[1]]$data$Stunting)[[2]][[1]]
-table(SMOTEStunting[[1]][[1]]$data$Stunting)[[1]][[1]]/table(SMOTEStunting[[1]][[1]]$data$Stunting)[[2]][[1]]
+table(SMOTETrainStunting[[1]][[1]]$data$Stunting)[[1]][[1]]
+table(SMOTETrainStunting[[1]][[1]]$data$Stunting)[[2]][[1]]
+table(SMOTETrainStunting[[1]][[1]]$data$Stunting)[[1]][[1]]/table(SMOTETrainStunting[[1]][[1]]$data$Stunting)[[2]][[1]]
+
+table(TrainValidStunting[[1]]$Stunting)[[1]][[1]]
+table(TrainValidStunting[[1]]$Stunting)[[2]][[1]]
+table(TrainValidStunting[[1]]$Stunting)[[1]][[1]]/table(TrainValidStunting[[1]]$Stunting)[[2]][[1]]
+table(SMOTETrainValidStunting[[1]]$data$Stunting)[[1]][[1]]
+table(SMOTETrainValidStunting[[1]]$data$Stunting)[[2]][[1]]
+table(SMOTETrainValidStunting[[1]]$data$Stunting)[[1]][[1]]/table(SMOTETrainValidStunting[[1]]$data$Stunting)[[2]][[1]]
 ```
 
 
@@ -1267,27 +1388,47 @@ table(SMOTEStuntingAdolescent[[1]][[1]]$data$Stunting)[[1]][[1]]/table(SMOTEStun
 library(caret)
 library(tidyverse)
 library(smotefamily)
+library(VIM)
 
 set.seed(13)
-testFolds = createFolds(thinness$Thinness, k = 10) #Create k splits
-testSetsThinness = list(thinness[testFolds$Fold01, ], thinness[testFolds$Fold02, ],
-                        thinness[testFolds$Fold03, ], thinness[testFolds$Fold04, ],
-                        thinness[testFolds$Fold05, ], thinness[testFolds$Fold06, ],
-                        thinness[testFolds$Fold07, ], thinness[testFolds$Fold08, ],
-                        thinness[testFolds$Fold09, ], thinness[testFolds$Fold10, ]
+################################################################################
+#TEST data
+imputed = kNN(Thinness, variable = colnames(Thinness), k = 5, impNA = TRUE) 
+imputed = subset(imputed, select = 1:41)
+testFolds = createFolds(imputed$Thinness, k = 10) #Create k splits
+
+TestThinness = list(imputed[testFolds$Fold01, ], imputed[testFolds$Fold02, ],
+                        imputed[testFolds$Fold03, ], imputed[testFolds$Fold04, ],
+                        imputed[testFolds$Fold05, ], imputed[testFolds$Fold06, ],
+                        imputed[testFolds$Fold07, ], imputed[testFolds$Fold08, ],
+                        imputed[testFolds$Fold09, ], imputed[testFolds$Fold10, ]
                         )
-sansTestThinness = list(thinness[-testFolds$Fold01, ], thinness[-testFolds$Fold02, ],
-                        thinness[-testFolds$Fold03, ], thinness[-testFolds$Fold04, ],
-                        thinness[-testFolds$Fold05, ], thinness[-testFolds$Fold06, ],
-                        thinness[-testFolds$Fold07, ], thinness[-testFolds$Fold08, ],
-                        thinness[-testFolds$Fold09, ], thinness[-testFolds$Fold10, ]
+################################################################################
+
+TrainValidThinness = list(Thinness[-testFolds$Fold01, ], Thinness[-testFolds$Fold02, ],
+                        Thinness[-testFolds$Fold03, ], Thinness[-testFolds$Fold04, ],
+                        Thinness[-testFolds$Fold05, ], Thinness[-testFolds$Fold06, ],
+                        Thinness[-testFolds$Fold07, ], Thinness[-testFolds$Fold08, ],
+                        Thinness[-testFolds$Fold09, ], Thinness[-testFolds$Fold10, ]
                         )
 UBThinness = list()
-validSetsThinness = list()
+ValidThinness = list()
 for (i in 1:10){
-  curSet = sansTestThinness[[i]]
-  validationFolds = createFolds(sansTestThinness[[i]]$Thinness, k = 10)
-  validSetsThinness[[i]] = validationFolds
+  curSet = TrainValidThinness[[i]]
+  imputed = kNN(curSet, variable = colnames(Thinness), k = 5, impNA = TRUE) 
+  imputed = subset(imputed, select = 1:41)
+  validationFolds = createFolds(TrainValidThinness[[i]]$Thinness, k = 10)
+  ValidThinness[[i]] = list(imputed[validationFolds$Fold01, ],
+                         imputed[validationFolds$Fold02, ],
+                         imputed[validationFolds$Fold03, ],
+                         imputed[validationFolds$Fold04, ],
+                         imputed[validationFolds$Fold05, ],
+                         imputed[validationFolds$Fold06, ],
+                         imputed[validationFolds$Fold07, ],
+                         imputed[validationFolds$Fold08, ],
+                         imputed[validationFolds$Fold09, ],
+                         imputed[validationFolds$Fold10, ]
+                         )
   UBThinness[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -1299,18 +1440,34 @@ for (i in 1:10){
                          curSet[-validationFolds$Fold09, ],
                          curSet[-validationFolds$Fold10, ]
                          )
-}
-SMOTEThinness = list()
-for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
-  SMOTEThinness[[i]] = list()
+  TrainValidThinness[[i]] = imputed
   for (j in 1:10){
-    SMOTEThinness[[i]][[j]] = SMOTE(X = as.data.frame(UBThinness[[i]][[j]]),
+    curSet = UBThinness[[i]][[j]]
+    imputed = kNN(curSet, variable = colnames(Thinness), k = 5, impNA = TRUE) 
+    imputed = subset(imputed, select = 1:41)
+    UBThinness[[i]][[j]] = imputed
+  }
+}
+SMOTETrainThinness = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTETrainThinness[[i]] = list()
+  for (j in 1:10){
+    SMOTETrainThinness[[i]][[j]] = SMOTE(X = as.data.frame(UBThinness[[i]][[j]]),
                               target = UBThinness[[i]][[j]]$Thinness,
                               K = 5,
                               dup_size = 9
                               )
-     SMOTEThinness[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+     SMOTETrainThinness[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
+}
+SMOTETrainValidThinness = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTETrainValidThinness[[i]]  = SMOTE(X = as.data.frame(TrainValidThinness[[i]]),
+                              target = TrainValidThinness[[i]]$Thinness,
+                              K = 5,
+                              dup_size = 9
+                              )
+     SMOTETrainValidThinness[[i]]$data$class = NULL #Extra random variable, breaks modelling
 }
 ################################################################################
 barplot(prop.table(table(UBThinness[[1]][[1]]$Thinness)),
@@ -1318,17 +1475,17 @@ barplot(prop.table(table(UBThinness[[1]][[1]]$Thinness)),
         ylim = c(0, 1),
         xlim = c(0, 3),
         ylab = "Prevalence (%)",
-        xlab = "Stunting",
+        xlab = "Thinness",
         names = c("No", "Yes"),
         main = 'Thinness Training Set Class Distribution (Unbalanced)')
 abline(h = 0)
 
-barplot(prop.table(table(SMOTEThinness[[1]][[1]]$data$Thinness)),
+barplot(prop.table(table(SMOTETrainThinness[[1]][[1]]$data$Thinness)),
         col = c("white", "darkgrey"),
         ylim = c(0, 1),
         xlim = c(0, 3),
         ylab = "Prevalence (%)",
-        xlab = "Stunting",
+        xlab = "Thinness",
         names = c("No", "Yes"),
         main = 'Thinness Training Set Class Distribution (SMOTE)')
 abline(h = 0)
@@ -1336,9 +1493,16 @@ abline(h = 0)
 table(UBThinness[[1]][[1]]$Thinness)[[1]][[1]]
 table(UBThinness[[1]][[1]]$Thinness)[[2]][[1]]
 table(UBThinness[[1]][[1]]$Thinness)[[1]][[1]]/table(UBThinness[[1]][[1]]$Thinness)[[2]][[1]]
-table(SMOTEThinness[[1]][[1]]$data$Thinness)[[1]][[1]]
-table(SMOTEThinness[[1]][[1]]$data$Thinness)[[2]][[1]]
-table(SMOTEThinness[[1]][[1]]$data$Thinness)[[1]][[1]]/table(SMOTEThinness[[1]][[1]]$data$Thinness)[[2]][[1]]
+table(SMOTETrainThinness[[1]][[1]]$data$Thinness)[[1]][[1]]
+table(SMOTETrainThinness[[1]][[1]]$data$Thinness)[[2]][[1]]
+table(SMOTETrainThinness[[1]][[1]]$data$Thinness)[[1]][[1]]/table(SMOTETrainThinness[[1]][[1]]$data$Thinness)[[2]][[1]]
+
+table(TrainValidThinness[[1]]$Thinness)[[1]][[1]]
+table(TrainValidThinness[[1]]$Thinness)[[2]][[1]]
+table(TrainValidThinness[[1]]$Thinness)[[1]][[1]]/table(TrainValidThinness[[1]]$Thinness)[[2]][[1]]
+table(SMOTETrainValidThinness[[1]]$data$Thinness)[[1]][[1]]
+table(SMOTETrainValidThinness[[1]]$data$Thinness)[[2]][[1]]
+table(SMOTETrainValidThinness[[1]]$data$Thinness)[[1]][[1]]/table(SMOTETrainValidThinness[[1]]$data$Thinness)[[2]][[1]]
 ```
 
 
@@ -1814,27 +1978,47 @@ table(SMOTEThinnessAdolescent[[1]][[1]]$data$Thinness)[[1]][[1]]/table(SMOTEThin
 library(caret)
 library(tidyverse)
 library(smotefamily)
+library(VIM)
 
 set.seed(13)
-testFolds = createFolds(wasting$Wasting, k = 10) #Create k splits
-testSetsWasting = list(wasting[testFolds$Fold01, ], wasting[testFolds$Fold02, ],
-                        wasting[testFolds$Fold03, ], wasting[testFolds$Fold04, ],
-                        wasting[testFolds$Fold05, ], wasting[testFolds$Fold06, ],
-                        wasting[testFolds$Fold07, ], wasting[testFolds$Fold08, ],
-                        wasting[testFolds$Fold09, ], wasting[testFolds$Fold10, ]
+################################################################################
+#TEST data
+imputed = kNN(Wasting, variable = colnames(Wasting), k = 5, impNA = TRUE) 
+imputed = subset(imputed, select = 1:41)
+testFolds = createFolds(imputed$Wasting, k = 10) #Create k splits
+
+TestWasting = list(imputed[testFolds$Fold01, ], imputed[testFolds$Fold02, ],
+                        imputed[testFolds$Fold03, ], imputed[testFolds$Fold04, ],
+                        imputed[testFolds$Fold05, ], imputed[testFolds$Fold06, ],
+                        imputed[testFolds$Fold07, ], imputed[testFolds$Fold08, ],
+                        imputed[testFolds$Fold09, ], imputed[testFolds$Fold10, ]
                         )
-sansTestWasting = list(wasting[-testFolds$Fold01, ], wasting[-testFolds$Fold02, ],
-                        wasting[-testFolds$Fold03, ], wasting[-testFolds$Fold04, ],
-                        wasting[-testFolds$Fold05, ], wasting[-testFolds$Fold06, ],
-                        wasting[-testFolds$Fold07, ], wasting[-testFolds$Fold08, ],
-                        wasting[-testFolds$Fold09, ], wasting[-testFolds$Fold10, ]
+################################################################################
+
+TrainValidWasting = list(Wasting[-testFolds$Fold01, ], Wasting[-testFolds$Fold02, ],
+                        Wasting[-testFolds$Fold03, ], Wasting[-testFolds$Fold04, ],
+                        Wasting[-testFolds$Fold05, ], Wasting[-testFolds$Fold06, ],
+                        Wasting[-testFolds$Fold07, ], Wasting[-testFolds$Fold08, ],
+                        Wasting[-testFolds$Fold09, ], Wasting[-testFolds$Fold10, ]
                         )
 UBWasting = list()
-validSetsWasting = list()
+ValidWasting = list()
 for (i in 1:10){
-  curSet = sansTestWasting[[i]]
-  validationFolds = createFolds(sansTestWasting[[i]]$Wasting, k = 10)
-  validSetsWasting[[i]] = validationFolds
+  curSet = TrainValidWasting[[i]]
+  imputed = kNN(curSet, variable = colnames(Wasting), k = 5, impNA = TRUE) 
+  imputed = subset(imputed, select = 1:41)
+  validationFolds = createFolds(TrainValidWasting[[i]]$Wasting, k = 10)
+  ValidWasting[[i]] = list(imputed[validationFolds$Fold01, ],
+                         imputed[validationFolds$Fold02, ],
+                         imputed[validationFolds$Fold03, ],
+                         imputed[validationFolds$Fold04, ],
+                         imputed[validationFolds$Fold05, ],
+                         imputed[validationFolds$Fold06, ],
+                         imputed[validationFolds$Fold07, ],
+                         imputed[validationFolds$Fold08, ],
+                         imputed[validationFolds$Fold09, ],
+                         imputed[validationFolds$Fold10, ]
+                         )
   UBWasting[[i]] = list(curSet[-validationFolds$Fold01, ], #Remove subsets from current set
                          curSet[-validationFolds$Fold02, ],
                          curSet[-validationFolds$Fold03, ],
@@ -1846,18 +2030,34 @@ for (i in 1:10){
                          curSet[-validationFolds$Fold09, ],
                          curSet[-validationFolds$Fold10, ]
                          )
-}
-SMOTEWasting = list()
-for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
-  SMOTEWasting[[i]] = list()
+  TrainValidWasting[[i]] = imputed
   for (j in 1:10){
-    SMOTEWasting[[i]][[j]] = SMOTE(X = as.data.frame(UBWasting[[i]][[j]]),
+    curSet = UBWasting[[i]][[j]]
+    imputed = kNN(curSet, variable = colnames(Wasting), k = 5, impNA = TRUE) 
+    imputed = subset(imputed, select = 1:41)
+    UBWasting[[i]][[j]] = imputed
+  }
+}
+SMOTETrainWasting = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTETrainWasting[[i]] = list()
+  for (j in 1:10){
+    SMOTETrainWasting[[i]][[j]] = SMOTE(X = as.data.frame(UBWasting[[i]][[j]]),
                               target = UBWasting[[i]][[j]]$Wasting,
                               K = 5,
                               dup_size = 3
                               )
-     SMOTEWasting[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
+     SMOTETrainWasting[[i]][[j]]$data$class = NULL #Extra random variable, breaks modelling
   }
+}
+SMOTETrainValidWasting = list()
+for (i in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
+  SMOTETrainValidWasting[[i]]  = SMOTE(X = as.data.frame(TrainValidWasting[[i]]),
+                              target = TrainValidWasting[[i]]$Wasting,
+                              K = 5,
+                              dup_size = 3
+                              )
+     SMOTETrainValidWasting[[i]]$data$class = NULL #Extra random variable, breaks modelling
 }
 ################################################################################
 barplot(prop.table(table(UBWasting[[1]][[1]]$Wasting)),
@@ -1870,12 +2070,12 @@ barplot(prop.table(table(UBWasting[[1]][[1]]$Wasting)),
         main = 'Wasting Training Set Class Distribution (Unbalanced)')
 abline(h = 0)
 
-barplot(prop.table(table(SMOTEWasting[[1]][[1]]$data$Wasting)),
+barplot(prop.table(table(SMOTETrainWasting[[1]][[1]]$data$Wasting)),
         col = c("white", "darkgrey"),
         ylim = c(0, 1),
         xlim = c(0, 3),
         ylab = "Prevalence (%)",
-        xlab = "Stunting",
+        xlab = "Wasting",
         names = c("No", "Yes"),
         main = 'Wasting Training Set Class Distribution (SMOTE)')
 abline(h = 0)
@@ -1883,9 +2083,16 @@ abline(h = 0)
 table(UBWasting[[1]][[1]]$Wasting)[[1]][[1]]
 table(UBWasting[[1]][[1]]$Wasting)[[2]][[1]]
 table(UBWasting[[1]][[1]]$Wasting)[[1]][[1]]/table(UBWasting[[1]][[1]]$Wasting)[[2]][[1]]
-table(SMOTEWasting[[1]][[1]]$data$Wasting)[[1]][[1]]
-table(SMOTEWasting[[1]][[1]]$data$Wasting)[[2]][[1]]
-table(SMOTEWasting[[1]][[1]]$data$Wasting)[[1]][[1]]/table(SMOTEWasting[[1]][[1]]$data$Wasting)[[2]][[1]]
+table(SMOTETrainWasting[[1]][[1]]$data$Wasting)[[1]][[1]]
+table(SMOTETrainWasting[[1]][[1]]$data$Wasting)[[2]][[1]]
+table(SMOTETrainWasting[[1]][[1]]$data$Wasting)[[1]][[1]]/table(SMOTETrainWasting[[1]][[1]]$data$Wasting)[[2]][[1]]
+
+table(TrainValidWasting[[1]]$Wasting)[[1]][[1]]
+table(TrainValidWasting[[1]]$Wasting)[[2]][[1]]
+table(TrainValidWasting[[1]]$Wasting)[[1]][[1]]/table(TrainValidWasting[[1]]$Wasting)[[2]][[1]]
+table(SMOTETrainValidWasting[[1]]$data$Wasting)[[1]][[1]]
+table(SMOTETrainValidWasting[[1]]$data$Wasting)[[2]][[1]]
+table(SMOTETrainValidWasting[[1]]$data$Wasting)[[1]][[1]]/table(SMOTETrainValidWasting[[1]]$data$Wasting)[[2]][[1]]
 ```
 
 
@@ -4275,7 +4482,7 @@ for (i in 1:10){
   }
 }
 ################################################################################
-write.csv(results, "FS_R-MVLoR.csv")
+write.csv(results, "FS_R-UVLoR.csv")
 ```
 
 
@@ -4630,7 +4837,7 @@ TRAINING[[1]][["None"]] = UBStunting
 TRAINING[[1]][["MVLoR"]] = UBStunting
 for (i in 1:10){
   for (j in 1:10){
-    TRAINING[[1]][["MVLoR"]][[i]][[j]] = TRAINING[[1]][["MVLoR"]][[i]][[j]][,c(1,2,4,41)]
+    TRAINING[[1]][["MVLoR"]][[i]][[j]] = TRAINING[[1]][["MVLoR"]][[i]][[j]][,c(2,3,5,41)]
   }
 }
 TRAINING[[1]][["UVLoR"]] = UBStunting
@@ -4639,17 +4846,17 @@ for (i in 1:10){
     TRAINING[[1]][["UVLoR"]][[i]][[j]] = TRAINING[[1]][["UVLoR"]][[i]][[j]][,c(1,4,41)]
   }
 }
-TRAINING[[1]][["IG"]] = NA #IG
+TRAINING[[1]][["IG"]] = NA #IG]]
 TRAINING[[1]][["MRMR"]] = UBStunting
 for (i in 1:10){
   for (j in 1:10){
-    TRAINING[[1]][["MRMR"]][[i]][[j]] = TRAINING[[1]][["MRMR"]][[i]][[j]][,c(1,2,4,12,36,41)]
+    TRAINING[[1]][["MRMR"]][[i]][[j]] = TRAINING[[1]][["MRMR"]][[i]][[j]][,c(1:4,12,24,26,35,40,41)]
   }
 }
 TRAINING[[1]][["JMI"]] = UBStunting
 for (i in 1:10){
   for (j in 1:10){
-    TRAINING[[1]][["JMI"]][[i]][[j]] = TRAINING[[1]][["JMI"]][[i]][[j]][,c(1:4,41)]
+    TRAINING[[1]][["JMI"]][[i]][[j]] = TRAINING[[1]][["JMI"]][[i]][[j]][,c(1:4,8,12,13,41)]
   }
 }
 TRAINING[[1]][["ChiSq"]] = NA
@@ -4675,23 +4882,27 @@ for (i in 1:10){
 TRAINING[[2]][["IG"]] = SMOTEThinness
 for (i in 1:10){
   for (j in 1:10){
-    TRAINING[[2]][["IG"]][[i]][[j]] = TRAINING[[2]][["IG"]][[i]][[j]]$data[,c(5,8,24,41)]
+    TRAINING[[2]][["IG"]][[i]][[j]] = TRAINING[[2]][["IG"]][[i]][[j]]$data[,c(13,29,5,24,8,38,23,28,41)]
   }
 }
-TRAINING[[2]][["MRMR"]] = NA
+TRAINING[[2]][["MRMR"]] = SMOTEThinness
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[2]][["MRMR"]][[i]][[j]] = TRAINING[[2]][["MRMR"]][[i]][[j]]$data[,c(36,15,3,26,39,35,20,33,41)]
+  }
+}
 TRAINING[[2]][["JMI"]] = SMOTEThinness
 for (i in 1:10){
   for (j in 1:10){
-    TRAINING[[2]][["JMI"]][[i]][[j]] = TRAINING[[2]][["JMI"]][[i]][[j]]$data[,c(5,8,23,41)]
+    TRAINING[[2]][["JMI"]][[i]][[j]] = TRAINING[[2]][["JMI"]][[i]][[j]]$data[,c(1,28,40,12,13,29,34,4,5,24,35,8,38,35,21,41)]
   }
 }
 TRAINING[[2]][["ChiSq"]] = SMOTEThinness
 for (i in 1:10){
   for (j in 1:10){
-    TRAINING[[2]][["ChiSq"]][[i]][[j]] = TRAINING[[2]][["ChiSq"]][[i]][[j]]$data[,c(1,3,8,20,29,32,33,41)]
+    TRAINING[[2]][["ChiSq"]][[i]][[j]] = TRAINING[[2]][["ChiSq"]][[i]][[j]]$data[,c(1,3,29,39,8,32,33,41)]
   }
 }
-#TRAINING[[2]][["JMI"]] = thinness[,c(5, 8, 23, 41)] #JMI
 ################################################################################
 TRAINING[[3]][["None"]] = SMOTEWasting
 for (i in 1:10){
@@ -4717,11 +4928,16 @@ for (i in 1:10){
     TRAINING[[3]][["IG"]][[i]][[j]] = TRAINING[[3]][["IG"]][[i]][[j]]$data[,c(1,41)]
   }
 }
-TRAINING[[3]][["MRMR"]] = TRAINING[[3]][["IG"]]
+TRAINING[[3]][["MRMR"]] = SMOTEWasting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[3]][["MRMR"]][[i]][[j]] = TRAINING[[3]][["MRMR"]][[i]][[j]]$data[,c(1,36,10,11,15,26,17,20,41)]
+  }
+}
 TRAINING[[3]][["JMI"]] = SMOTEWasting #None
 for (i in 1:10){
   for (j in 1:10){
-    TRAINING[[3]][["JMI"]][[i]][[j]] = TRAINING[[3]][["JMI"]][[i]][[j]]$data[,c(1,5,12,41)]
+    TRAINING[[3]][["JMI"]][[i]][[j]] = TRAINING[[3]][["JMI"]][[i]][[j]]$data[,c(1,2,28,40,11,12,13,29,34,5,24,35,8,38,23,21,41)]
   }
 }
 TRAINING[[3]][["ChiSq"]] = SMOTEWasting
@@ -4731,6 +4947,152 @@ for (i in 1:10){
   }
 }
 ```
+
+
+
+```{r Classifer Training Set Preparation}
+#Creating train sets of selected features from original datasets for use in classifier modelling.
+TRAINING = list(Stunting = list(None = list(),
+                                MVLoR = list(),
+                                UVLoR = list(),
+                                IG = list(),
+                                MRMR = list(),
+                                JMI = list(),
+                                ChiSq = list()
+                                ),
+                Thinness = list(None = list(),
+                                MVLoR = list(),
+                                UVLoR = list(),
+                                IG = list(),
+                                MRMR = list(),
+                                JMI = list(),
+                                ChiSq = list()
+                                ),
+                Wasting = list(None = list(),
+                                MVLoR = list(),
+                                UVLoR = list(),
+                                IG = list(),
+                                MRMR = list(),
+                                JMI = list(),
+                                ChiSq = list()
+                                )
+                )
+################################################################################
+TRAINING[[1]][["None"]] = UBStunting
+TRAINING[[1]][["MVLoR"]] = UBStunting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[1]][["MVLoR"]][[i]][[j]] = TRAINING[[1]][["MVLoR"]][[i]][[j]][,c(2,3,5,41)]
+  }
+}
+TRAINING[[1]][["UVLoR"]] = UBStunting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[1]][["UVLoR"]][[i]][[j]] = TRAINING[[1]][["UVLoR"]][[i]][[j]][,c(1,4,41)]
+  }
+}
+TRAINING[[1]][["IG"]] = NA #IG]]
+TRAINING[[1]][["MRMR"]] = UBStunting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[1]][["MRMR"]][[i]][[j]] = TRAINING[[1]][["MRMR"]][[i]][[j]][,c(1:4,12,24,26,35,40,41)]
+  }
+}
+TRAINING[[1]][["JMI"]] = UBStunting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[1]][["JMI"]][[i]][[j]] = TRAINING[[1]][["JMI"]][[i]][[j]][,c(1:4,8,12,13,41)]
+  }
+}
+TRAINING[[1]][["ChiSq"]] = NA
+################################################################################
+TRAINING[[2]][["None"]] = SMOTEThinness
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[2]][["None"]][[i]][[j]] = TRAINING[[2]][["None"]][[i]][[j]]$data
+  }
+}
+TRAINING[[2]][["MVLoR"]] = SMOTEThinness
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[2]][["MVLoR"]][[i]][[j]] = TRAINING[[2]][["MVLoR"]][[i]][[j]]$data[,c(11,17,41)]
+  }
+}
+TRAINING[[2]][["UVLoR"]] = SMOTEThinness
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[2]][["UVLoR"]][[i]][[j]] = TRAINING[[2]][["UVLoR"]][[i]][[j]]$data[,c(3,8,28,29,41)]
+  }
+}
+TRAINING[[2]][["IG"]] = SMOTEThinness
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[2]][["IG"]][[i]][[j]] = TRAINING[[2]][["IG"]][[i]][[j]]$data[,c(13,29,5,24,8,38,23,28,41)]
+  }
+}
+TRAINING[[2]][["MRMR"]] = SMOTEThinness
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[2]][["MRMR"]][[i]][[j]] = TRAINING[[2]][["MRMR"]][[i]][[j]]$data[,c(36,15,3,26,39,35,20,33,41)]
+  }
+}
+TRAINING[[2]][["JMI"]] = SMOTEThinness
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[2]][["JMI"]][[i]][[j]] = TRAINING[[2]][["JMI"]][[i]][[j]]$data[,c(1,28,40,12,13,29,34,4,5,24,35,8,38,35,21,41)]
+  }
+}
+TRAINING[[2]][["ChiSq"]] = SMOTEThinness
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[2]][["ChiSq"]][[i]][[j]] = TRAINING[[2]][["ChiSq"]][[i]][[j]]$data[,c(1,3,29,39,8,32,33,41)]
+  }
+}
+################################################################################
+TRAINING[[3]][["None"]] = SMOTEWasting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[3]][["None"]][[i]][[j]] = TRAINING[[3]][["None"]][[i]][[j]]$data
+  }
+}
+TRAINING[[3]][["MVLoR"]] = SMOTEWasting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[3]][["MVLoR"]][[i]][[j]] = TRAINING[[3]][["MVLoR"]][[i]][[j]]$data[,c(2,17,41)]
+  }
+}
+TRAINING[[3]][["UVLoR"]] = SMOTEWasting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[3]][["UVLoR"]][[i]][[j]] = TRAINING[[3]][["UVLoR"]][[i]][[j]]$data[,c(1,16,41)]
+  }
+}
+TRAINING[[3]][["IG"]] = SMOTEWasting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[3]][["IG"]][[i]][[j]] = TRAINING[[3]][["IG"]][[i]][[j]]$data[,c(1,41)]
+  }
+}
+TRAINING[[3]][["MRMR"]] = SMOTEWasting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[3]][["MRMR"]][[i]][[j]] = TRAINING[[3]][["MRMR"]][[i]][[j]]$data[,c(1,36,10,11,15,26,17,20,41)]
+  }
+}
+TRAINING[[3]][["JMI"]] = SMOTEWasting #None
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[3]][["JMI"]][[i]][[j]] = TRAINING[[3]][["JMI"]][[i]][[j]]$data[,c(1,2,28,40,11,12,13,29,34,5,24,35,8,38,23,21,41)]
+  }
+}
+TRAINING[[3]][["ChiSq"]] = SMOTEWasting
+for (i in 1:10){
+  for (j in 1:10){
+    TRAINING[[3]][["ChiSq"]][[i]][[j]] = TRAINING[[3]][["ChiSq"]][[i]][[j]]$data[,c(1,16,20,41)]
+  }
+}
+```
+
 
 
 
@@ -4771,7 +5133,7 @@ for (i in 1:10){
 VALID[[1]][["MVLoR"]] = validSetsStunting
 for (i in 1:10){
   for (j in 1:10){
-    VALID[[1]][["MVLoR"]][[i]][[j]] = stunting[VALID[[1]][[2]][[i]][[j]],][,c(1,2,4,41)]
+    VALID[[1]][["MVLoR"]][[i]][[j]] = stunting[VALID[[1]][[2]][[i]][[j]],][,c(2,3,5,41)]
   }
 }
 VALID[[1]][["UVLoR"]] = validSetsStunting
@@ -4780,17 +5142,17 @@ for (i in 1:10){
     VALID[[1]][["UVLoR"]][[i]][[j]] = stunting[VALID[[1]][["UVLoR"]][[i]][[j]],][,c(1,4,41)]
   }
 }
-VALID[[1]][["IG"]] = NA #IG
+VALID[[1]][["IG"]] = NA
 VALID[[1]][["MRMR"]] = validSetsStunting
 for (i in 1:10){
   for (j in 1:10){
-    VALID[[1]][["MRMR"]][[i]][[j]] = stunting[VALID[[1]][["MRMR"]][[i]][[j]],][,c(1,2,4,12,36,41)]
+    VALID[[1]][["MRMR"]][[i]][[j]] = stunting[VALID[[1]][["MRMR"]][[i]][[j]],][,c(1:4,12,24,26,35,40,41)]
   }
 }
 VALID[[1]][["JMI"]] = validSetsStunting
 for (i in 1:10){
   for (j in 1:10){
-    VALID[[1]][["JMI"]][[i]][[j]] = stunting[VALID[[1]][["JMI"]][[i]][[j]],][,c(1:4,41)]
+    VALID[[1]][["JMI"]][[i]][[j]] = stunting[VALID[[1]][["JMI"]][[i]][[j]],][,c(1:4,8,12,13,41)]
   }
 }
 VALID[[1]][["ChiSq"]] = NA
@@ -4816,20 +5178,25 @@ for (i in 1:10){
 VALID[[2]][["IG"]] = validSetsThinness
 for (i in 1:10){
   for (j in 1:10){
-    VALID[[2]][["IG"]][[i]][[j]] = thinness[VALID[[2]][["IG"]][[i]][[j]],][,c(5,8,24,41)]
+    VALID[[2]][["IG"]][[i]][[j]] = thinness[VALID[[2]][["IG"]][[i]][[j]],][,c(13,29,5,24,8,38,23,28,41)]
   }
 }
-VALID[[2]][["MRMR"]] = NA
+VALID[[2]][["MRMR"]] = validSetsThinness
+for (i in 1:10){
+  for (j in 1:10){
+    VALID[[2]][["MRMR"]][[i]][[j]] = thinness[VALID[[2]][["MRMR"]][[i]][[j]],][,c(36,15,3,26,39,35,20,33,41)]
+  }
+}
 VALID[[2]][["JMI"]] = validSetsThinness
 for (i in 1:10){
   for (j in 1:10){
-    VALID[[2]][["JMI"]][[i]][[j]] = thinness[VALID[[2]][["JMI"]][[i]][[j]],][,c(5,8,23,41)]
+    VALID[[2]][["JMI"]][[i]][[j]] = thinness[VALID[[2]][["JMI"]][[i]][[j]],][,c(1,28,40,12,13,29,34,4,5,24,35,8,38,35,21,41)]
   }
 }
 VALID[[2]][["ChiSq"]] = validSetsThinness
 for (i in 1:10){
   for (j in 1:10){
-    VALID[[2]][["ChiSq"]][[i]][[j]] = thinness[VALID[[2]][["ChiSq"]][[i]][[j]],][,c(1,3,8,20,29,32,33,41)]
+    VALID[[2]][["ChiSq"]][[i]][[j]] = thinness[VALID[[2]][["ChiSq"]][[i]][[j]],][,c(1,3,29,39,8,32,33,41)]
   }
 }
 ################################################################################
@@ -4857,11 +5224,16 @@ for (i in 1:10){
     VALID[[3]][["IG"]][[i]][[j]] = wasting[VALID[[3]][["IG"]][[i]][[j]],][,c(1,41)]
   }
 }
-VALID[[3]][["MRMR"]] = VALID[[3]][["IG"]]
+VALID[[3]][["MRMR"]] = validSetsWasting
+for (i in 1:10){
+  for (j in 1:10){
+    VALID[[3]][["MRMR"]][[i]][[j]] = wasting[VALID[[3]][["MRMR"]][[i]][[j]],][,c(1,36,10,11,15,26,17,20,41)]
+  }
+}
 VALID[[3]][["JMI"]] = validSetsWasting #None
 for (i in 1:10){
   for (j in 1:10){
-    VALID[[3]][["JMI"]][[i]][[j]] = wasting[VALID[[3]][["JMI"]][[i]][[j]],][,c(1,5,12,41)]
+    VALID[[3]][["JMI"]][[i]][[j]] = wasting[VALID[[3]][["JMI"]][[i]][[j]],][,c(1,2,28,40,11,12,13,29,34,5,24,35,8,38,23,21,41)]
   }
 }
 VALID[[3]][["ChiSq"]] = validSetsWasting #None
@@ -4874,8 +5246,451 @@ for (i in 1:10){
 
 
 
+```{r Train Feature Selection, warning = FALSE}
+library(FSelectorRcpp)
+library(broom)
+#Prepare list to hold subsets determined by feature selection
+TRAIN = list(Stunting = list(None = list(),
+                                MVLoR = list(),
+                                UVLoR = list(),
+                                IG = list(),
+                                MRMR = list(),
+                                JMI = list(),
+                                ChiSq = list()
+                                ),
+                Thinness = list(None = list(),
+                                MVLoR = list(),
+                                UVLoR = list(),
+                                IG = list(),
+                                MRMR = list(),
+                                JMI = list(),
+                                ChiSq = list()
+                                ),
+                Wasting = list(None = list(),
+                                MVLoR = list(),
+                                UVLoR = list(),
+                                IG = list(),
+                                MRMR = list(),
+                                JMI = list(),
+                                ChiSq = list()
+                                )
+                )
+for (i in 1:3){
+  for (j in 1:7){
+    for (k in 1:10){
+      TRAIN[[i]][[j]][[k]] = list()
+      for (l in 1:10){}
+        TRAIN[[i]][[j]][[k]][[l]] = list() #Create list for each subset; to be filled with selected indices as determined by new FS
+        TRAIN[[i]][[j]][[k]][[l]][[1]] = list()
+        TRAIN[[i]][[j]][[k]][[l]][[2]] = list()
+        names(TRAIN[[i]][[j]][[k]][[l]])[[1]] = paste0("TRAIN_",k)
+        names(TRAIN[[i]][[j]][[k]][[l]])[[2]] = paste0("TEST_",k)
+    }
+  }
+}
+################################################################################
+#No feature selection
+for (k in 1:10){
+  for (l in 1:10){
+    TRAIN[[1]][[1]][[k]][[l]][[1]] = UBStunting[[k]][[l]]
+    TRAIN[[1]][[1]][[k]][[l]][[2]] = ValidStunting[[k]][[l]]
+  }
+}
+for (k in 1:10){
+  for (l in 1:10){
+    TRAIN[[2]][[1]][[k]][[l]][[1]] = SMOTETrainThinness[[k]][[l]]$data
+    TRAIN[[2]][[1]][[k]][[l]][[2]] = ValidThinness[[k]][[l]]
+  }
+}
+for (k in 1:10){
+  for (l in 1:10){
+    TRAIN[[3]][[1]][[k]][[l]][[1]] = SMOTETrainWasting[[k]][[l]]$data
+    TRAIN[[3]][[1]][[k]][[l]][[2]] = ValidWasting[[k]][[l]]
+  }
+}
+################################################################################
+#MVLoR
 
-```{r Multivariate Logistic Regression Validation, warning = FALSE}
+#Stunting
+  for (j in 1:10){
+    for (k in 1:10){
+    index = 0
+    MVLoR = glm(formula = Stunting~.,
+                data = as.data.frame(UBStunting[[j]][[k]]),
+                family = "binomial"
+                )
+    regSummary = tidy(MVLoR, exponentiate = TRUE, conf.level = 0.95)
+    
+    factors = data.frame(PV = double())
+    for (i in 1:40){
+      factors[i,] = 0
+    }
+    row.names(factors) = names(stunting)[1:40]
+    
+    for (factor in names(stunting)[1:40]){
+      index = index + 1
+      if (!is.na(regSummary[[index, 5]])){
+        factors[[factor, 1]] =  regSummary[[index+1, 5]]
+      }
+    }
+    factors = order(factors$PV)[1:10]
+    TRAIN[[1]][[2]][[j]][[k]][[1]] = UBStunting[[j]][[k]][,factors]
+    TRAIN[[1]][[2]][[j]][[k]][[2]] = ValidStunting[[j]][[k]][,factors]
+    }}
+#Thinness
+for (j in 1:10){
+  for (k in 1:10){
+    index = 0
+    MVLoR = glm(formula = Thinness~.,
+                data = as.data.frame(SMOTETrainThinness[[j]][[k]]$data),
+                family = "binomial"
+                )
+    regSummary = tidy(MVLoR, exponentiate = TRUE, conf.level = 0.95)
+    
+    factors = data.frame(PV = double())
+    for (i in 1:40){
+      factors[i,] = 0
+    }
+    row.names(factors) = names(Thinness)[1:40]
+    
+    for (factor in names(Thinness)[1:40]){
+      index = index + 1
+      if (!is.na(regSummary[[index, 5]])){
+        factors[[factor, 1]] =  regSummary[[index+1, 5]]
+      }
+    }
+    factors = order(factors$PV)[1:10]
+    TRAIN[[2]][[2]][[j]][[k]][[1]] = SMOTETrainThinness[[j]][[k]]$data[,factors]
+    TRAIN[[2]][[2]][[j]][[k]][[2]] = ValidThinness[[j]][[k]][,factors]
+  }}
+#Wasting
+for (j in 1:10){
+  for (k in 1:10){
+    index = 0
+    MVLoR = glm(formula = Wasting~.,
+                data = as.data.frame(SMOTETrainWasting[[j]][[k]]$data),
+                family = "binomial"
+                )
+    regSummary = tidy(MVLoR, exponentiate = TRUE, conf.level = 0.95)
+    
+    factors = data.frame(PV = double())
+    for (i in 1:40){
+      factors[i,] = 0
+    }
+    row.names(factors) = names(Wasting)[1:40]
+    
+    for (factor in names(Wasting)[1:40]){
+      index = index + 1
+      if (!is.na(regSummary[[index, 5]])){
+        factors[[factor, 1]] =  regSummary[[index+1, 5]]
+      }
+    }
+    factors = order(factors$PV)[1:10]
+    TRAIN[[3]][[2]][[j]][[k]][[1]] = SMOTETrainWasting[[j]][[k]]$data[,factors]
+    TRAIN[[3]][[2]][[j]][[k]][[2]] = ValidWasting[[j]][[k]][,factors]
+}}
+################################################################################
+#UVLoR
+
+for (j in 1:10){
+  for (k in 1:10){
+  factors = data.frame(PV = double())
+  for (i in 1:40){
+    factors[i,] = 0
+  }
+  row.names(factors) = names(stunting)[1:40]
+  
+  for (factor in names(stunting)[1:40]){
+    UVLoR = glm(formula = paste0("Stunting~",factor),
+                data = as.data.frame(UBStunting[[j]][[k]]),
+                family = "binomial"
+                )
+    regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+    factors[[factor,1]] = regSummary[[2,5]]
+  }
+  factors = order(factors$PV)[1:10]
+  TRAIN[[1]][[3]][[j]][[k]][[1]] = UBStunting[[j]][[k]][,factors]
+  TRAIN[[1]][[3]][[j]][[k]][[2]] = ValidStunting[[j]][[k]][,factors]
+}}
+
+
+for (j in 1:10){
+  for (k in 1:10){
+  factors = data.frame(PV = double())
+  for (i in 1:40){
+    factors[i,] = 0
+  }
+  row.names(factors) = names(stunting)[1:40]
+  
+  for (factor in names(stunting)[1:40]){
+    UVLoR = glm(formula = paste0("Thinness~",factor),
+                data = as.data.frame(SMOTETrainThinness[[j]][[k]]$data),
+                family = "binomial"
+                )
+    regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+    factors[[factor,1]] = regSummary[[2,5]]
+  }
+  factors = order(factors$PV)[1:10]
+  TRAIN[[2]][[3]][[j]][[k]][[1]] = SMOTETrainThinness[[j]][[k]]$data[,factors]
+  TRAIN[[2]][[3]][[j]][[k]][[2]] = ValidThinness[[j]][[k]][,factors]
+  }}
+
+for (j in 1:10){
+  for (k in 1:10){
+  factors = data.frame(PV = double())
+  for (i in 1:40){
+    factors[i,] = 0
+  }
+  row.names(factors) = names(stunting)[1:40]
+  
+  for (factor in names(stunting)[1:40]){
+    UVLoR = glm(formula = paste0("Wasting~",factor),
+                data = as.data.frame(SMOTETrainWasting[[j]][[k]]$data),
+                family = "binomial"
+                )
+    regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+    factors[[factor,1]] = regSummary[[2,5]]
+  }
+  factors = order(factors$PV)[1:10]
+  TRAIN[[3]][[3]][[j]][[k]][[1]] = SMOTETrainWasting[[j]][[k]]$data[,factors]
+  TRAIN[[3]][[3]][[j]][[k]][[2]] = ValidWasting[[j]][[k]][,factors]
+}}
+################################################################################
+#InfoGain
+
+for (j in 1:10){
+  for (k in 1:10){
+  infogain = information_gain(formula = Stunting~.,
+                              data = as.data.frame(UBStunting[[j]][[k]]),
+                              type = 'infogain',
+                              equal = TRUE
+                              )
+  infogain = infogain[order(infogain$importance, decreasing = TRUE),] #Order by importance
+    
+  factors = c()
+  for (l in 1:10){ #Look at top 10 most important features
+    if (infogain$importance[l] == 0){
+      next
+    }
+    feature = infogain[[l, 1]]
+    index = which(names(stunting) == feature)
+    factors[l] = index
+  }
+  TRAIN[[1]][[4]][[j]][[k]][[1]] = UBStunting[[j]][[k]][,factors]
+  TRAIN[[1]][[4]][[j]][[k]][[2]] = ValidStunting[[j]][[k]][,factors]
+}}
+
+for (j in 1:10){
+  for (k in 1:10){
+  infogain = information_gain(formula = Thinness~.,
+                              data = as.data.frame(SMOTETrainThinness[[j]][[k]]$data),
+                              type = 'infogain',
+                              equal = TRUE
+                              )
+  infogain = infogain[order(infogain$importance, decreasing = TRUE),] #Order by importance
+    
+  factors = c()
+  for (l in 1:10){ #Look at top 10 most important features
+    if (infogain$importance[l] == 0){
+      next
+    }
+    feature = infogain[[l, 1]]
+    index = which(names(stunting) == feature)
+    factors[l] = index
+  }
+  TRAIN[[2]][[4]][[j]][[k]][[1]] = SMOTETrainThinness[[j]][[k]]$data[,factors]
+  TRAIN[[2]][[4]][[j]][[k]][[2]] = ValidThinness[[j]][[k]][,factors]
+  }}
+
+for (j in 1:10){
+  for (k in 1:10){
+  infogain = information_gain(formula = Wasting~.,
+                              data = as.data.frame(SMOTETrainWasting[[j]][[k]]$data),
+                              type = 'infogain',
+                              equal = TRUE
+                              )
+  infogain = infogain[order(infogain$importance, decreasing = TRUE),] #Order by importance
+    
+  factors = c()
+  for (l in 1:10){ #Look at top 10 most important features
+    if (infogain$importance[l] == 0){
+      next
+    }
+    feature = infogain[[l, 1]]
+    index = which(names(stunting) == feature)
+    factors[l] = index
+  }
+  TRAIN[[3]][[4]][[j]][[k]][[1]] = SMOTETrainWasting[[j]][[k]]$data[,factors]
+  TRAIN[[3]][[4]][[j]][[k]][[2]] = ValidWasting[[j]][[k]][,factors]
+}}
+
+################################################################################
+library(mRMRe)
+
+for (j in 1:10){
+  for (k in 1:10){
+  mrmr = mRMR.data(data = as.data.frame(UBStunting[[j]][[k]]))
+  results = mRMR.classic("mRMRe.Filter",
+                           data = mrmr,
+                           target_indices = 41,
+                           feature_count = 10,
+                           method = "exhaustive"
+                           )
+  factors = c()
+  for (l in 1:10){
+    factors[l] = results@filters[["41"]][[l,1]]
+  }
+  TRAIN[[1]][[5]][[j]][[k]][[1]] = UBStunting[[j]][[k]][,factors]
+  TRAIN[[1]][[5]][[j]][[k]][[2]] = ValidStunting[[j]][[k]][,factors]
+  }}
+
+for (j in 1:10){
+  for (k in 1:10){
+  mrmr = mRMR.data(data = as.data.frame(SMOTETrainThinness[[j]][[k]]$data))
+  results = mRMR.classic("mRMRe.Filter",
+                           data = mrmr,
+                           target_indices = 41,
+                           feature_count = 10,
+                           method = "exhaustive"
+                           )
+  factors = c()
+  for (l in 1:10){
+    factors[l] = results@filters[["41"]][[l,1]]
+  }
+  TRAIN[[2]][[5]][[j]][[k]][[1]] = SMOTETrainThinness[[j]][[k]]$data[,factors]
+  TRAIN[[2]][[5]][[j]][[k]][[2]] = ValidThinness[[j]][[k]][,factors]
+  }}
+
+for (j in 1:10){
+  for (k in 1:10){
+  mrmr = mRMR.data(data = as.data.frame(SMOTETrainWasting[[j]][[k]]$data))
+  results = mRMR.classic("mRMRe.Filter",
+                           data = mrmr,
+                           target_indices = 41,
+                           feature_count = 10,
+                           method = "exhaustive"
+                           )
+  factors = c()
+  for (l in 1:10){
+    factors[l] = results@filters[["41"]][[l,1]]
+  }
+  TRAIN[[3]][[5]][[j]][[k]][[1]] = SMOTETrainWasting[[j]][[k]]$data[,factors]
+  TRAIN[[3]][[5]][[j]][[k]][[2]] = ValidWasting[[j]][[k]][,factors]
+  }}
+
+################################################################################
+library(praznik)
+
+  for (j in 1:10){
+    for (k in 1:10){
+    jmi = JMI(as.data.frame(UBStunting[[j]][[k]][-ncol(UBStunting[[j]][[k]])]),
+          as.vector(UBStunting[[j]][[k]][,ncol(UBStunting[[j]][[k]])]),
+          k = 10
+          )
+    factors = c()
+    for (l in 1:10){
+      factors[l] = jmi$selection[[l]]
+    }
+    TRAIN[[1]][[6]][[j]][[k]][[1]] = UBStunting[[j]][[k]][,factors]
+    TRAIN[[1]][[6]][[j]][[k]][[2]] = ValidStunting[[j]][[k]][,factors]
+    }}
+
+for (j in 1:10){
+  for (k in 1:10){
+    jmi = JMI(as.data.frame(SMOTETrainThinness[[j]][[k]]$data[-ncol(SMOTETrainThinness[[j]][[k]]$data)]),
+          as.vector(SMOTETrainThinness[[j]][[k]]$data[,ncol(SMOTETrainThinness[[j]][[k]]$data)]),
+          k = 10
+          )
+    factors = c()
+    for (l in 1:10){
+      factors[l] = jmi$selection[[l]]
+    }
+    TRAIN[[2]][[6]][[j]][[k]][[1]] = SMOTETrainThinness[[j]][[k]]$data[,factors]
+    TRAIN[[2]][[6]][[j]][[k]][[2]] = ValidThinness[[j]][[k]][,factors]
+  }}
+
+for (j in 1:10){
+  for (k in 1:10){
+    jmi = JMI(as.data.frame(SMOTETrainWasting[[j]][[k]]$data[-ncol(SMOTETrainWasting[[j]][[k]]$data)]),
+          as.vector(SMOTETrainWasting[[j]][[k]]$data[,ncol(SMOTETrainWasting[[j]][[k]]$data)]),
+          k = 10
+          )
+    factors = c()
+    for (l in 1:10){
+      factors[l] = jmi$selection[[l]]
+    }
+    TRAIN[[3]][[6]][[j]][[k]][[1]] = SMOTETrainWasting[[j]][[k]]$data[,factors]
+    TRAIN[[3]][[6]][[j]][[k]][[2]] = ValidWasting[[j]][[k]][,factors]
+  }}
+
+################################################################################
+#ChiSq
+
+for (j in 1:10){
+  for (k in 1:10){
+  factors = data.frame(PV = double())
+  for (i in 1:40){
+    factors[i,] = 0
+  }
+  row.names(factors) = names(stunting)[1:40]
+  for (factor in 1:40){
+    chisq = chisq.test(table(UBStunting[[j]][[k]][,factor],
+                               UBStunting[[j]][[k]]$Stunting)
+                         )
+    if (chisq$p.value < 0.05){
+      factors[[factor, 1]] = chisq$p.value
+    }
+  }
+  factors = order(factors$PV)[1:10]
+  TRAIN[[1]][[7]][[j]][[k]][[1]] = UBStunting[[j]][[k]][,factors]
+  TRAIN[[1]][[7]][[j]][[k]][[2]] = ValidStunting[[j]][[k]][,factors]
+  }}
+
+for (j in 1:10){
+  for (k in 1:10){
+  factors = data.frame(PV = double())
+  for (i in 1:40){
+    factors[i,] = 0
+  }
+  row.names(factors) = names(stunting)[1:40]
+  for (factor in 1:40){
+    chisq = chisq.test(table(SMOTETrainThinness[[j]][[k]]$data[,factor],
+                               SMOTETrainThinness[[j]][[k]]$data$Thinness)
+                         )
+    if (chisq$p.value < 0.05){
+      factors[[factor, 1]] = chisq$p.value
+    }
+  }
+  factors = order(factors$PV)[1:10]
+  TRAIN[[2]][[7]][[j]][[k]][[1]] = SMOTETrainThinness[[j]][[k]]$data[,factors]
+  TRAIN[[2]][[7]][[j]][[k]][[2]] = ValidThinness[[j]][[k]][,factors]
+  }}
+
+for (j in 1:10){
+  for (k in 1:10){
+  factors = data.frame(PV = double())
+  for (i in 1:40){
+    factors[i,] = 0
+  }
+  row.names(factors) = names(stunting)[1:40]
+  for (factor in 1:40){
+    chisq = chisq.test(table(SMOTETrainWasting[[j]][[k]]$data[,factor],
+                               SMOTETrainWasting[[j]][[k]]$data$Wasting)
+                         )
+    if (chisq$p.value < 0.05){
+      factors[[factor, 1]] = chisq$p.value
+    }
+  }
+  factors = order(factors$PV)[1:10]
+  TRAIN[[3]][[7]][[j]][[k]][[1]] = SMOTETrainWasting[[j]][[k]]$data[,factors]
+  TRAIN[[3]][[7]][[j]][[k]][[2]] = ValidWasting[[j]][[k]][,factors]
+  }}
+
+```
+
+
+
+```{r Multivariate Logistic Regression for Classification, warning = FALSE}
 set.seed(13)
 library(broom)
 library(car)
@@ -4928,23 +5743,24 @@ best = list(accuracy = 0,
 for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
   #if (i > 1){break}
   for (j in 1:7){ #7 feature selection (FS) sets
-    if (is.na(TRAINING[[i]][[j]])){
-      next
-    }
     for (k in 1:10){ #10 test sets total
       for (l in 1:10){ #10 train/validation sets per test set
-        train = TRAINING[[i]][[j]][[k]][[l]] #Import & coerce to matrix in order to scale
+        train = TRAIN[[i]][[j]][[k]][[l]][[1]] #Import & coerce to matrix in order to scale
+        if (length(ncol(train)) == 0){
+          next
+        }
+        if (ncol(train) == 0){
+          next
+        }
         train[,ncol(train)] = as.factor(train[,ncol(train)]) #Set response as factor
         
-        test = VALID[[i]][[j]][[k]][[l]] #Prepare test; 1 test set for 10 train/valid sets (seen below)
-        if (length(range(test[,ncol(test)])) != 2){ #Should be both 0s and 1s as response vars
-          next
-        }else if (range(test[,ncol(test)])[2] != 1){
+        test = TRAIN[[i]][[j]][[k]][[l]][[2]] #Prepare test; 1 test set for 10 train/valid sets (seen below)
+        if (nrow(table(test[,ncol(test)])) != 2){ #Should be both 0s and 1s as response vars
           next
         }
         test[,ncol(test)] = as.factor(test[,ncol(test)])
 
-        MVLoR = glm(paste0(names(train)[ncol(train)], "~."),
+        MVLoR = glm(paste0(names(train)[ncol(train)], "~."), #"glm(Stunting~.),
                     data = train,
                     family = "binomial"
                     )
@@ -4954,7 +5770,11 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
                              reference = test[,ncol(test)]
                              )
         accuracy = CM$overall[["Accuracy"]]
-        F1 = CM$byClass[["F1"]]
+        if (is.na(CM$byClass[["F1"]])){
+          F1 = 0
+        }else{
+          F1 = CM$byClass[["F1"]]
+        }
         Scores_MVLoR[[i]][[j]][[1]] = Scores_MVLoR[[i]][[j]][[1]] + accuracy
         Scores_MVLoR[[i]][[j]][[2]] = Scores_MVLoR[[i]][[j]][[2]] + F1
         if(F1 > best$F1){
@@ -4973,7 +5793,7 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
 
 
 
-```{r Random Forest Validation, warning = FALSE}
+```{r Random Forest, warning = FALSE}
 set.seed(13)
 library(randomForest)
 library(datasets)
@@ -5023,16 +5843,17 @@ best = list(accuracy = 0,
 
 for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
   for (j in 1:7){ #7 feature selection (FS) sets
-    if (is.na(TRAINING[[i]][[j]])){
-      next
-    }
     for (k in 1:10){ #10 test sets total
       for (l in 1:10){ #10 train/validation sets per test set
-        train = TRAINING[[i]][[j]][[k]][[l]] #Import & coerce to matrix in order to scale
-        valid = VALID[[i]][[j]][[k]][[l]]
-        if (length(range(valid[,ncol(valid)])) != 2){ #Should be both 0s and 1s as response vars
+        train = TRAIN[[i]][[j]][[k]][[l]][[1]] #Import & coerce to matrix in order to scale
+        if (length(ncol(train)) == 0){
           next
-        }else if (range(valid[,ncol(valid)])[2] != 1){
+        }
+        if (ncol(train) == 0){
+          next
+        }
+        valid = TRAIN[[i]][[j]][[k]][[l]][[2]]
+        if (nrow(table(valid[,ncol(valid)])) != 2){ #Should be both 0s and 1s as response vars
           next
         }
         train[,ncol(train)] = as.factor(train[,ncol(train)]) #Set response as factor
@@ -5048,16 +5869,20 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
                            y = train[,ncol(train)],
                            method = 'rf',
                            metric = 'F1',
-                           #tuneGrid = rfGrid,
+                           tuneGrid = rfGrid,
                            trControl = control
                            )
-        y_pred = predict(RF, newdata = as.matrix(test[-ncol(test)]))
+        y_pred = predict(RF, newdata = as.matrix(valid[-ncol(valid)]))
         #y_pred = 1*(y_pred >= 0.5)
         CM = confusionMatrix(data = y_pred,
-                             reference = as.factor(test[,ncol(test)])
+                             reference = as.factor(valid[,ncol(valid)])
                              )
         accuracy = CM$overall[["Accuracy"]]
-        F1 = CM$byClass[["F1"]]
+        if (is.na(CM$byClass[["F1"]])){
+          F1 = 0
+        }else{
+          F1 = CM$byClass[["F1"]]
+        }
         #cat(accuracy)
         #cat(F1)
         Scores_RF[[i]][[j]][[1]] = Scores_RF[[i]][[j]][[1]] + accuracy
@@ -5080,7 +5905,7 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
 
 
 
-```{r Support Vector Machine Validation, warning = FALSE}
+```{r Support Vector Machine, warning = FALSE}
 set.seed(13)
 library(e1071)
 library(Matrix)
@@ -5122,7 +5947,7 @@ best = list(accuracy = 0,
 for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
   #if (i > 1){break}
   for (j in 1:7){ #7 feature selection (FS) sets
-    if (is.na(TRAINING[[i]][[j]])){
+    if (length(TRAINING[[i]][[j]]) == 1){
       next
     }
     for (k in 1:10){ #10 test sets total
@@ -5175,7 +6000,7 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
 
 
 
-```{r Extreme Gradient Boosting Validation, results = FALSE, warning = FALSE}
+```{r Extreme Gradient Boosting, results = FALSE, warning = FALSE}
 set.seed(13)
 library(xgboost)
 library(caret)
@@ -5221,7 +6046,7 @@ best = list(accuracy = 0,
             )
 for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
   for (j in 1:7){ #7 feature selection (FS) sets
-    if (is.na(TRAINING[[i]][[j]])){
+    if (length(TRAINING[[i]][[j]]) == 1){
       next
     }
     for (k in 1:10){ #10 test sets total
@@ -5236,8 +6061,6 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
         train[,ncol(train)] = as.factor(train[,ncol(train)]) #Set response as factor
         valid[,ncol(valid)] = as.factor(valid[,ncol(valid)])
         control = trainControl(method = "repeatedcv",
-                               number = 10,
-                               repeats = 1,
                                summaryFunction = f1
                                )
         xgbGrid <- expand.grid(nrounds = c(50),#,100),  
@@ -5284,8 +6107,10 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
 
 
 
-```{r Classifier Test Set Preparation, warning = FALSE}
-#Creating test sets of selected features from original datasets for use in classifier modelling.
+```{r Trainvalid Feature Selection, warning = FALSE}
+library(FSelectorRcpp)
+library(broom)
+#Prepare list to hold subsets determined by feature selection
 TRAINVALID = list(Stunting = list(None = list(),
                                 MVLoR = list(),
                                 UVLoR = list(),
@@ -5311,78 +6136,360 @@ TRAINVALID = list(Stunting = list(None = list(),
                                 ChiSq = list()
                                 )
                 )
+for (i in 1:3){
+  for (j in 1:7){
+    for (k in 1:10){
+      TRAINVALID[[i]][[j]][[k]] = list() #Create list for each subset; to be filled with selected indices as determined by new FS
+      TRAINVALID[[i]][[j]][[k]][[1]] = list()
+      TRAINVALID[[i]][[j]][[k]][[2]] = list()
+      names(TRAINVALID[[i]][[j]][[k]])[[1]] = paste0("TRAIN_",k)
+      names(TRAINVALID[[i]][[j]][[k]])[[2]] = paste0("TEST_",k)
+    }
+  }
+}
 ################################################################################
-TRAINVALID[[1]][["None"]] = sansTestStunting
-TRAINVALID[[1]][["MVLoR"]] = sansTestStunting
-for (i in 1:10){
-    TRAINVALID[[1]][["MVLoR"]][[i]] = TRAINVALID[[1]][["MVLoR"]][[i]][,c(1,2,4,41)]
+#No feature selection
+for (k in 1:10){
+  TRAINVALID[[1]][[1]][[k]][[1]] = TrainValidStunting[[k]]
+  TRAINVALID[[1]][[1]][[k]][[2]] = TestStunting[[k]]
 }
-TRAINVALID[[1]][["UVLoR"]] = sansTestStunting
-for (i in 1:10){
-    TRAINVALID[[1]][["UVLoR"]][[i]] = TRAINVALID[[1]][["UVLoR"]][[i]][,c(1,4,41)]
+for (k in 1:10){
+  TRAINVALID[[2]][[1]][[k]][[1]] = TrainValidThinness[[k]]
+  TRAINVALID[[2]][[1]][[k]][[2]] = TestThinness[[k]]
 }
-TRAINVALID[[1]][["IG"]] = NA #IG
+for (k in 1:10){
+  TRAINVALID[[3]][[1]][[k]][[1]] = TrainValidWasting[[k]]
+  TRAINVALID[[3]][[1]][[k]][[2]] = TestWasting[[k]]
+}
+################################################################################
+#MVLoR
+  for (j in 1:10){
+    index = 0
+    MVLoR = glm(formula = Stunting~.,
+                data = as.data.frame(TrainValidStunting[[j]]),
+                family = "binomial"
+                )
+    regSummary = tidy(MVLoR, exponentiate = TRUE, conf.level = 0.95)
+    
+    factors = data.frame(PV = double())
+    for (i in 1:40){
+      factors[i,] = 0
+    }
+    row.names(factors) = names(stunting)[1:40]
+    
+    for (factor in names(stunting)[1:40]){
+      index = index + 1
+      if (!is.na(regSummary[[index, 5]])){
+        factors[[factor, 1]] =  regSummary[[index+1, 5]]
+      }
+    }
+    factors = order(factors$PV)[1:10]
+    TRAINVALID[[1]][[2]][[j]][[1]] = TrainValidStunting[[j]][,factors]
+    TRAINVALID[[1]][[2]][[j]][[2]] = TestStunting[[j]][,factors]
+  }
+for (j in 1:10){
+    index = 0
+    MVLoR = glm(formula = Thinness~.,
+                data = as.data.frame(TrainValidThinness[[j]]),
+                family = "binomial"
+                )
+    regSummary = tidy(MVLoR, exponentiate = TRUE, conf.level = 0.95)
+    
+    factors = data.frame(PV = double())
+    for (i in 1:40){
+      factors[i,] = 0
+    }
+    row.names(factors) = names(Thinness)[1:40]
+    
+    for (factor in names(Thinness)[1:40]){
+      index = index + 1
+      if (!is.na(regSummary[[index, 5]])){
+        factors[[factor, 1]] =  regSummary[[index+1, 5]]
+      }
+    }
+    factors = order(factors$PV)[1:10]
+    TRAINVALID[[2]][[2]][[j]][[1]] = TrainValidThinness[[j]][,factors]
+    TRAINVALID[[2]][[2]][[j]][[2]] = TestThinness[[j]][,factors]
+}
+for (j in 1:10){
+    index = 0
+    MVLoR = glm(formula = Wasting~.,
+                data = as.data.frame(TrainValidWasting[[j]]),
+                family = "binomial"
+                )
+    regSummary = tidy(MVLoR, exponentiate = TRUE, conf.level = 0.95)
+    
+    factors = data.frame(PV = double())
+    for (i in 1:40){
+      factors[i,] = 0
+    }
+    row.names(factors) = names(Wasting)[1:40]
+    
+    for (factor in names(Wasting)[1:40]){
+      index = index + 1
+      if (!is.na(regSummary[[index, 5]])){
+        factors[[factor, 1]] =  regSummary[[index+1, 5]]
+      }
+    }
+    factors = order(factors$PV)[1:10]
+    TRAINVALID[[3]][[2]][[j]][[1]] = TrainValidWasting[[j]][,factors]
+    TRAINVALID[[3]][[2]][[j]][[2]] = TestWasting[[j]][,factors]
+  }
+################################################################################
+#UVLoR
 
-TRAINVALID[[1]][["MRMR"]] = sansTestStunting
-for (i in 1:10){
-    TRAINVALID[[1]][["MRMR"]][[i]] = TRAINVALID[[1]][["MRMR"]][[i]][,c(1,2,4,12,36,41)]
+for (j in 1:10){
+  factors = data.frame(PV = double())
+  for (i in 1:40){
+    factors[i,] = 0
+  }
+  row.names(factors) = names(stunting)[1:40]
+  
+  for (factor in names(stunting)[1:40]){
+    UVLoR = glm(formula = paste0("Stunting~",factor),
+                data = as.data.frame(TrainValidStunting[[j]]),
+                family = "binomial"
+                )
+    regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+    factors[[factor,1]] = regSummary[[2,5]]
+  }
+  factors = order(factors$PV)[1:10]
+  TRAINVALID[[1]][[3]][[j]][[1]] = TrainValidStunting[[j]][,factors]
+  TRAINVALID[[1]][[3]][[j]][[2]] = TestStunting[[j]][,factors]
 }
-TRAINVALID[[1]][["JMI"]] = sansTestStunting
-for (i in 1:10){
-    TRAINVALID[[1]][["JMI"]][[i]] = TRAINVALID[[1]][["JMI"]][[i]][,c(1:4,41)]
+
+
+for (j in 1:10){
+  factors = data.frame(PV = double())
+  for (i in 1:40){
+    factors[i,] = 0
+  }
+  row.names(factors) = names(stunting)[1:40]
+  
+  for (factor in names(stunting)[1:40]){
+    UVLoR = glm(formula = paste0("Thinness~",factor),
+                data = as.data.frame(TrainValidThinness[[j]]),
+                family = "binomial"
+                )
+    regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+    factors[[factor,1]] = regSummary[[2,5]]
+  }
+  factors = order(factors$PV)[1:10]
+  TRAINVALID[[2]][[3]][[j]][[1]] = TrainValidThinness[[j]][,factors]
+  TRAINVALID[[2]][[3]][[j]][[2]] = TestThinness[[j]][,factors]
 }
-TRAINVALID[[1]][["ChiSq"]] = NA
+for (j in 1:10){
+  factors = data.frame(PV = double())
+  for (i in 1:40){
+    factors[i,] = 0
+  }
+  row.names(factors) = names(stunting)[1:40]
+  
+  for (factor in names(stunting)[1:40]){
+    UVLoR = glm(formula = paste0("Wasting~",factor),
+                data = as.data.frame(TrainValidWasting[[j]]),
+                family = "binomial"
+                )
+    regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
+    factors[[factor,1]] = regSummary[[2,5]]
+  }
+  factors = order(factors$PV)[1:10]
+  TRAINVALID[[3]][[3]][[j]][[1]] = TrainValidWasting[[j]][,factors]
+  TRAINVALID[[3]][[3]][[j]][[2]] = TestWasting[[j]][,factors]
+}
 ################################################################################
-TRAINVALID[[2]][["None"]] = sansTestThinness
-for (i in 1:10){
-    TRAINVALID[[2]][["None"]][[i]] = TRAINVALID[[2]][["None"]][[i]]
+#InfoGain
+
+for (j in 1:10){
+  infogain = information_gain(formula = Stunting~.,
+                              data = as.data.frame(TrainValidStunting[[j]]),
+                              type = 'infogain',
+                              equal = TRUE
+                              )
+  infogain = infogain[order(infogain$importance, decreasing = TRUE),] #Order by importance
+    
+  factors = c()
+  for (k in 1:10){ #Look at top 10 most important features
+    factors[k] = infogain[[k, 1]]
+  }
+  TRAINVALID[[1]][[4]][[j]][[1]] = TrainValidStunting[[j]][,factors]
+  TRAINVALID[[1]][[4]][[j]][[2]] = TestStunting[[j]][,factors]
 }
-TRAINVALID[[2]][["MVLoR"]] = sansTestThinness
-for (i in 1:10){
-    TRAINVALID[[2]][["MVLoR"]][[i]] = TRAINVALID[[2]][["MVLoR"]][[i]][,c(11,17,41)]
+
+for (j in 1:10){
+  infogain = information_gain(formula = Thinness~.,
+                              data = as.data.frame(TrainValidThinness[[j]]),
+                              type = 'infogain',
+                              equal = TRUE
+                              )
+  infogain = infogain[order(infogain$importance, decreasing = TRUE),] #Order by importance
+    
+  factors = c()
+  for (k in 1:10){ #Look at top 10 most important features
+    factors[k] = infogain[[k, 1]]
+  }
+  TRAINVALID[[2]][[4]][[j]][[1]] = TrainValidThinness[[j]][,factors]
+  TRAINVALID[[2]][[4]][[j]][[2]] = TestThinness[[j]][,factors]
 }
-TRAINVALID[[2]][["UVLoR"]] = sansTestThinness
-for (i in 1:10){
-    TRAINVALID[[2]][["UVLoR"]][[i]] = TRAINVALID[[2]][["UVLoR"]][[i]][,c(3,8,28,29,41)]
+for (j in 1:10){
+  infogain = information_gain(formula = Wasting~.,
+                              data = as.data.frame(TrainValidWasting[[j]]),
+                              type = 'infogain',
+                              equal = TRUE
+                              )
+  infogain = infogain[order(infogain$importance, decreasing = TRUE),] #Order by importance
+    
+  factors = c()
+  for (k in 1:10){ #Look at top 10 most important features
+    factors[k] = infogain[[k, 1]]
+  }
+  TRAINVALID[[3]][[4]][[j]][[1]] = TrainValidWasting[[j]][,factors]
+  TRAINVALID[[3]][[4]][[j]][[2]] = TestWasting[[j]][,factors]
 }
-TRAINVALID[[2]][["IG"]] = sansTestThinness
-for (i in 1:10){
-    TRAINVALID[[2]][["IG"]][[i]] = TRAINVALID[[2]][["IG"]][[i]][,c(5,8,24,41)]
+
+################################################################################
+library(mRMRe)
+
+for (j in 1:10){
+  mrmr = mRMR.data(data = as.data.frame(TrainValidStunting[[j]]))
+  results = mRMR.classic("mRMRe.Filter",
+                           data = mrmr,
+                           target_indices = 41,
+                           feature_count = 10,
+                           method = "exhaustive"
+                           )
+  factors = c()
+  for (k in 1:10){
+    factors[k] = results@filters[["41"]][[k,1]]
+  }
+  TRAINVALID[[1]][[5]][[j]][[1]] = TrainValidStunting[[j]][,factors]
+  TRAINVALID[[1]][[5]][[j]][[2]] = TestStunting[[j]][,factors]
 }
-TRAINVALID[[2]][["MRMR"]] = NA
-TRAINVALID[[2]][["JMI"]] = sansTestThinness
-for (i in 1:10){
-    TRAINVALID[[2]][["JMI"]][[i]] = TRAINVALID[[2]][["JMI"]][[i]][,c(5,8,23,41)]
+for (j in 1:10){
+  mrmr = mRMR.data(data = as.data.frame(TrainValidThinness[[j]]))
+  results = mRMR.classic("mRMRe.Filter",
+                           data = mrmr,
+                           target_indices = 41,
+                           feature_count = 10,
+                           method = "exhaustive"
+                           )
+  factors = c()
+  for (k in 1:10){
+    factors[k] = results@filters[["41"]][[k,1]]
+  }
+  TRAINVALID[[2]][[5]][[j]][[1]] = TrainValidThinness[[j]][,factors]
+  TRAINVALID[[2]][[5]][[j]][[2]] = TestThinness[[j]][,factors]
 }
-TRAINVALID[[2]][["ChiSq"]] = sansTestThinness
-for (i in 1:10){
-    TRAINVALID[[2]][["ChiSq"]][[i]] = TRAINVALID[[2]][["ChiSq"]][[i]][,c(1,3,8,20,29,32,33,41)]
+for (j in 1:10){
+  mrmr = mRMR.data(data = as.data.frame(TrainValidWasting[[j]]))
+  results = mRMR.classic("mRMRe.Filter",
+                           data = mrmr,
+                           target_indices = 41,
+                           feature_count = 10,
+                           method = "exhaustive"
+                           )
+  factors = c()
+  for (k in 1:10){
+    factors[k] = results@filters[["41"]][[k,1]]
+  }
+  TRAINVALID[[3]][[5]][[j]][[1]] = TrainValidWasting[[j]][,factors]
+  TRAINVALID[[3]][[5]][[j]][[2]] = TestWasting[[j]][,factors]
 }
 ################################################################################
-TRAINVALID[[3]][["None"]] = sansTestWasting
-for (i in 1:10){
-    TRAINVALID[[3]][["None"]][[i]] = TRAINVALID[[3]][["None"]][[i]]
+library(praznik)
+
+  for (j in 1:10){
+    jmi = JMI(as.data.frame(TrainValidStunting[[j]][-ncol(TrainValidStunting[[j]])]),
+          as.vector(TrainValidStunting[[j]][,ncol(TrainValidStunting[[j]])]),
+          k = 10
+          )
+    factors = c()
+    for (k in 1:10){
+      factors[k] = jmi$selection[[k]]
+    }
+    TRAINVALID[[1]][[6]][[j]][[1]] = TrainValidStunting[[j]][,factors]
+    TRAINVALID[[1]][[6]][[j]][[2]] = TestStunting[[j]][,factors]
+  }
+for (j in 1:10){
+    jmi = JMI(as.data.frame(TrainValidThinness[[j]][-ncol(TrainValidThinness[[j]])]),
+          as.vector(TrainValidThinness[[j]][,ncol(TrainValidThinness[[j]])]),
+          k = 10
+          )
+    factors = c()
+    for (k in 1:10){
+      factors[k] = jmi$selection[[k]]
+    }
+    TRAINVALID[[2]][[6]][[j]][[1]] = TrainValidThinness[[j]][,factors]
+    TRAINVALID[[2]][[6]][[j]][[2]] = TestThinness[[j]][,factors]
 }
-TRAINVALID[[3]][["MVLoR"]] = sansTestWasting
-for (i in 1:10){
-    TRAINVALID[[3]][["MVLoR"]][[i]] = TRAINVALID[[3]][["MVLoR"]][[i]][,c(2,17,41)]
+for (j in 1:10){
+    jmi = JMI(as.data.frame(TrainValidWasting[[j]][-ncol(TrainValidWasting[[j]])]),
+          as.vector(TrainValidWasting[[j]][,ncol(TrainValidWasting[[j]])]),
+          k = 10
+          )
+    factors = c()
+    for (k in 1:10){
+      factors[k] = jmi$selection[[k]]
+    }
+    TRAINVALID[[3]][[6]][[j]][[1]] = TrainValidWasting[[j]][,factors]
+    TRAINVALID[[3]][[6]][[j]][[2]] = TestWasting[[j]][,factors]
 }
-TRAINVALID[[3]][["UVLoR"]] = sansTestWasting
-for (i in 1:10){
-    TRAINVALID[[3]][["UVLoR"]][[i]] = TRAINVALID[[3]][["UVLoR"]][[i]][,c(1,16,41)]
+################################################################################
+#ChiSq
+
+for (j in 1:10){
+  factors = data.frame(PV = double())
+  for (i in 1:40){
+    factors[i,] = 0
+  }
+  row.names(factors) = names(stunting)[1:40]
+  for (factor in 1:40){
+    chisq = chisq.test(table(TrainValidStunting[[j]][,factor],
+                               TrainValidStunting[[j]]$Stunting)
+                         )
+    if (chisq$p.value < 0.05){
+      factors[[factor, 1]] = chisq$p.value
+    }
+  }
+  factors = order(factors$PV)[1:10]
+  TRAINVALID[[1]][[7]][[j]][[1]] = TrainValidStunting[[j]][,factors]
+  TRAINVALID[[1]][[7]][[j]][[2]] = TestStunting[[j]][,factors]
 }
-TRAINVALID[[3]][["IG"]] = sansTestWasting
-for (i in 1:10){
-    TRAINVALID[[3]][["IG"]][[i]] = TRAINVALID[[3]][["IG"]][[i]][,c(1,41)]
+for (j in 1:10){
+  factors = data.frame(PV = double())
+  for (i in 1:40){
+    factors[i,] = 0
+  }
+  row.names(factors) = names(stunting)[1:40]
+  for (factor in 1:40){
+    chisq = chisq.test(table(TrainValidThinness[[j]][,factor],
+                               TrainValidThinness[[j]]$Thinness)
+                         )
+    if (chisq$p.value < 0.05){
+      factors[[factor, 1]] = chisq$p.value
+    }
+  }
+  factors = order(factors$PV)[1:10]
+  TRAINVALID[[2]][[7]][[j]][[1]] = TrainValidThinness[[j]][,factors]
+  TRAINVALID[[2]][[7]][[j]][[2]] = TestThinness[[j]][,factors]
 }
-TRAINVALID[[3]][["MRMR"]] = TRAINVALID[[3]][["IG"]]
-TRAINVALID[[3]][["JMI"]] = sansTestWasting #None
-for (i in 1:10){
-    TRAINVALID[[3]][["JMI"]][[i]] = TRAINVALID[[3]][["JMI"]][[i]][,c(1,5,12,41)]
-}
-TRAINVALID[[3]][["ChiSq"]] = sansTestWasting #None
-for (i in 1:10){
-    TRAINVALID[[3]][["ChiSq"]][[i]] = TRAINVALID[[3]][["ChiSq"]][[i]][,c(1,16,20,41)]
+for (j in 1:10){
+  factors = data.frame(PV = double())
+  for (i in 1:40){
+    factors[i,] = 0
+  }
+  row.names(factors) = names(stunting)[1:40]
+  for (factor in 1:40){
+    chisq = chisq.test(table(TrainValidWasting[[j]][,factor],
+                               TrainValidWasting[[j]]$Wasting)
+                         )
+    if (chisq$p.value < 0.05){
+      factors[[factor, 1]] = chisq$p.value
+    }
+  }
+  factors = order(factors$PV)[1:10]
+  TRAINVALID[[3]][[7]][[j]][[1]] = TrainValidWasting[[j]][,factors]
+  TRAINVALID[[3]][[7]][[j]][[2]] = TestWasting[[j]][,factors]
 }
 ```
 
@@ -5419,21 +6526,20 @@ TEST = list(Stunting = list(None = list(),
 TEST[[1]][["None"]] = testSetsStunting
 TEST[[1]][["MVLoR"]] = testSetsStunting
 for (i in 1:10){
-    TEST[[1]][["MVLoR"]][[i]] = TEST[[1]][["MVLoR"]][[i]][,c(1,2,4,41)]
+    TEST[[1]][["MVLoR"]][[i]] = TEST[[1]][["MVLoR"]][[i]][,c(2,3,5,41)]
 }
 TEST[[1]][["UVLoR"]] = testSetsStunting
 for (i in 1:10){
     TEST[[1]][["UVLoR"]][[i]] = TEST[[1]][["UVLoR"]][[i]][,c(1,4,41)]
 }
-TEST[[1]][["IG"]] = NA #IG
-
+TEST[[1]][["IG"]] = NA
 TEST[[1]][["MRMR"]] = testSetsStunting
 for (i in 1:10){
-    TEST[[1]][["MRMR"]][[i]] = TEST[[1]][["MRMR"]][[i]][,c(1,2,4,12,36,41)]
+    TEST[[1]][["MRMR"]][[i]] = TEST[[1]][["MRMR"]][[i]][,c(1:4,12,24,26,35,40,41)]
 }
 TEST[[1]][["JMI"]] = testSetsStunting
 for (i in 1:10){
-    TEST[[1]][["JMI"]][[i]] = TEST[[1]][["JMI"]][[i]][,c(1:4,41)]
+    TEST[[1]][["JMI"]][[i]] = TEST[[1]][["JMI"]][[i]][,c(1:4,8,12,13,41)]
 }
 TEST[[1]][["ChiSq"]] = NA
 ################################################################################
@@ -5451,16 +6557,19 @@ for (i in 1:10){
 }
 TEST[[2]][["IG"]] = testSetsThinness
 for (i in 1:10){
-    TEST[[2]][["IG"]][[i]] = TEST[[2]][["IG"]][[i]][,c(5,8,24,41)]
+    TEST[[2]][["IG"]][[i]] = TEST[[2]][["IG"]][[i]][,c(13,29,5,24,8,38,23,28,41)]
 }
-TEST[[2]][["MRMR"]] = NA
+TEST[[2]][["MRMR"]] = testSetsThinness
+for (i in 1:10){
+  TEST[[2]][["MRMR"]][[i]] = TEST[[2]][["MRMR"]][[i]][,c(36,15,3,26,39,35,20,33,41)]
+}
 TEST[[2]][["JMI"]] = testSetsThinness
 for (i in 1:10){
-    TEST[[2]][["JMI"]][[i]] = TEST[[2]][["JMI"]][[i]][,c(5,8,23,41)]
+    TEST[[2]][["JMI"]][[i]] = TEST[[2]][["JMI"]][[i]][,c(1,28,40,12,13,29,34,4,5,24,35,8,38,35,21,41)]
 }
 TEST[[2]][["ChiSq"]] = testSetsThinness
 for (i in 1:10){
-    TEST[[2]][["ChiSq"]][[i]] = TEST[[2]][["ChiSq"]][[i]][,c(1,3,8,20,29,32,33,41)]
+    TEST[[2]][["ChiSq"]][[i]] = TEST[[2]][["ChiSq"]][[i]][,c(1,3,29,39,8,32,33,41)]
 }
 ################################################################################
 TEST[[3]][["None"]] = testSetsWasting
@@ -5479,10 +6588,13 @@ TEST[[3]][["IG"]] = testSetsWasting
 for (i in 1:10){
     TEST[[3]][["IG"]][[i]] = TEST[[3]][["IG"]][[i]][,c(1,41)]
 }
-TEST[[3]][["MRMR"]] = TEST[[3]][["IG"]]
+TEST[[3]][["MRMR"]] = testSetsWasting
+for (i in 1:10){
+    TEST[[3]][["MRMR"]][[i]] = TEST[[3]][["MRMR"]][[i]][,c(1,36,10,11,15,26,17,20,41)]
+}
 TEST[[3]][["JMI"]] = testSetsWasting #None
 for (i in 1:10){
-    TEST[[3]][["JMI"]][[i]] = TEST[[3]][["JMI"]][[i]][,c(1,5,12,41)]
+    TEST[[3]][["JMI"]][[i]] = TEST[[3]][["JMI"]][[i]][,c(1,2,28,40,11,12,13,29,34,5,24,35,8,38,23,21,41)]
 }
 TEST[[3]][["ChiSq"]] = testSetsWasting #None
 for (i in 1:10){
@@ -5492,7 +6604,7 @@ for (i in 1:10){
 
 
 
-```{r Multivariate Logistic Regression TEST, warning = FALSE}
+```{r Multivariate Logistic Regression for Classification, warning = FALSE}
 set.seed(13)
 library(broom)
 library(car)
@@ -5545,14 +6657,14 @@ best = list(accuracy = 0,
 for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
   #if (i > 1){break}
   for (j in 1:7){ #7 feature selection (FS) sets
-    if (is.na(TRAINING[[i]][[j]])){
+    if (length(TRAINVALID[[i]][[j]]) == 1){
       next
     }
     for (k in 1:10){ #10 test sets total
-        train = sansTestStunting[[i]][[j]][[k]] #Import & coerce to matrix in order to scale
+        train = TRAINVALID[[i]][[j]][[k]] #Import & coerce to matrix in order to scale
         train[,ncol(train)] = as.factor(train[,ncol(train)]) #Set response as factor
         
-        test = TEST[[i]][[j]][[k]][[l]] #Prepare test; 1 test set for 10 train/valid sets (seen below)
+        test = TEST[[i]][[j]][[k]] #Prepare test; 1 test set for 10 train/valid sets (seen below)
         if (length(range(test[,ncol(test)])) != 2){ #Should be both 0s and 1s as response vars
           next
         }else if (range(test[,ncol(test)])[2] != 1){
@@ -5565,6 +6677,7 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
                     family = "binomial"
                     )
         y_pred = predict(MVLoR, newdata = test[-ncol(test)], type = "response")
+        #probs = prediction(y_pred[,2], test[,ncol(test)])
         y_pred = unname(1*(y_pred >= 0.5))
         CM = confusionMatrix(data = as.factor(y_pred),
                              reference = test[,ncol(test)]
@@ -5574,6 +6687,8 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
         Scores_MVLoR[[i]][[j]][[1]] = Scores_MVLoR[[i]][[j]][[1]] + accuracy
         Scores_MVLoR[[i]][[j]][[2]] = Scores_MVLoR[[i]][[j]][[2]] + F1
         if(F1 > best$F1){
+          #ROC_MLR = performance(probs, "tpr", "fpr")
+          #AUC_MLR = performance(probs, "auc")@y.values[[1]]
           best$accuracy = accuracy
           best$RS = i
           best$FS = j
@@ -5582,19 +6697,22 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
           best$F1 = F1
         }
       }
-      Scores_MVLoR[[i]][[j]][[1]] = Scores_MVLoR[[i]][[j]][[1]]/100
-      Scores_MVLoR[[i]][[j]][[2]] = Scores_MVLoR[[i]][[j]][[2]]/100
-    }}
+      Scores_MVLoR[[i]][[j]][[1]] = Scores_MVLoR[[i]][[j]][[1]]/10
+      Scores_MVLoR[[i]][[j]][[2]] = Scores_MVLoR[[i]][[j]][[2]]/10
+  }}
+#plot(ROC_MLR, main = "XGB ROC Plot")
+#abline(0, 1)
 ```
 
 
 
-```{r Random Forest TEST, warning = FALSE}
+```{r Random Forest, warning = FALSE}
 set.seed(13)
 library(randomForest)
 library(datasets)
 library(caret)
 library(MLmetrics)
+library(MLeval)
 
 f1 <- function(data, lev = NULL, model = NULL) {
         f1_val <- MLmetrics::F1_Score(y_pred = data$pred,
@@ -5639,24 +6757,15 @@ best = list(accuracy = 0,
 
 for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
   for (j in 1:7){ #7 feature selection (FS) sets
-    if (is.na(TRAINING[[i]][[j]])){
+    if (length(TRAINVALID[[i]][[j]]) == 1){
       next
     }
     for (k in 1:10){ #10 test sets total
-      for (l in 1:10){ #10 train/validation sets per test set
-        train = TRAINING[[i]][[j]][[k]][[l]] #Import & coerce to matrix in order to scale
-        valid = VALID[[i]][[j]][[k]][[l]]
-        if (length(range(valid[,ncol(valid)])) != 2){ #Should be both 0s and 1s as response vars
-          next
-        }else if (range(valid[,ncol(valid)])[2] != 1){
-          next
-        }
+        train = TRAINVALID[[i]][[j]][[k]] #Import & coerce to matrix in order to scale
+        test = TEST[[i]][[j]][[k]]
         train[,ncol(train)] = as.factor(train[,ncol(train)]) #Set response as factor
-        valid[,ncol(valid)] = as.factor(valid[,ncol(valid)])
-
-        control = trainControl(method = "repeatedcv",
-                               number = 10,
-                               repeats = 10,
+        test[,ncol(test)] = as.factor(test[,ncol(test)])
+        control = trainControl(method = "none",
                                summaryFunction = f1
                                )
         rfGrid = expand.grid(.mtry = 2)
@@ -5664,21 +6773,22 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
                            y = train[,ncol(train)],
                            method = 'rf',
                            metric = 'F1',
-                           #tuneGrid = rfGrid,
+                           tuneGrid = rfGrid,
                            trControl = control
                            )
         y_pred = predict(RF, newdata = as.matrix(test[-ncol(test)]))
-        #y_pred = 1*(y_pred >= 0.5)
+        #probs = prediction(y_pred[,2], test[,ncol(test)])
+        #y_pred = 1*(y_pred >= 0.5)[,2]
         CM = confusionMatrix(data = y_pred,
                              reference = as.factor(test[,ncol(test)])
                              )
         accuracy = CM$overall[["Accuracy"]]
         F1 = CM$byClass[["F1"]]
-        #cat(accuracy)
-        #cat(F1)
         Scores_RF[[i]][[j]][[1]] = Scores_RF[[i]][[j]][[1]] + accuracy
         Scores_RF[[i]][[j]][[2]] = Scores_RF[[i]][[j]][[2]] + F1
         if(F1 > best$F1){
+          #ROC_RF = performance(probs, "tpr", "fpr")
+          #AUC_RF = performance(probs, "auc")@y.values[[1]]
           best$accuracy = accuracy
           best$RS = i
           best$FS = j
@@ -5686,20 +6796,22 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
           best$trainvalid = l
           best$F1 = F1
         }
-      }}
-      Scores_RF[[i]][[j]][[1]] = Scores_RF[[i]][[j]][[1]]/100
-      Scores_RF[[i]][[j]][[2]] = Scores_RF[[i]][[j]][[2]]/100
+      }
+      Scores_RF[[i]][[j]][[1]] = Scores_RF[[i]][[j]][[1]]/10
+      Scores_RF[[i]][[j]][[2]] = Scores_RF[[i]][[j]][[2]]/10
     }}
-
+#plot(ROC_RF, main = "XGB ROC Plot")
+#abline(0, 1)
 ```
 
 
 
 
-```{r Support Vector Machine TEST, warning = FALSE}
+```{r Support Vector Machine, warning = FALSE}
 set.seed(13)
 library(e1071)
 library(Matrix)
+library(MLeval)
 
 Scores_SVM = list(Stunting = list(None = list(Accuracy = 0, F1 = 0),
                                 MVLoR = list(Accuracy = 0, F1 = 0),
@@ -5738,23 +6850,15 @@ best = list(accuracy = 0,
 for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
   #if (i > 1){break}
   for (j in 1:7){ #7 feature selection (FS) sets
-    if (is.na(TRAINING[[i]][[j]])){
+    if (length(TRAINVALID[[i]][[j]]) == 1){
       next
     }
     for (k in 1:10){ #10 test sets total
-      for (l in 1:10){ #10 train/validation sets per test set
-        train = TRAINING[[i]][[j]][[k]][[l]] #Import & coerce to matrix in order to scale
-        valid = VALID[[i]][[j]][[k]][[l]]
-        if (length(range(valid[,ncol(valid)])) != 2){ #Should be both 0s and 1s as response vars
-          next
-        }else if (range(valid[,ncol(valid)])[2] != 1){
-          next
-        }
+        train = TRAINVALID[[i]][[j]][[k]] #Import & coerce to matrix in order to scale
+        test = TEST[[i]][[j]][[k]]
         train[,ncol(train)] = as.factor(train[,ncol(train)]) #Set response as factor
-        valid[,ncol(valid)] = as.factor(valid[,ncol(valid)])
-        control = trainControl(method = "repeatedcv",
-                               number = 10,
-                               repeats = 10,
+        test[,ncol(test)] = as.factor(test[,ncol(test)])
+        control = trainControl(method = "none",
                                summaryFunction = f1
                                )
         svmGrid = expand.grid(C = 0.15
@@ -5764,18 +6868,20 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
                            method = 'svmLinear',
                            metric = 'F1',
                            tuneGrid = svmGrid,
-                           trControl = control
+                           ctrControl = control
                            )
-        y_pred = predict(SVM, newdata = as.matrix(valid[-ncol(valid)]))
-        #y_pred = 1*(y_pred >= 0.5)
+        y_pred = predict(SVM, newdata = as.matrix(test[-ncol(test)]))
+        #probs = prediction(y_pred[,2], test[,ncol(test)])
         CM = confusionMatrix(data = y_pred,
-                             reference = as.factor(valid[,ncol(valid)])
+                             reference = as.factor(test[,ncol(test)])
                              )
         accuracy = CM$overall[["Accuracy"]]
         F1 = CM$byClass[["F1"]]
         Scores_SVM[[i]][[j]][[1]] = Scores_SVM[[i]][[j]][[1]] + accuracy
         Scores_SVM[[i]][[j]][[2]] = Scores_SVM[[i]][[j]][[2]] + F1
         if(F1 > best$F1){
+          #ROC_SVM = performance(probs, "tpr", "fpr")
+          #AUC_SVM = performance(probs, "auc")@y.values[[1]]
           best$accuracy = accuracy
           best$RS = i
           best$FS = j
@@ -5783,19 +6889,23 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
           best$trainvalid = l
           best$F1 = F1
         }
-      }}
-      Scores_SVM[[i]][[j]][[1]] = Scores_SVM[[i]][[j]][[1]]/100
-      Scores_SVM[[i]][[j]][[2]] = Scores_SVM[[i]][[j]][[2]]/100
-    }}
+      }
+      Scores_SVM[[i]][[j]][[1]] = Scores_SVM[[i]][[j]][[1]]/10
+      Scores_SVM[[i]][[j]][[2]] = Scores_SVM[[i]][[j]][[2]]/10
+  }}
+#plot(ROC_SVM, main = "XGB ROC Plot")
+#abline(0, 1)
 ```
 
 
 
-```{r Extreme Gradient Boosting TEST, results = FALSE, warning = FALSE}
+```{r Extreme Gradient Boosting, results = FALSE, warning = FALSE}
 set.seed(13)
 library(xgboost)
 library(caret)
 library(tidyverse)
+library(ROCR)
+library(ggplot2)
 
 # Esto se trata de usar XGBoost para regressión o classificación. Todavía tengo que implementar este algoritmo, pero supongo que yo sé los fundamentales.
 # Я тоже хочу сделать что-то о тех, что мы расговаривали. Наша модель ещё не работает достаточно хорошо за публикации, и так мне надо эту сделать лучше.
@@ -5837,28 +6947,20 @@ best = list(accuracy = 0,
             )
 for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
   for (j in 1:7){ #7 feature selection (FS) sets
-    if (is.na(TRAINING[[i]][[j]])){
+    if (length(TRAINVALID[[i]][[j]]) == 1){
       next
     }
     for (k in 1:10){ #10 test sets total
-      for (l in 1:10){ #10 train/validation sets per test set
-        train = TRAINING[[i]][[j]][[k]][[l]] #Import & coerce to matrix in order to scale
-        valid = VALID[[i]][[j]][[k]][[l]]
-        if (length(range(valid[,ncol(valid)])) != 2){ #Should be both 0s and 1s as response vars
-          next
-        }else if (range(valid[,ncol(valid)])[2] != 1){
-          next
-        }
+        train = TRAINVALID[[i]][[j]][[k]] #Import & coerce to matrix in order to scale
+        test = TEST[[i]][[j]][[k]]
         train[,ncol(train)] = as.factor(train[,ncol(train)]) #Set response as factor
-        valid[,ncol(valid)] = as.factor(valid[,ncol(valid)])
-        control = trainControl(method = "repeatedcv",
-                               number = 10,
-                               repeats = 1,
+        test[,ncol(test)] = as.factor(test[,ncol(test)])
+        control = trainControl(method = "none",
                                summaryFunction = f1
                                )
         xgbGrid <- expand.grid(nrounds = c(50),#,100),  
                        max_depth = c(5),#, 10, 15, 20),
-                       colsample_bytree = seq(0.1),#, 0.5, length.out = 5),
+                       colsample_bytree = c(0.1),#, 0.5, length.out = 5),
                        ## The values below are default values in the sklearn-api. 
                        eta = 0.1,
                        gamma=0,
@@ -5870,20 +6972,22 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
                            y = train[,ncol(train)],
                            method = 'xgbTree',
                            metric = 'F1',
-                           tuneGrid = xgbGrid,
-                           trControl = control
+                           tuneGrid = xgbGrid
                            )
         # Predicting the Test set results
-        y_pred = predict(XGB, newdata = as.matrix(valid[-ncol(valid)]))
-        #y_pred = 1*(y_pred >= 0.5)
-        CM = confusionMatrix(data = y_pred,
-                             reference = as.factor(valid[,ncol(valid)])
+        y_pred = predict(XGB, newdata = as.matrix(test[-ncol(test)]))
+        #probs = prediction(y_pred[,2], test[,ncol(test)])
+        #y_pred = 1*(probs@predictions[[1]] >= 0.5)
+        CM = confusionMatrix(data = as.factor(y_pred),
+                             reference = as.factor(test[,ncol(test)])
                              )
         accuracy = CM$overall[["Accuracy"]]
         F1 = CM$byClass[["F1"]]
         Scores_XGB[[i]][[j]][[1]] = Scores_XGB[[i]][[j]][[1]] + accuracy
         Scores_XGB[[i]][[j]][[2]] = Scores_XGB[[i]][[j]][[2]] + F1
         if(F1 > best$F1){
+          #ROC_XGB = performance(probs, "tpr", "fpr")
+          #AUC_XGB = performance(probs, "auc")@y.values[[1]]
           best$accuracy = accuracy
           best$RS = i
           best$FS = j
@@ -5891,17 +6995,18 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
           best$trainvalid = l
           best$F1 = F1
         } 
-          }}
-    Scores_XGB[[i]][[j]][[1]] = Scores_XGB[[i]][[j]][[1]]/100
-    Scores_XGB[[i]][[j]][[2]] = Scores_XGB[[i]][[j]][[2]]/100
-    }}
-#best
+          }
+    Scores_XGB[[i]][[j]][[1]] = Scores_XGB[[i]][[j]][[1]]/10
+    Scores_XGB[[i]][[j]][[2]] = Scores_XGB[[i]][[j]][[2]]/10
+  }}
+#plot(ROC_XGB, main = "XGB ROC Plot")
+#abline(0, 1)
 ```
 
 
 
 ```{r Classifier Heat Maps}
-library("ggplot2")
+library("ggplot2") 
 library("viridis")
 library("forcats")
 
@@ -5950,21 +7055,21 @@ for (score in c("Accuracy", "F1")){
       RF[j] = round(Scores_RF[[response]][[i]][[score]], 2)*100 #Round to 3 decimal places
       j=j+1
     }
-   
+    
     SVM = c()
     j = 1
     for (i in c(1,3,2,7,4,5,6)){
       SVM[j] = round(Scores_SVM[[response]][[i]][[score]], 2)*100 #Round to 3 decimal places
       j=j+1
     }
-   
+    
     XGB = c()
     j = 1
     for (i in c(1,3,2,7,4,5,6)){
       XGB[j] = round(Scores_XGB[[response]][[i]][[score]], 2)*100 #Round to 3 decimal places
       j=j+1
     }
-   
+    
     LogReg = c()
     j = 1
     for (i in c(1,3,2,7,4,5,6)){
@@ -5978,9 +7083,9 @@ for (score in c("Accuracy", "F1")){
                                          ),
                          FS = #c(rep(c("All","MLR","ULR","IG","MRMR","JMI","ChiSq"), 4)),
                            c(rep(c("All","ULR","MLR","ChiSq","IG","JMI","MRMR"), 4)),
-                         values = c(XGB,
-                                    RF,
-                                    SVM,
+                         values = c(rep(0, 7),#XGB,
+                                    rep(0, 7),#RF,
+                                    rep(0, 7),#SVM,
                                     LogReg
                                     )
                          )
@@ -6000,10 +7105,10 @@ for (score in c("Accuracy", "F1")){
                            )
     heatmap = heatmap + theme(legend.key.height = unit(1.5, "cm"))#,legend.position = c(1, 0))
     heatmap = heatmap + ggtitle(response) + xlab("Feature Selection") + ylab("Classifier") #Title of heatmap and axis labels
-    heatmap = heatmap + theme(text = element_text(size = 18),
+    heatmap = heatmap + theme(text = element_text(size = 18), 
                               plot.title = element_text(hjust = 0.5)) #Center the title
     print(heatmap)
-  }}
+     }}
 ```
 
 
