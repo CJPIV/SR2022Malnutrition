@@ -5879,10 +5879,10 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
 
         control = trainControl(method = "repeatedcv",
                                number = 10,
-                               repeats = 1,
+                               repeats = 5,
                                summaryFunction = f1
                                )
-        rfGrid = expand.grid(.mtry = 2)
+        rfGrid = expand.grid(.mtry = c(2, 4, 6, 8))
         RF = train(x = train[-ncol(train)],
                            y = train[,ncol(train)],
                            method = 'rf',
@@ -5928,6 +5928,14 @@ set.seed(13)
 library(e1071)
 library(Matrix)
 library(caret)
+library(kernlab)
+
+f1 <- function(data, lev = NULL, model = NULL) {
+        f1_val <- MLmetrics::F1_Score(y_pred = data$pred,
+                                      y_true = data$obs,
+                                      positive = lev[1])
+        c(F1 = f1_val)
+}
 
 Scores_SVM = list(Stunting = list(None = list(Accuracy = 0, F1 = 0),
                                 MVLoR = list(Accuracy = 0, F1 = 0),
@@ -5984,19 +5992,21 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
         control = trainControl(method = "repeatedcv",
                                number = 10,
                                repeats = 1,
-                               summaryFunction = f1
+                               #summaryFunction = f1,
+                               search = 'grid'
                                )
-        svmGrid = expand.grid(C = 0.15
+        svmGrid = expand.grid(C = c(0.1, 0.5, 1, 2, 3)
                               )
         SVM = train(x = train[-ncol(train)],
                            y = train[,ncol(train)],
-                           method = 'svmLinear',
-                           metric = 'F1',
+                           method = 'svmLinear', #svmRadialWeights
+                           metric = 'Accuracy',
                            tuneGrid = svmGrid,
                            trControl = control
                            )
         y_pred = predict(SVM, newdata = as.matrix(valid[-ncol(valid)]))
         #y_pred = 1*(y_pred >= 0.5)
+        y_pred = factor(colnames(y_pred)[max.col(y_pred)])
         CM = confusionMatrix(data = y_pred,
                              reference = as.factor(valid[,ncol(valid)])
                              )
@@ -6070,7 +6080,7 @@ best = list(accuracy = 0,
             )
 for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
   for (j in 1:7){ #7 feature selection (FS) sets
-    for (k in 1:10){ #10 test sets total
+    for (k in 1){ #10 test sets total
       for (l in 1:10){ #10 train/validation sets per test set
         train = TRAIN[[i]][[j]][[k]][[l]][[1]] #Import & coerce to matrix in order to scale
         if (length(ncol(train)) == 0){
@@ -6085,8 +6095,8 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
         }
         train[,ncol(train)] = as.factor(train[,ncol(train)]) #Set response as factor
         valid[,ncol(valid)] = as.factor(valid[,ncol(valid)])
-        control = trainControl(method = "repeatedcv",
-                               summaryFunction = f1
+        control = trainControl(method = "repeatedcv"#,
+                               #summaryFunction = f1
                                )
         xgbGrid <- expand.grid(nrounds = c(50,100),  
                        max_depth = c(5, 10, 15, 20),
@@ -6101,7 +6111,7 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
         XGB = train(x = train[-ncol(train)],
                            y = train[,ncol(train)],
                            method = 'xgbTree',
-                           metric = 'F1',
+                           metric = 'Accuracy',
                            tuneGrid = xgbGrid,
                            trControl = control
                            )
@@ -6109,7 +6119,8 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
         y_pred = predict(XGB, newdata = as.matrix(valid[-ncol(valid)]))
         #y_pred = 1*(y_pred >= 0.5)
         CM = confusionMatrix(data = y_pred,
-                             reference = as.factor(valid[,ncol(valid)])
+                             reference = as.factor(valid[,ncol(valid)]),
+                             positive = "1"
                              )
         accuracy = CM$overall[["Accuracy"]]
         if (is.na(CM$byClass[["F1"]])){
@@ -6619,7 +6630,8 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
         #probs = prediction(y_pred[,2], test[,ncol(test)])
         y_pred = unname(1*(y_pred >= 0.5))
         CM = confusionMatrix(data = as.factor(y_pred),
-                             reference = test[,ncol(test)]
+                             reference = test[,ncol(test)],
+                             positive = "1"
                              )
         accuracy = CM$overall[["Accuracy"]]
         if (is.na(CM$byClass[["F1"]])){
@@ -6729,7 +6741,8 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
         #probs = prediction(y_pred[,2], test[,ncol(test)])
         #y_pred = 1*(y_pred >= 0.5)[,2]
         CM = confusionMatrix(data = y_pred,
-                             reference = as.factor(test[,ncol(test)])
+                             reference = as.factor(test[,ncol(test)]),
+                             positive = "1"
                              )
         accuracy = CM$overall[["Accuracy"]]
         if (is.na(CM$byClass[["F1"]])){
@@ -6831,7 +6844,8 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
         y_pred = predict(SVM, newdata = as.matrix(test[-ncol(test)]))
         #probs = prediction(y_pred[,2], test[,ncol(test)])
         CM = confusionMatrix(data = y_pred,
-                             reference = as.factor(test[,ncol(test)])
+                             reference = as.factor(test[,ncol(test)]),
+                             positive = "1"
                              )
         accuracy = CM$overall[["Accuracy"]]
         if (is.na(CM$byClass[["F1"]])){
@@ -6946,7 +6960,8 @@ for (i in 1:3){ #3 response sets (Stunting, Thinness, Wasting)
         #probs = prediction(y_pred[,2], test[,ncol(test)])
         #y_pred = 1*(probs@predictions[[1]] >= 0.5)
         CM = confusionMatrix(data = as.factor(y_pred),
-                             reference = as.factor(test[,ncol(test)])
+                             reference = as.factor(test[,ncol(test)]),
+                             positive = "1"
                              )
         accuracy = CM$overall[["Accuracy"]]
          if (is.na(CM$byClass[["F1"]])){
