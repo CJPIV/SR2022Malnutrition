@@ -977,7 +977,7 @@ for (i in 1:3){
     FSResults[[i]][[j]][[k]] = list("ULR" = list(),
                                     "MLR" = list(),
                                     "ChiSq" = list(),
-                                    "IG" = list(),
+                                    "RelF" = list(),
                                     "mRMR" = list(),
                                     "JMI" = list()
                                     )
@@ -1030,15 +1030,19 @@ library(MASS)
           FSResults[[i]][[j]][[d]][[1]] = FeatureList[,c(1,4)]
 ################################################################################          
 #MLoR
-          
-################################################################################
-#Boruta          
-library("Boruta")
-          
-          brta = Boruta(x = data[,-41],
-                        y = data[,41],
-                        pValue = 0.05
-                        )
+          MLoR = glm(formula = paste0(names(data)[41],"~."),
+                     data = data,
+                     family = "binomial"
+          )
+          regSummary = tidy(MLoR, exponentiate = TRUE, conf.level = 0.95)
+          regSummary = regSummary[2:nrow(regSummary),] #Drop intercept
+          regSummary = regSummary[order(regSummary$p.value), ]
+          for (index in 1:NUM_FEATURES){
+            Feature = regSummary[[index,1]]
+            FeatureInd = which(names(Stunting) == Feature)
+            FeatureList[[FeatureInd, 3]] = FeatureList[[FeatureInd, 3]] + 1
+          }
+          FSResults[[i]][[j]][[d]][[2]] = FeatureList[,c(1,3)]
 ################################################################################
 #ChiSq
 library(plyr) 
@@ -1053,23 +1057,19 @@ library(plyr)
           }
           FSResults[[i]][[j]][[d]][[3]] = FeatureList[,c(1,4)]
 ################################################################################
-#InfoGain. This one is pretty quick.
+# #This one takes ~5 hours to run. Have fun waiting.
 library(FSelectorRcpp)
           
-          infogain = information_gain(x = data[,-41],
-                                      y = data[,41],
-                                      type = 'infogain',
-                                      equal = TRUE
-                                      )
-          infogain = infogain[order(infogain$importance, decreasing = TRUE),] #Sort
-          for (index in 1:NUM_FEATURES){ #Look at top n most important features
-            Feature = infogain[[index, 1]] #Get the name of the next most important feature
-            if (infogain[[index, 2]] > 0){ #if significance > 0
-              FeatureInd = which(names(Stunting) == Feature)
-              FeatureList[[FeatureInd, 5]] = FeatureList[[FeatureInd, 5]] + 1 #Increase its value by 1
-            }
-          }
-          FSResults[[i]][[j]][[d]][[4]] = FeatureList[,c(1,5)] #Update FeatureList
+          # relF = relief(x = data[,-41],
+          #               y = data[,41],
+          #               neighboursCount = 5
+          #               )
+          # relF = relF[order(relF$importance, decreasing = TRUE), ]
+          # for (index in 1:NUM_FEATURES){
+          #   FeatureInd = row.names(relF)[index]
+          #   FeatureList[[FeatureInd, 5]] = FeatureList[[FeatureInd, 5]] + 1
+          # }
+          # FSResults[[i]][[j]][[d]][[4]] = FeatureList[,c(1,5)]
 ################################################################################
 #mRMR. Pretty quick.
 library(mRMRe)
