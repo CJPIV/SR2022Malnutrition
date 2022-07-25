@@ -596,9 +596,9 @@ names(processed)[[36]] = "DontUseSchoolLat"
 names(processed)[[37]] = "DontUseTP"
 
 for (i in 1:1036){
-  if ((!is.na(processed[[i,8]] & processed[[i,8]] == 1)) |
-      (!is.na(processed[[i,9]] & processed[[i,9]] == 1)) |
-      (!is.na(processed[[i,10]] & processed[[i,10]] == 1))){
+  if ((!is.na(processed[[i,8]]) & processed[[i,8]] == 1) |
+      (!is.na(processed[[i,9]]) & processed[[i,9]] == 1) |
+      (!is.na(processed[[i,10]]) & processed[[i,10]] == 1)){
     processed$SickLast2Weeks[i] = 1
   }else if (is.na(processed[[i,8]]) | is.na(processed[[i,9]]) | is.na(processed[[i,10]])){
     processed$SickLast2Weeks[i] = NA
@@ -609,8 +609,8 @@ for (i in 1:1036){
 processed = processed[,-c(8:10)]
 
 for (i in 1:1036){
-  if ((!is.na(processed[[i,8]] & processed[[i,8]] == 1)) |
-      (!is.na(processed[[i,9]] & processed[[i,9]] == 1))){
+  if ((!is.na(processed[[i,8]]) & processed[[i,8]] == 1) |
+      (!is.na(processed[[i,9]]) & processed[[i,9]] == 1)){
     processed$NailsMaintained[i] = 0
   }else if (is.na(processed[[i,8]]) | is.na(processed[[i,9]])){
     processed$NailsMaintained[i] = NA
@@ -621,8 +621,8 @@ for (i in 1:1036){
 processed = processed[,-c(8:10)]
 
 for (i in 1:1036){
-  if ((!is.na(processed[[i,8]] & processed[[i,8]] == 1)) |
-      (!is.na(processed[[i,9]] & processed[[i,9]] == 1))){
+  if ((!is.na(processed[[i,8]]) & processed[[i,8]] == 1) |
+      (!is.na(processed[[i,9]]) & processed[[i,9]] == 1)){
     processed$SchoolLatClean[i] = 0
   }else if (is.na(processed[[i,8]]) | is.na(processed[[i,9]])){
     processed$SchoolLatClean[i] = NA
@@ -634,8 +634,8 @@ processed = processed[,-c(8:9, 11)]
 processed = processed[,-c(10)]
 
 for (i in 1:1036){
-  if ((!is.na(processed[[i,11]] & processed[[i,11]] == 1)) |
-      (!is.na(processed[[i,12]] & processed[[i,12]] == 1))){
+  if ((!is.na(processed[[i,11]]) & processed[[i,11]] == 1) |
+      (!is.na(processed[[i,12]]) & processed[[i,12]] == 1)){
     processed$"Radio/TV"[i] = 1
   }else if (is.na(processed[[i,11]]) | is.na(processed[[i,12]])){
     processed$"Radio/TV"[i] = NA
@@ -649,8 +649,8 @@ processed = processed[,-11]
 processed = processed[,-c(16, 18)]
 
 for (i in 1:1036){
-  if ((!is.na(processed[[i,18]] & processed[[i,18]] == 1)) |
-      (!is.na(processed[[i,19]] & processed[[i,19]] == 1))){
+  if ((!is.na(processed[[i,18]]) & processed[[i,18]] == 1) |
+      (!is.na(processed[[i,19]]) & processed[[i,19]] == 1)){
     processed$RiverCleaning[i] = 1
   }else if (is.na(processed[[i,18]]) | is.na(processed[[i,19]])){
     processed$RiverCleaning[i] = NA
@@ -661,8 +661,8 @@ for (i in 1:1036){
 processed = processed[,-c(18,19)]
 
 for (i in 1:1036){
-  if ((!is.na(processed[[i,28]] & processed[[i,28]] == 1)) |
-      (!is.na(processed[[i,29]] & processed[[i,29]] == 1))){
+  if ((!is.na(processed[[i,28]]) & processed[[i,28]] == 1) |
+      (!is.na(processed[[i,29]]) & processed[[i,29]] == 1)){
     processed$OtherMeds[i] = 1
   }else if (is.na(processed[[i,28]]) | is.na(processed[[i,29]])){
     processed$OtherMeds[i] = NA
@@ -675,8 +675,8 @@ processed = processed[,-28]
 processed = processed[,-c(30:34)]
 
 for (i in 1:1036){
-  if ((!is.na(processed[[i,31]] & processed[[i,31]] == 1)) |
-      (!is.na(processed[[i,32]] & processed[[i,32]] == 1))){
+  if ((!is.na(processed[[i,31]]) & processed[[i,31]] == 1) |
+      (!is.na(processed[[i,32]]) & processed[[i,32]] == 1)){
     processed$"momFinished2Up"[i] = 1
   }else if (is.na(processed[[i,31]]) | is.na(processed[[i,32]])){
     processed$"momFinished2Up"[i] = NA
@@ -1027,7 +1027,7 @@ library(MASS)
               FeatureList[[feature, 2]] = FeatureList[[feature, 2]] + 1
             }
           }
-          FSResults[[i]][[j]][[d]][[1]] = FeatureList[,c(1,4)]
+          FSResults[[i]][[j]][[d]][[1]] = FeatureList[,c(1,2)]
 ################################################################################          
 #MLoR
           MLoR = glm(formula = paste0(names(data)[41],"~."),
@@ -1048,8 +1048,8 @@ library(MASS)
 library(plyr) 
 
           for (FeatureInd in 1:40){
-            chisq = chisq.test(table(data[,FeatureInd],
-                                     data[,41])
+            chisq = chisq.test(table(data[,-41],
+                                     DATA[[i]][[j]][,-41])
                          )
             if (chisq$p.value < 0.05){
               FeatureList[[FeatureInd, 4]] = FeatureList[[FeatureInd, 4]] + 1
