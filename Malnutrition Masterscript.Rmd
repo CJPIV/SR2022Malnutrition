@@ -845,11 +845,17 @@ FSSets = list("Stunting" = list("Full" = list(),
                               )
             )
 
+DupCoefs = c(0,0,0,0,1,0,0,
+             9,7,10,8,6,11,6,
+             3,2,2,2,3
+             )
+index = 0
 for (i in 1:3){
   for (j in 1:7){
     if (i == 3 & (j == 6 | j == 7)){
       next
     }
+    index = index + 1
     FSSets[[i]][[j]] = list("Unbalanced" = list(),
                         "Balanced" = list()
                         )
@@ -888,13 +894,16 @@ for (i in 1:3){
       SMOTE[[k]] = list()
       for (l in 1:10){
         neighbors = sum(Unbalanced[[k]][[l]][,41]) - 1 #can't include itself
+        if (neighbors < 1){
+          next
+        }
         if (neighbors > 5){
           neighbors = 5
         }
         SMOTE[[k]][[l]] = SMOTE(X = Unbalanced[[k]][[l]],
                               target = Unbalanced[[k]][[l]][,41],
                               K = neighbors,
-                              dup_size = 1
+                              dup_size = DupCoefs[[index]]
                               )
         SMOTE[[k]][[l]]$data$class = NULL #Extra random variable, breaks modelling
         SMOTE[[k]][[l]] = SMOTE[[k]][[l]]$data
@@ -942,7 +951,7 @@ for (i in 1:3){
 set.seed(13)
 #Preparing data structure to store results
 
-NUM_FEATURES = 20 #Change this for different feature selection cutoffs
+NUM_FEATURES = 10 #Change this for different feature selection cutoffs
 FSResults = list("Stunting" = list("Full" = list(),
                                    "Urban" = list(),
                                    "Nonurban" = list(),
@@ -1112,7 +1121,7 @@ for (i in 1:3){
         data = FSResults[[i]][[j]][[d]][[k]]
         Selected = integer()
         for (index in 1:40){
-          if (data[[index, 2]] >= 90){
+          if (data[[index, 2]] >= 95){
             Selected = c(Selected, index)
           }
         }
