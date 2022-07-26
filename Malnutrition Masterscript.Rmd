@@ -942,7 +942,7 @@ for (i in 1:3){
 set.seed(13)
 #Preparing data structure to store results
 
-NUM_FEATURES = 10 #Change this for different feature selection cutoffs
+NUM_FEATURES = 20 #Change this for different feature selection cutoffs
 FSResults = list("Stunting" = list("Full" = list(),
                                    "Urban" = list(),
                                    "Nonurban" = list(),
@@ -1016,7 +1016,7 @@ library(broom)
 library(car)
 library(performance)
 library(MASS)
-          
+
           for (feature in 1:40){
             ULoR = glm(formula = paste0(names(data)[41],"~",names(data)[feature]),
                        data = data,
@@ -1028,7 +1028,7 @@ library(MASS)
             }
           }
           FSResults[[i]][[j]][[d]][[1]] = FeatureList[,c(1,2)]
-################################################################################          
+################################################################################
 #MLoR
           MLoR = glm(formula = paste0(names(data)[41],"~."),
                      data = data,
@@ -1045,35 +1045,22 @@ library(MASS)
           FSResults[[i]][[j]][[d]][[2]] = FeatureList[,c(1,3)]
 ################################################################################
 #ChiSq
-library(plyr) 
+library(plyr)
 
           for (FeatureInd in 1:40){
-            chisq = chisq.test(table(data[,-41],
-                                     DATA[[i]][[j]][,-41])
-                         )
+            chisq = chisq.test(table(data[,FeatureInd],
+                                     data[,41]
+                                     )
+                               )
             if (chisq$p.value < 0.05){
               FeatureList[[FeatureInd, 4]] = FeatureList[[FeatureInd, 4]] + 1
             }
           }
           FSResults[[i]][[j]][[d]][[3]] = FeatureList[,c(1,4)]
 ################################################################################
-# #This one takes ~5 hours to run. Have fun waiting.
-library(FSelectorRcpp)
-          
-          # relF = relief(x = data[,-41],
-          #               y = data[,41],
-          #               neighboursCount = 5
-          #               )
-          # relF = relF[order(relF$importance, decreasing = TRUE), ]
-          # for (index in 1:NUM_FEATURES){
-          #   FeatureInd = row.names(relF)[index]
-          #   FeatureList[[FeatureInd, 5]] = FeatureList[[FeatureInd, 5]] + 1
-          # }
-          # FSResults[[i]][[j]][[d]][[4]] = FeatureList[,c(1,5)]
-################################################################################
 #mRMR. Pretty quick.
 library(mRMRe)
-          
+
           mrmr = mRMR.data(data = data)
           results = mRMR.classic("mRMRe.Filter",
                            data = mrmr,
@@ -1089,7 +1076,7 @@ library(mRMRe)
 ################################################################################
 #JMI
 library(praznik)
-          
+
           jmi = JMI(X = data[,-41],
                     Y = data[,41],
                     k = NUM_FEATURES
@@ -1101,6 +1088,35 @@ library(praznik)
           FSResults[[i]][[j]][[d]][[6]] = FeatureList[,c(1,7)]
 ################################################################################
         }
+      }
+    }
+  }
+}
+```
+
+
+
+```{r FS Results}
+T10Features = FSResults
+
+for (i in 1:3){
+  for (j in 1:7){
+    if (i == 3 & (j == 6 | j == 7)){ #Wasting has no youth/adolescent subsets; skip them
+      next
+    }
+    for (d in 1:2){
+      for (k in 1:6){
+        if (length(FSResults[[i]][[j]][[d]][[k]]) == 0){
+          next
+        }
+        data = FSResults[[i]][[j]][[d]][[k]]
+        Selected = integer()
+        for (index in 1:40){
+          if (data[[index, 2]] >= 90){
+            Selected = c(Selected, index)
+          }
+        }
+        T10Features[[i]][[j]][[d]][[k]] = T10Features[[i]][[j]][[d]][[k]][Selected,1]
       }
     }
   }
