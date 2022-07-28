@@ -615,7 +615,7 @@ for (i in 1:1036){
   }else if (is.na(processed[[i,8]]) | is.na(processed[[i,9]])){
     processed$NailsMaintained[i] = NA
   }else{
-    processed$NailsMaintained[i] = 0
+    processed$NailsMaintained[i] = 1
   }
 }
 processed = processed[,-c(8:10)]
@@ -627,7 +627,7 @@ for (i in 1:1036){
   }else if (is.na(processed[[i,8]]) | is.na(processed[[i,9]])){
     processed$SchoolLatClean[i] = NA
   }else{
-    processed$SchoolLatClean[i] = 0
+    processed$SchoolLatClean[i] = 1
   }
 }
 processed = processed[,-c(8:9, 11)]
@@ -688,6 +688,7 @@ processed = processed[,-c(31, 32)]
 names(processed)[[12]] = "SheepGoat"
 names(processed)[[39]] = "RadioTV"
 ```
+
 
 
 ```{r Dependent Variable Calculations}
@@ -788,27 +789,44 @@ DATA = list("Stunting" = list("Full" = list(),
                               "Female" = list()
                               )
             )
+################################################################################
 DATA[["Stunting"]][["Full"]] = Stunting
 DATA[["Stunting"]][["Urban"]] = subset(Stunting, Urban == 1)
 DATA[["Stunting"]][["Nonurban"]] = subset(Stunting, Urban == 0)
+DATA[[1]][[2]] = DATA[[1]][[2]][,-6]
+DATA[[1]][[3]] = DATA[[1]][[3]][,-6]
 DATA[["Stunting"]][["Male"]] = subset(Stunting, Sex == 0)
 DATA[["Stunting"]][["Female"]] = subset(Stunting, Sex == 1)
+DATA[[1]][[4]] = DATA[[1]][[4]][,-2]
+DATA[[1]][[5]] = DATA[[1]][[5]][,-2]
 DATA[["Stunting"]][["Youth"]] = subset(Stunting, Age < 11)
 DATA[["Stunting"]][["Adolescent"]] = subset(Stunting, Age > 10)
-
+DATA[[1]][[6]] = DATA[[1]][[6]][,-1]
+DATA[[1]][[7]] = DATA[[1]][[7]][,-1]
+################################################################################
 DATA[["Thinness"]][["Full"]] = Thinness
 DATA[["Thinness"]][["Urban"]] = subset(Thinness, Urban == 1)
 DATA[["Thinness"]][["Nonurban"]] = subset(Thinness, Urban == 0)
+DATA[[2]][[2]] = DATA[[2]][[2]][,-6]
+DATA[[2]][[3]] = DATA[[2]][[3]][,-6]
 DATA[["Thinness"]][["Male"]] = subset(Thinness, Sex == 0)
 DATA[["Thinness"]][["Female"]] = subset(Thinness, Sex == 1)
+DATA[[2]][[4]] = DATA[[2]][[4]][,-2]
+DATA[[2]][[5]] = DATA[[2]][[5]][,-2]
 DATA[["Thinness"]][["Youth"]] = subset(Thinness, Age < 11)
 DATA[["Thinness"]][["Adolescent"]] = subset(Thinness, Age > 10)
-
+DATA[[2]][[6]] = DATA[[2]][[6]][,-1]
+DATA[[2]][[7]] = DATA[[2]][[7]][,-1]
+################################################################################
 DATA[["Wasting"]][["Full"]] = Wasting
 DATA[["Wasting"]][["Urban"]] = subset(Wasting, Urban == 1)
 DATA[["Wasting"]][["Nonurban"]] = subset(Wasting, Urban == 0)
+DATA[[3]][[2]] = DATA[[3]][[2]][,-6]
+DATA[[3]][[3]] = DATA[[3]][[3]][,-6]
 DATA[["Wasting"]][["Male"]] = subset(Wasting, Sex == 0)
 DATA[["Wasting"]][["Female"]] = subset(Wasting, Sex == 1)
+DATA[[3]][[4]] = DATA[[3]][[4]][,-2]
+DATA[[3]][[5]] = DATA[[3]][[5]][,-2]
 #No Youth/Adolescent splits for Wasting; it's already limited to samples < 11 years old
 ```
 
@@ -856,9 +874,9 @@ for (i in 1:3){
       next
     }
     index = index + 1
-    FSSets[[i]][[j]] = list("Unbalanced" = list(),
-                        "Balanced" = list()
-                        )
+     FSSets[[i]][[j]] = list()#"Unbalanced" = list(),
+                         # "Balanced" = list()
+                         # )
     set = DATA[[i]][[j]]
     response = names(DATA)[i]
     
@@ -889,63 +907,13 @@ for (i in 1:3){
                             curSet[-innerFolds$Fold10, ]
                             )
     }
-    SMOTE = list()
-    for (k in 1:10){ #Use SMOTE to create balanced versions of each of the training sets
-      SMOTE[[k]] = list()
-      for (l in 1:10){
-        neighbors = sum(Unbalanced[[k]][[l]][,41]) - 1 #can't include itself
-        if (neighbors < 1){
-          next
-        }
-        if (neighbors > 5){
-          neighbors = 5
-        }
-        SMOTE[[k]][[l]] = SMOTE(X = Unbalanced[[k]][[l]],
-                              target = Unbalanced[[k]][[l]][,41],
-                              K = neighbors,
-                              dup_size = DupCoefs[[index]]
-                              )
-        SMOTE[[k]][[l]]$data$class = NULL #Extra random variable, breaks modelling
-        SMOTE[[k]][[l]] = SMOTE[[k]][[l]]$data
-      }
-    }
-################################################################################
-    # barplot(prop.table(table(Unbalanced[[1]][[1]][,41])),
-    #     col = c("white", "darkgrey"),
-    #     ylim = c(0, 1),
-    #     xlim = c(0, 3),
-    #     ylab = "Prevalence (%)",
-    #     xlab = "Stunting",
-    #     names = c("No", "Yes"),
-    #     main = 'Unbalanced Set Class Distribution')
-    # abline(h = 0)
-    # 
-    # barplot(prop.table(table(SMOTE[[1]][[1]]$data[,41])),
-    #     col = c("white", "darkgrey"),
-    #     ylim = c(0, 1),
-    #     xlim = c(0, 3),
-    #     ylab = "Prevalence (%)",
-    #     xlab = "Stunting",
-    #     names = c("No", "Yes"),
-    #     main = 'Balanced  Set Class Distribution (SMOTE)')
-    # abline(h = 0)
-################################################################################
-#Print ratios of class distributions so we know we have the right split. We want 3:1 here.
-# table(Unbalanced[[1]][[1]]$response)[[1]][[1]]
-# table(Unbalanced[[1]][[1]]$response)[[2]][[1]]
-# table(Unbalanced[[1]][[1]]$response)[[1]][[1]]/table(Unbalanced[[1]][[1]]$response)[[2]][[1]]
-# 
-# table(SMOTE[[1]][[1]]$data$response)[[1]][[1]]
-# table(SMOTE[[1]][[1]]$data$response)[[2]][[1]]
-# table(SMOTE[[1]][[1]]$data$response)[[1]][[1]]/table(SMOTE[[1]][[1]]$data$response)[[2]][[1]]
-
-  FSSets[[i]][[j]][["Unbalanced"]] = Unbalanced
-  FSSets[[i]][[j]][["Balanced"]] = SMOTE
+  FSSets[[i]][[j]] = Unbalanced
   }
 }
 ```
 
-
+# FEATURE SELECTION:
+####################
 
 ```{r Feature Selection, warning = FALSE, output = FALSE}
 set.seed(13)
@@ -986,7 +954,7 @@ for (i in 1:3){
     FSResults[[i]][[j]][[k]] = list("ULR" = list(),
                                     "MLR" = list(),
                                     "ChiSq" = list(),
-                                    "RelF" = list(),
+                                    "MLiR" = list(),
                                     "mRMR" = list(),
                                     "JMI" = list()
                                     )
@@ -997,7 +965,6 @@ for (i in 1:3){
 #Beginning loop iterations, filling out data structure
 for (i in 1:3){
   for (j in 1:7){
-    for (d in 1:2){
       if (i == 3 & (j == 6 | j == 7)){ #Wasting has no youth/adolescent subsets; skip them
         next
       }
@@ -1007,7 +974,7 @@ for (i in 1:3){
                                ChiSq = double(),
                                IG = double(),
                                mRMR = double(),
-                               JMi = double()
+                               JMI = double()
                                )
       for (k in 1:40){ #Make score markers for all features to track importance
         FeatureList[[k,1]] = names(Stunting)[k] #Name every row
@@ -1018,25 +985,25 @@ for (i in 1:3){
       #1 for unbalanced dataset; 2 for balanced dataset
       for (k in 1:10){
         for (l in 1:10){
-          data = FSSets[[i]][[j]][[d]][[k]][[l]] #Load specific dataset we'll use in this run
+          data = FSSets[[i]][[j]][[k]][[l]] #Load specific dataset we'll use in this run
 ################################################################################
-#ULoR
-library(broom)
-library(car)
-library(performance)
-library(MASS)
-
-          for (feature in 1:40){
-            ULoR = glm(formula = paste0(names(data)[41],"~",names(data)[feature]),
-                       data = data,
-                       family = "binomial"
-                       )
-            regSummary = tidy(ULoR, exponentiate = TRUE, conf.level = 0.95)
-            if (!is.na(regSummary[[2, 5]]) & regSummary[[2, 5]] < 0.05){
-              FeatureList[[feature, 2]] = FeatureList[[feature, 2]] + 1
-            }
-          }
-          FSResults[[i]][[j]][[d]][[1]] = FeatureList[,c(1,2)]
+# #ULoR
+# library(broom)
+# library(car)
+# library(performance)
+# library(MASS)
+# 
+#           for (feature in 1:40){
+#             ULoR = glm(formula = paste0(names(data)[41],"~",names(data)[feature]),
+#                        data = data,
+#                        family = "binomial"
+#                        )
+#             regSummary = tidy(ULoR, exponentiate = TRUE, conf.level = 0.95)
+#             if (!is.na(regSummary[[2, 5]]) & regSummary[[2, 5]] < 0.05){
+#               FeatureList[[feature, 2]] = FeatureList[[feature, 2]] + 1
+#             }
+#           }
+#           FSResults[[i]][[j]][[1]] = FeatureList[,c(1,2)]
 ################################################################################
 #MLoR
           MLoR = glm(formula = paste0(names(data)[41],"~."),
@@ -1051,7 +1018,7 @@ library(MASS)
             FeatureInd = which(names(Stunting) == Feature)
             FeatureList[[FeatureInd, 3]] = FeatureList[[FeatureInd, 3]] + 1
           }
-          FSResults[[i]][[j]][[d]][[2]] = FeatureList[,c(1,3)]
+          FSResults[[i]][[j]][[2]] = FeatureList[,c(1,3)]
 ################################################################################
 #ChiSq
 library(plyr)
@@ -1065,7 +1032,7 @@ library(plyr)
               FeatureList[[FeatureInd, 4]] = FeatureList[[FeatureInd, 4]] + 1
             }
           }
-          FSResults[[i]][[j]][[d]][[3]] = FeatureList[,c(1,4)]
+          FSResults[[i]][[j]][[3]] = FeatureList[,c(1,4)]
 ################################################################################
 #mRMR. Pretty quick.
 library(mRMRe)
@@ -1081,7 +1048,7 @@ library(mRMRe)
             FeatureInd = results@filters[["41"]][[index,1]]
             FeatureList[[FeatureInd, 6]] = FeatureList[[FeatureInd, 6]] + 1
           }
-          FSResults[[i]][[j]][[d]][[5]] = FeatureList[,c(1,6)]
+          FSResults[[i]][[j]][[5]] = FeatureList[,c(1,6)]
 ################################################################################
 #JMI
 library(praznik)
@@ -1094,11 +1061,10 @@ library(praznik)
             FeatureInd = jmi$selection[[index]]
             FeatureList[[FeatureInd, 7]] = FeatureList[[FeatureInd, 7]] + 1
           }
-          FSResults[[i]][[j]][[d]][[6]] = FeatureList[,c(1,7)]
+          FSResults[[i]][[j]][[6]] = FeatureList[,c(1,7)]
 ################################################################################
         }
       }
-    }
   }
 }
 ```
@@ -1113,20 +1079,18 @@ for (i in 1:3){
     if (i == 3 & (j == 6 | j == 7)){ #Wasting has no youth/adolescent subsets; skip them
       next
     }
-    for (d in 1:2){
-      for (k in 1:6){
-        if (length(FSResults[[i]][[j]][[d]][[k]]) == 0){
-          next
-        }
-        data = FSResults[[i]][[j]][[d]][[k]]
-        Selected = integer()
-        for (index in 1:40){
-          if (data[[index, 2]] >= 95){
-            Selected = c(Selected, index)
-          }
-        }
-        T10Features[[i]][[j]][[d]][[k]] = T10Features[[i]][[j]][[d]][[k]][Selected,1]
+    for (k in 1:6){
+      if (length(FSResults[[i]][[j]][[k]]) == 0){
+        next
       }
+      data = FSResults[[i]][[j]][[k]]
+      Selected = integer()
+      for (index in 1:40){
+        if (data[[index, 2]] >= 95){
+          Selected = c(Selected, index)
+        }
+      }
+      T10Features[[i]][[j]][[k]] = T10Features[[i]][[j]][[k]][Selected,1]
     }
   }
 }
@@ -1134,53 +1098,173 @@ for (i in 1:3){
 
 
 
-```{r Repeated Multivariate Logistic Regression (FS), warning = FALSE}
-#Takes ~2 minutes.
-results = data.frame(StuntingRejects = double(),
-                     StuntingMaleRejects = double(),
-                     StuntinFemaleRejects = double(),
-                     StuntingUrbanRejects = double(),
-                     StuntingNotUrbanRejects = double(),
-                     StuntingYouthRejects = double(),
-                     StuntingAdolescentRejects = double(),
-                     
-                     ThinnessRejects = double(),
-                     ThinnessMaleRejects = double(),
-                     StuntinFemaleRejects = double(),
-                     ThinnessUrbanRejects = double(),
-                     ThinnessNotUrbanRejects = double(),
-                     ThinnessYouthRejects = double(),
-                     ThinnessAdolescentRejects = double(),
-                     
-                     WastingRejects = double(),
-                     WastingMaleRejects = double(),
-                     StuntinFemaleRejects = double(), 
-                     WastingUrbanRejects = double(), 
-                     WastingNotUrbanRejects = double()
-                     )
-################################################################################
-#Stunting PV-based feature selection & approximate odds ratios
-for (factor in names(Stunting)[1:40]){
-  results[[factor, 1]] = 0 #Must instantiate columns or next lines can't access them
-}
+```{r Linear Regression Prep}
+StuntingZ = processed[,-c(3, 4, 44:48)]
+imputed = kNN(StuntingZ, variable = colnames(StuntingZ), k = 5, impNA = TRUE) 
+StuntingZ = subset(imputed, select = 1:41)
 
-for (i in 1:10){
-  for (j in 1:10){
-    index = 0
-    UVLoR = glm(Stunting~.,
-                data = UBStunting[[i]][[j]],
-                family = "binomial"
+ThinnessZ = processed[,-c(3, 4, 43:44, 46:48)]
+imputed = kNN(ThinnessZ, variable = colnames(ThinnessZ), k = 5, impNA = TRUE) 
+ThinnessZ = subset(imputed, select = 1:41)
+
+WastingZ = processed[,-c(3, 4, 43:46, 48)]
+WastingZ = subset(WastingZ, Age < 11)
+WastingZ$WAZ = as.numeric(as.character(WastingZ$WAZ))
+imputed = kNN(WastingZ, variable = colnames(WastingZ), k = 5, impNA = TRUE) 
+WastingZ = subset(imputed, select = 1:41)
+
+DATAZ = list("Stunting" = list("Full" = list(),
+                              "Urban" = list(),
+                              "Nonurban" = list(),
+                              "Male" = list(),
+                              "Female" = list(),
+                              "Youth" = list(),
+                              "Adolescent" = list()
+                              ),
+            "Thinness" = list("Full" = list(),
+                              "Urban" = list(),
+                              "Nonurban" = list(),
+                              "Male" = list(),
+                              "Female" = list(),
+                              "Youth" = list(),
+                              "Adolescent" = list()
+                              ),
+            "Wasting" = list("Full" = list(),
+                              "Urban" = list(),
+                              "Nonurban" = list(),
+                              "Male" = list(),
+                              "Female" = list()
+                              )
+            )
+DATAZ[["Stunting"]][["Full"]] = StuntingZ
+DATAZ[["Stunting"]][["Urban"]] = subset(StuntingZ, Urban == 1)
+DATAZ[["Stunting"]][["Nonurban"]] = subset(StuntingZ, Urban == 0)
+DATAZ[["Stunting"]][["Male"]] = subset(StuntingZ, Sex == 0)
+DATAZ[["Stunting"]][["Female"]] = subset(StuntingZ, Sex == 1)
+DATAZ[["Stunting"]][["Youth"]] = subset(StuntingZ, Age < 11)
+DATAZ[["Stunting"]][["Adolescent"]] = subset(StuntingZ, Age > 10)
+
+DATAZ[["Thinness"]][["Full"]] = ThinnessZ
+DATAZ[["Thinness"]][["Urban"]] = subset(ThinnessZ, Urban == 1)
+DATAZ[["Thinness"]][["Nonurban"]] = subset(ThinnessZ, Urban == 0)
+DATAZ[["Thinness"]][["Male"]] = subset(ThinnessZ, Sex == 0)
+DATAZ[["Thinness"]][["Female"]] = subset(ThinnessZ, Sex == 1)
+DATAZ[["Thinness"]][["Youth"]] = subset(ThinnessZ, Age < 11)
+DATAZ[["Thinness"]][["Adolescent"]] = subset(ThinnessZ, Age > 10)
+
+DATAZ[["Wasting"]][["Full"]] = WastingZ
+DATAZ[["Wasting"]][["Urban"]] = subset(WastingZ, Urban == 1)
+DATAZ[["Wasting"]][["Nonurban"]] = subset(WastingZ, Urban == 0)
+DATAZ[["Wasting"]][["Male"]] = subset(WastingZ, Sex == 0)
+DATAZ[["Wasting"]][["Female"]] = subset(WastingZ, Sex == 1)
+
+LinResults = list("Stunting" = list("Full" = list(),
+                                   "Urban" = list(),
+                                   "Nonurban" = list(),
+                                   "Male" = list(),
+                                   "Female" = list(),
+                                   "Youth" = list(),
+                                   "Adolescent" = list()
+                                   ),
+                 "Thinness" = list("Full" = list(),
+                                   "Urban" = list(),
+                                   "Nonurban" = list(),
+                                   "Male" = list(),
+                                   "Female" = list(),
+                                   "Youth" = list(),
+                                   "Adolescent" = list()
+                                   ),
+                 "Wasting" = list("Full" = list(),
+                                  "Urban" = list(),
+                                  "Nonurban" = list(),
+                                  "Male" = list(),
+                                  "Female" = list(),
+                                  "Youth" = list(),
+                                  "Adolescent" = list()
+                                  )
+                 )
+```
+
+
+
+```{r Linear Regression}
+library(glmnet)
+
+for (i in 1:3){
+  for (j in 1:7){
+    if (i == 3 & (j == 6 | j == 7)){
+      next
+    }
+    data = DATAZ[[i]][[j]]
+    # xVals = as.matrix(data[,-41])
+    # yVals = as.vector(data[,41])
+    # exploreModel = cv.glmnet(x = xVals,
+    #                          y = yVals,
+    #                          alpha = 1
+    #                          )
+    # lambda = exploreModel$lambda.min
+    # bestModel = glmnet(x = xVals,
+    #                    y = yVals,
+    #                    alpha = 1,
+    #                    lambda = lambda
+    #                    )
+    # LinResults[[i]][[j]] = bestModel
+    
+    linear = lm(paste0(names(data)[41],"~."),
+                data = data
                 )
-    regSummary = tidy(UVLoR, exponentiate = TRUE, conf.level = 0.95)
-    for (factor in names(Stunting)[1:40]){
-      index = index + 1
-      if (!is.na(regSummary[[index, 5]]) && regSummary[[index, 5]] < 0.05){
-        results[[factor, 1]] = results[[factor, 1]] + 1
+    stepwise = stepAIC(linear, direction = "both", trace = FALSE)
+    stepwise = tidy(stepwise, conf.level = 0.95)
+    #linear = tidy(linear, conf.level = 0.95)
+    stepwise = cbind(stepwise,
+                     p.adjust(stepwise$p.value, method = "BH")
+                     )
+    stepwise = stepwise[-1,]
+    significants = integer()
+    for (k in 1:nrow(stepwise)){
+      if(stepwise[[k, 5]] <= 0.05){
+        significants = c(significants, k)
       }
     }
+    stepwise = stepwise[significants,]
+    LinResults[[i]][[j]] = stepwise
   }
 }
-write.csv(results, "FS_R-UVLoR.csv")
+
+#StepLINStunting = stepAIC(LIN_Stunting, direction = "both", trace = FALSE)
+```
+
+
+
+```{r Odds Ratios for Requested Subsets}
+results = data.frame(term = character(), 
+                     estimate = double(),
+                     IGNORE = double(),
+                     IGNORE = double(),
+                     PV = double(),
+                     PV.adj = double(),
+                     "2.5%" = double(),
+                     "97.5%" = double()
+                     )
+index = 1
+for (i in c(1)){
+  for (j in c(2,4,6)){
+    data = DATA[[i]][[j]]
+    logistic = glm(paste0(names(data)[41],"~FamilySize"),
+                   data = data,
+                   family = "binomial"
+                   )
+    factor = cbind(tidy(logistic, exponentiate = TRUE, conf.level = 0.95),
+                   p.adjust(summary(logistic)$coefficients[2,4],method = "BH"),
+                   exp(confint(logistic))
+                   )
+    results[index,] = factor[2,]
+    results[index,1] = paste0(names(DATA)[[i]], names(DATA[[i]])[[j]], "FamilySize")
+    index = index + 1
+  }
+}
+
+
 ```
 
 
@@ -1195,6 +1279,65 @@ library(performance)
 library(MASS)
 library(leaps)
 
+RegResults = list("Stunting" = list("Full" = list(),
+                                   "Urban" = list(),
+                                   "Nonurban" = list(),
+                                   "Male" = list(),
+                                   "Female" = list(),
+                                   "Youth" = list(),
+                                   "Adolescent" = list()
+                                   ),
+                 "Thinness" = list("Full" = list(),
+                                   "Urban" = list(),
+                                   "Nonurban" = list(),
+                                   "Male" = list(),
+                                   "Female" = list(),
+                                   "Youth" = list(),
+                                   "Adolescent" = list()
+                                   ),
+                 "Wasting" = list("Full" = list(),
+                                  "Urban" = list(),
+                                  "Nonurban" = list(),
+                                  "Male" = list(),
+                                  "Female" = list(),
+                                  "Youth" = list(),
+                                  "Adolescent" = list()
+                                  )
+                 )
+
+for (i in 1:3){
+  for (j in 1:7){
+    if ((i == 2 | i == 3) & j == 3){
+      next
+    }
+    if (i == 3 & (j == 6 | j == 7)){
+      next
+    }
+    # results = data.frame(term = character(), 
+    #                  estimate = double(),
+    #                  IGNORE = double(),
+    #                  IGNORE = double(),
+    #                  PV = double(),
+    #                  PV.adj = double(),
+    #                  "2.5%" = double(),
+    #                  "97.5%" = double()
+    #                  )
+    
+      data = DATA[[i]][[j]]
+      reg = glm(paste0(names(data)[ncol(data)],"~."),
+                data = data,
+                family = "binomial"
+                )
+      #results = data.frame()
+      tidied = tidy(reg, exponentiate = TRUE, conf.level = 0.95, n = length(data))
+      results = cbind(tidied,
+                      p.adjust(tidied$p.value, method = "BH"),
+                      exp(confint(na.omit(reg)))
+                      )
+      RegResults[[i]][[j]] = results
+  }
+}
+```
 OR_Stunting = glm(Stunting~., data = Stunting, family = "binomial")
 write.csv(cbind(
           tidy(OR_Stunting, exponentiate = TRUE, conf.level = 0.95),
@@ -1291,7 +1434,7 @@ write.csv(cbind(
           "MVLiR_SW_Wasting.csv"
           )
 
-```
+
 
 
 
@@ -1361,9 +1504,10 @@ for (i in 1:40){
 write.csv(results, "UVLoR.csv")
 ```
 
+# ARL:
+######
 
-
-```{r Association Rule Learning: Stunting}
+```{r Association Rule Learning Prep}
 #Pretty quick.
 #I played around with support and confidence values until I got ~10 rules per iteration of the Apriori algorithm. 
 
@@ -1379,6 +1523,36 @@ ruleSet = data.frame(rules = character(),
                      coverage = numeric(),
                      lift = numeric(),
                      count = numeric())
+
+for (i in 1:1032){
+  if(Stunting[[i,41]] == 1){
+    Stunting[[i,41]] = 0
+  }else{
+    Stunting[[i,41]] = 1
+  }
+}
+
+for (i in 1:1032){
+  if(Thinness[[i,41]] == 1){
+    Thinness[[i,41]] = 0
+  }else{
+    Thinness[[i,41]] = 1
+  }
+}
+
+for (i in 1:579){
+  if(Wasting[[i,41]] == 1){
+    Wasting[[i,41]] = 0
+  }else{
+    Wasting[[i,41]] = 1
+  }
+}
+```
+
+
+
+```{r Stunting Rules}
+set.seed(13)
 ################################################################################
 #Male vs. Female associations on Stunting
 ruleSet[nrow(ruleSet)+1, 1] = "Stunting:"
@@ -1389,8 +1563,8 @@ ruleSet[nrow(ruleSet)+1, 1] = "FEMALE:"
 female = subset(data, Sex == TRUE)
 female = female[,-2]
 rules = apriori(female, 
-                parameter = list(support = 0.01,
-                                 confidence = 0.4,
+                parameter = list(support = 0.1,
+                                 confidence = 0.5,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
@@ -1398,19 +1572,23 @@ rules = apriori(female,
                 )
 #append(ruleSet, as(rules, "data.frame"))
 #inspect(rules[1:10])
+rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
+rules = rules[1:5]
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "MALE:"
 male = subset(data, Sex == FALSE)
 male = male[,-2]
 rules = apriori(male, 
-                parameter = list(support = 0.01,
-                                 confidence = 0.62,
+                parameter = list(support = 0.1,
+                                 confidence = 0.5,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
                 )
+rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
+rules = rules[1:5]
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ################################################################################
 #Rural & suburban vs. urban rules on Stunting
@@ -1418,66 +1596,76 @@ ruleSet[nrow(ruleSet)+1, 1] = "NOTURBAN:"
 rural = subset(data, Urban == FALSE)
 rural = rural[,-c(6)]
 rules = apriori(rural,
-                parameter = list(support = 0.02,
-                                 confidence = 0.46,
+                parameter = list(support = 0.1,
+                                 confidence = 0.5,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
                 )
 #inspect(rules)
+rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
+rules = rules[1:5]
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "URBAN:"
 urban = subset(data, Urban == TRUE)
 urban = urban[,-c(6)]
 rules = apriori(urban, 
-                parameter = list(support = 0.01,
-                                 confidence = 0.42,
+                parameter = list(support = 0.1,
+                                 confidence = 0.5,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
                 )
 #inspect(rules[1:8])
+rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
+rules = rules[1:5]
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ################################################################################
 ruleSet[nrow(ruleSet)+1, 1] = "Stunting OVERALL:"
 rules = apriori(data.frame(lapply(Stunting, as.logical)), 
-                parameter = list(support = 0.01,
-                                 confidence = 0.39,
+                parameter = list(support = 0.1,
+                                 confidence = 0.5,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
                 )
 #inspect(rules[1:10])
+rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
+rules = rules[1:5]
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "StuntingYOUNG OVERALL:"
 
 rules = apriori(data.frame(lapply(subset(Stunting, (Age < 11)), as.logical)), 
-                parameter = list(support = 0.01,
-                                 confidence = 0.54,
+                parameter = list(support = 0.1,
+                                 confidence = 0.5,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
                 )
 #inspect(rules[1:8])
+rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
+rules = rules[1:5]
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "StuntingADOLESCENT OVERALL:"
 
 rules = apriori(data.frame(lapply(subset(Stunting, (Age > 10)), as.logical)), 
-                parameter = list(support = 0.01,
-                                 confidence = 0.6,
+                parameter = list(support = 0.1,
+                                 confidence = 0.5,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
                                   )
                 )
 #inspect(rules[1:8])
+rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
+rules = rules[1:5]
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ```
 
@@ -1494,8 +1682,8 @@ ruleSet[nrow(ruleSet)+1, 1] = "FEMALE:"
 female = subset(data, Sex == TRUE)
 female = female[,-2]
 rules = apriori(female, 
-                parameter = list(support = 0.002,
-                                 confidence = 0.3,
+                parameter = list(support = 0.1,
+                                 confidence = 0.5,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
@@ -1503,19 +1691,23 @@ rules = apriori(female,
                 )
 #append(ruleSet, as(rules, "data.frame"))
 #inspect(rules)
+rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
+rules = rules[1:5]
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "MALE:"
 male = subset(data, Sex == FALSE)
 male = male[,-2]
 rules = apriori(male, 
-                parameter = list(support = 0.002,
-                                 confidence = 0.3,
+                parameter = list(support = 0.1,
+                                 confidence = 0.5,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
                 )
+rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
+rules = rules[1:5]
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ################################################################################
 #Rural & suburban vs. urban rules on Thinness
@@ -1523,66 +1715,76 @@ ruleSet[nrow(ruleSet)+1, 1] = "NOTURBAN:"
 rural = subset(data, Urban == FALSE)
 rural = rural[,-c(6)]
 rules = apriori(rural,
-                parameter = list(support = 0.005,
-                                 confidence = 0.25,
+                parameter = list(support = 0.1,
+                                 confidence = 0.5,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
                 )
 #inspect(rules)
+rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
+rules = rules[1:5]
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "URBAN:"
 urban = subset(data, Urban == TRUE)
 urban = urban[,-c(6)]
 rules = apriori(urban, 
-                parameter = list(support = 0.002,
-                                 confidence = 0.25,
+                parameter = list(support = 0.1,
+                                 confidence = 0.5,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
                 )
 #inspect(rules[1:8])
+rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
+rules = rules[1:5]
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ################################################################################
 ruleSet[nrow(ruleSet)+1, 1] = "Thinness OVERALL:"
 rules = apriori(data.frame(lapply(Thinness, as.logical)), 
-                parameter = list(support = 0.001,
-                                 confidence = 0.2,
+                parameter = list(support = 0.1,
+                                 confidence = 0.5,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
                 )
 #inspect(rules[1:10])
+rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
+rules = rules[1:5]
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "ThinnessYOUNG OVERALL:"
 
 rules = apriori(data.frame(lapply(subset(Thinness, (Age < 11)), as.logical)), 
-                parameter = list(support = 0.002,
-                                 confidence = 0.25,
+                parameter = list(support = 0.1,
+                                 confidence = 0.5,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
                 )
 #inspect(rules[1:8])
+rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
+rules = rules[1:5]
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "ThinnessADOLESCENT OVERALL:"
 
 rules = apriori(data.frame(lapply(subset(Thinness, (Age > 10)), as.logical)), 
-                parameter = list(support = 0.003,
-                                 confidence = 0.2,
+                parameter = list(support = 0.1,
+                                 confidence = 0.5,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
                                   )
                 )
 #inspect(rules[1:8])
+rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
+rules = rules[1:5]
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ```
 
@@ -1602,8 +1804,8 @@ ruleSet[nrow(ruleSet)+1, 1] = "FEMALE:"
 female = subset(data, Sex == TRUE)
 female = female[,-2]
 rules = apriori(female, 
-                parameter = list(support = 0.01,
-                                 confidence = 0.25,
+                parameter = list(support = 0.1,
+                                 confidence = 0.5,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
@@ -1611,19 +1813,23 @@ rules = apriori(female,
                 )
 #append(ruleSet, as(rules, "data.frame"))
 #inspect(rules)
+rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
+rules = rules[1:5]
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "MALE:"
 male = subset(data, Sex == FALSE)
 male = male[,-2]
 rules = apriori(male, 
-                parameter = list(support = 0.01,
-                                 confidence = 0.35,
+                parameter = list(support = 0.1,
+                                 confidence = 0.5,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
                                   )
                 )
+rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
+rules = rules[1:5]
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ################################################################################
 #Rural & suburban vs. urban rules on Wasting
@@ -1631,43 +1837,141 @@ ruleSet[nrow(ruleSet)+1, 1] = "NOTURBAN:"
 rural = subset(data, Urban == FALSE)
 rural = rural[,-c(6)]
 rules = apriori(rural,
-                parameter = list(support = 0.01,
-                                 confidence = 0.4,
+                parameter = list(support = 0.1,
+                                 confidence = 0.5,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
                                   )
                 )
 #inspect(rules)
+rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
+rules = rules[1:5]
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "URBAN:"
 urban = subset(data, Urban == TRUE)
 urban = urban[,-c(6)]
 rules = apriori(urban, 
-                parameter = list(support = 0.005,
-                                 confidence = 0.23,
+                parameter = list(support = 0.1,
+                                 confidence = 0.5,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
                                   )
                 )
 #inspect(rules[1:8])
+rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
+rules = rules[1:5]
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ################################################################################
 ruleSet[nrow(ruleSet)+1, 1] = "Wasting OVERALL:"
 rules = apriori(data.frame(lapply(Wasting, as.logical)), 
-                parameter = list(support = 0.005,
-                                 confidence = 0.25,
+                parameter = list(support = 0.1,
+                                 confidence = 0.5,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
                                   )
                 )
 #inspect(rules[1:10])
+rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
+rules = rules[1:5]
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ################################################################################
 write.csv(ruleSet, "Association_Rules.csv", row.names = FALSE)
 ```
 
+
+
+```{r Association Rule Sets Analysis}
+RiskSets = list(list("HousePet", "DontUseTP", "Chicken"), #Stunting
+             list("HousePet", "DontUseTP", "washHandsSoapB4Eat"),
+             
+             list("DefecateField", "Antibiotics", "RiverCleaning"), #Wasting
+             list("HousePet", "Antibiotics", "RiverCleaning"),
+             list("DefecateField", "Antibiotics", "WalkBarefoot"),
+                
+             list("houseDustFloor", "Rash", "momFinishedPrimary"), #Thinness
+             list("SheepGoat", "PotableWaterFromHouse", "momFinishedPrimary"),
+             list("SheepGoat", "EatRawVeg", "momFinishedPrimary"),
+             list("DefecateField", "Antibiotics", "momFinishedPrimary")
+             )
+RiskSetsResponse = c(rep(1,2), #First 2 groups go with Stunting (index 1)
+                     rep(3,3), #Next 3, with Wasting (index 3)
+                     rep(2,4) #Last 4, with Thinness (index 2)
+                     )
+
+ProtectSets = list(list("Vaccine", "PotableWaterFromHouse", "DontUseSchoolLat"), #Stunting
+                   list("Vaccine", "PotableWaterFromHouse", "momFinished2Up"),
+                   list("Vaccine", "CookElectric", "washHandsLatWaterSoap"),
+                   
+                   list("Vaccine", "CookElectric", "momFinished2Up"), #Wasting
+                   list("Chicken", "HousePet", "EatSoil"),
+                   list("Chicken", "HousePet", "RadioTV"),
+                   list("CookElectric", "EatSoil", "momFinished2Up"),
+                   
+                   #Thinness
+                   list("PotableWaterFromHouse", "DontTreatWater", "DontUseSchoolLat"),
+                   list("PotableWaterFromHouse", "DontTreatWater", "washHandsLatWater"),
+                   list("KitchenSeparate", "DontUseSchoolLat", "washHandsLatWaterSoap")
+                   )
+ProtectSetsResponse = c(rep(1,3), #Same pattern as RiskSetsResponse above
+                        rep(3,4),
+                        rep(2,3)
+                        )
+################################################################################
+```
+
+
+
+```{r }
+library(epitools)
+library(DescTools)
+
+setindex = 0
+for (setnum in 1:9){
+  #From Stunting, Thinness, or Wasting? Check next in list
+  setindex = setindex + 1
+  responseset = RiskSetsResponse[setindex]
+  #Now that we know which dataset we need, get it
+  data = DATA[[responseset]][[1]]
+  #Figure out which features we want to run the MLoR on
+  selected = RiskSets[[setnum]]
+  selected = append(selected, names(data)[ncol(data)]) #Add the response variable
+  #Figure out where these features are located
+  indices = c()
+  for (feature in selected){
+    index = which(names(data) == feature)
+    indices = c(indices, index)
+  }
+  #Subset data into variables + response
+  data = data[,indices]
+  data$Positive = 0
+  for (i in 1:nrow(data)){
+    count = 0
+    for (j in 1:(ncol(data)-2)){ #Skip response variable & new "Positive" column
+      count = count + data[[i,j]]
+    }
+    if (count > 0){
+      data[[i,ncol(data)]] = 1
+    }
+  }
+  data = data[,c(ncol(data)-1, ncol(data))]
+  #Create table with 0 as reference category
+  datatable = table(data)
+  # datatable = table(factor(data[,1], levels = c("1", "0")),
+  #                   factor(data[,2], levels = c("1", "0"))
+  #                   )
+  test = riskratio(datatable, correction = TRUE)
+  test$p.value = test$p.value[[2,3]]
+  test$measure = test$measure[2,]
+  #MLoR on subset
+  #Tidy
+  #Write results
+  
+  
+  
+}
+```
 
