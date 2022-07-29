@@ -1309,7 +1309,9 @@ ruleSet = data.frame(rules = character(),
                      confidence = numeric(),
                      coverage = numeric(),
                      lift = numeric(),
-                     count = numeric()
+                     count = numeric(),
+                     oddsRatios = numeric(),
+                     pVal = numeric()
                      )
 ```
 
@@ -1321,7 +1323,6 @@ set.seed(13)
 #Male vs. Female associations on Stunting
 ruleSet[nrow(ruleSet)+1, 1] = "Stunting:"
 data = data.frame(lapply(Stunting, as.logical))
-
 
 ruleSet[nrow(ruleSet)+1, 1] = "FEMALE:"
 female = subset(data, Sex == TRUE)
@@ -1336,7 +1337,9 @@ rules = apriori(female,
                 )
 #inspect(rules[1:10])
 rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-rules = rules[1:5]
+rules = rules[1:20]
+quality(rules)$oddsRatios = interestMeasure(rules, measure = "oddsRatio")
+quality(rules)$pVal = interestMeasure(rules, measure = "fishersExactTest")
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "MALE:"
@@ -1351,7 +1354,9 @@ rules = apriori(male,
                                   )
                 )
 rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-rules = rules[1:5]
+rules = rules[1:20]
+quality(rules)$oddsRatios = interestMeasure(rules, measure = "oddsRatio")
+quality(rules)$pVal = interestMeasure(rules, measure = "fishersExactTest")
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ################################################################################
 #Rural & suburban vs. urban rules on Stunting
@@ -1368,7 +1373,9 @@ rules = apriori(rural,
                 )
 #inspect(rules)
 rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-rules = rules[1:5]
+rules = rules[1:20]
+quality(rules)$oddsRatios = interestMeasure(rules, measure = "oddsRatio")
+quality(rules)$pVal = interestMeasure(rules, measure = "fishersExactTest")
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "URBAN:"
@@ -1384,7 +1391,9 @@ rules = apriori(urban,
                 )
 #inspect(rules[1:8])
 rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-rules = rules[1:5]
+rules = rules[1:20]
+quality(rules)$oddsRatios = interestMeasure(rules, measure = "oddsRatio")
+quality(rules)$pVal = interestMeasure(rules, measure = "fishersExactTest")
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ################################################################################
 ruleSet[nrow(ruleSet)+1, 1] = "Stunting OVERALL:"
@@ -1398,14 +1407,16 @@ rules = apriori(data.frame(lapply(Stunting, as.logical)),
                 )
 #inspect(rules[1:10])
 rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-rules = rules[1:5]
+rules = rules[1:20]
+quality(rules)$oddsRatios = interestMeasure(rules, measure = "oddsRatio")
+quality(rules)$pVal = interestMeasure(rules, measure = "fishersExactTest")
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "StuntingYOUNG OVERALL:"
 
 rules = apriori(data.frame(lapply(subset(Stunting, (Age < 11)), as.logical)), 
                 parameter = list(support = 0.01,
-                                 confidence = 0.5,
+                                 confidence = 0.4,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Stunting")
@@ -1413,7 +1424,9 @@ rules = apriori(data.frame(lapply(subset(Stunting, (Age < 11)), as.logical)),
                 )
 #inspect(rules[1:8])
 rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-rules = rules[1:5]
+rules = rules[1:20]
+quality(rules)$oddsRatios = interestMeasure(rules, measure = "oddsRatio")
+quality(rules)$pVal = interestMeasure(rules, measure = "fishersExactTest")
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "StuntingADOLESCENT OVERALL:"
@@ -1428,7 +1441,9 @@ rules = apriori(data.frame(lapply(subset(Stunting, (Age > 10)), as.logical)),
                 )
 #inspect(rules[1:8])
 rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-rules = rules[1:5]
+rules = rules[1:20]
+quality(rules)$oddsRatios = interestMeasure(rules, measure = "oddsRatio")
+quality(rules)$pVal = interestMeasure(rules, measure = "fishersExactTest")
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ```
 
@@ -1446,7 +1461,7 @@ female = subset(data, Sex == TRUE)
 female = female[,-2]
 rules = apriori(female, 
                 parameter = list(support = 0.002,
-                                 confidence = 0.2,
+                                 confidence = 0.15,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
@@ -1455,7 +1470,9 @@ rules = apriori(female,
 #append(ruleSet, as(rules, "data.frame"))
 #inspect(rules)
 rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-rules = rules[1:5]
+rules = rules[1:20]
+quality(rules)$oddsRatios = interestMeasure(rules, measure = "oddsRatio")
+quality(rules)$pVal = interestMeasure(rules, measure = "fishersExactTest")
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "MALE:"
@@ -1470,7 +1487,9 @@ rules = apriori(male,
                                   )
                 )
 rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-rules = rules[1:5]
+rules = rules[1:20]
+quality(rules)$oddsRatios = interestMeasure(rules, measure = "oddsRatio")
+quality(rules)$pVal = interestMeasure(rules, measure = "fishersExactTest")
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ################################################################################
 #Rural & suburban vs. urban rules on Thinness
@@ -1487,7 +1506,9 @@ rules = apriori(rural,
                 )
 #inspect(rules)
 rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-rules = rules[1:5]
+rules = rules[1:20]
+quality(rules)$oddsRatios = interestMeasure(rules, measure = "oddsRatio")
+quality(rules)$pVal = interestMeasure(rules, measure = "fishersExactTest")
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "URBAN:"
@@ -1495,7 +1516,7 @@ urban = subset(data, Urban == TRUE)
 urban = urban[,-c(6)]
 rules = apriori(urban, 
                 parameter = list(support = 0.002,
-                                 confidence = 0.2,
+                                 confidence = 0.15,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
@@ -1503,13 +1524,15 @@ rules = apriori(urban,
                 )
 #inspect(rules[1:8])
 rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-rules = rules[1:5]
+rules = rules[1:20]
+quality(rules)$oddsRatios = interestMeasure(rules, measure = "oddsRatio")
+quality(rules)$pVal = interestMeasure(rules, measure = "fishersExactTest")
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ################################################################################
 ruleSet[nrow(ruleSet)+1, 1] = "Thinness OVERALL:"
 rules = apriori(data.frame(lapply(Thinness, as.logical)), 
                 parameter = list(support = 0.001,
-                                 confidence = 0.2,
+                                 confidence = 0.12,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
@@ -1517,14 +1540,16 @@ rules = apriori(data.frame(lapply(Thinness, as.logical)),
                 )
 #inspect(rules[1:10])
 rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-rules = rules[1:5]
+rules = rules[1:20]
+quality(rules)$oddsRatios = interestMeasure(rules, measure = "oddsRatio")
+quality(rules)$pVal = interestMeasure(rules, measure = "fishersExactTest")
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "ThinnessYOUNG OVERALL:"
 
 rules = apriori(data.frame(lapply(subset(Thinness, (Age < 11)), as.logical)), 
                 parameter = list(support = 0.002,
-                                 confidence = 0.2,
+                                 confidence = 0.15,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
@@ -1532,14 +1557,16 @@ rules = apriori(data.frame(lapply(subset(Thinness, (Age < 11)), as.logical)),
                 )
 #inspect(rules[1:8])
 rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-rules = rules[1:5]
+rules = rules[1:20]
+quality(rules)$oddsRatios = interestMeasure(rules, measure = "oddsRatio")
+quality(rules)$pVal = interestMeasure(rules, measure = "fishersExactTest")
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "ThinnessADOLESCENT OVERALL:"
 
 rules = apriori(data.frame(lapply(subset(Thinness, (Age > 10)), as.logical)), 
                 parameter = list(support = 0.003,
-                                 confidence = 0.2,
+                                 confidence = 0.15,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Thinness")
@@ -1547,7 +1574,9 @@ rules = apriori(data.frame(lapply(subset(Thinness, (Age > 10)), as.logical)),
                 )
 #inspect(rules[1:8])
 rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-rules = rules[1:5]
+rules = rules[1:20]
+quality(rules)$oddsRatios = interestMeasure(rules, measure = "oddsRatio")
+quality(rules)$pVal = interestMeasure(rules, measure = "fishersExactTest")
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ```
 
@@ -1577,7 +1606,9 @@ rules = apriori(female,
 #append(ruleSet, as(rules, "data.frame"))
 #inspect(rules)
 rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-rules = rules[1:5]
+rules = rules[1:20]
+quality(rules)$oddsRatios = interestMeasure(rules, measure = "oddsRatio")
+quality(rules)$pVal = interestMeasure(rules, measure = "fishersExactTest")
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "MALE:"
@@ -1585,14 +1616,16 @@ male = subset(data, Sex == FALSE)
 male = male[,-2]
 rules = apriori(male, 
                 parameter = list(support = 0.01,
-                                 confidence = 0.3,
+                                 confidence = 0.25,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
                                   )
                 )
 rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-rules = rules[1:5]
+rules = rules[1:20]
+quality(rules)$oddsRatios = interestMeasure(rules, measure = "oddsRatio")
+quality(rules)$pVal = interestMeasure(rules, measure = "fishersExactTest")
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ################################################################################
 #Rural & suburban vs. urban rules on Wasting
@@ -1601,7 +1634,7 @@ rural = subset(data, Urban == FALSE)
 rural = rural[,-c(6)]
 rules = apriori(rural,
                 parameter = list(support = 0.01,
-                                 confidence = 0.4,
+                                 confidence = 0.3,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
@@ -1609,7 +1642,9 @@ rules = apriori(rural,
                 )
 #inspect(rules)
 rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-rules = rules[1:5]
+rules = rules[1:20]
+quality(rules)$oddsRatios = interestMeasure(rules, measure = "oddsRatio")
+quality(rules)$pVal = interestMeasure(rules, measure = "fishersExactTest")
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 
 ruleSet[nrow(ruleSet)+1, 1] = "URBAN:"
@@ -1617,7 +1652,7 @@ urban = subset(data, Urban == TRUE)
 urban = urban[,-c(6)]
 rules = apriori(urban, 
                 parameter = list(support = 0.005,
-                                 confidence = 0.2,
+                                 confidence = 0.15,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
@@ -1625,13 +1660,15 @@ rules = apriori(urban,
                 )
 #inspect(rules[1:8])
 rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-rules = rules[1:5]
+rules = rules[1:20]
+quality(rules)$oddsRatios = interestMeasure(rules, measure = "oddsRatio")
+quality(rules)$pVal = interestMeasure(rules, measure = "fishersExactTest")
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
 ################################################################################
 ruleSet[nrow(ruleSet)+1, 1] = "Wasting OVERALL:"
 rules = apriori(data.frame(lapply(Wasting, as.logical)), 
                 parameter = list(support = 0.005,
-                                 confidence = 0.2,
+                                 confidence = 0.15,
                                  maxlen = 4,
                                  target = "rules"),
                 appearance = list(default = "lhs", rhs = c("Wasting")
@@ -1639,8 +1676,11 @@ rules = apriori(data.frame(lapply(Wasting, as.logical)),
                 )
 #inspect(rules[1:10])
 rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-rules = rules[1:5]
+rules = rules[1:20]
+quality(rules)$oddsRatios = interestMeasure(rules, measure = "oddsRatio")
+quality(rules)$pVal = interestMeasure(rules, measure = "fishersExactTest")
 ruleSet = rbind(ruleSet, as(rules, "data.frame"))
+#quality(rules)$t = interestMeasure(rules, measure = "table")
 ################################################################################
 write.csv(ruleSet, "Association_Rules.csv", row.names = FALSE)
 ```
@@ -1651,14 +1691,31 @@ write.csv(ruleSet, "Association_Rules.csv", row.names = FALSE)
 RiskSets = list(list("HousePet", "DontUseTP", "Chicken"), #Stunting
              list("HousePet", "DontUseTP", "washHandsSoapB4Eat"),
              
+             # list("Urban", "Chicken", "DontUseTP"),
+             # list("HousePet", "RiverCleaning", "momFinished2Up"),
+             # list("Chicken", "DontUseTP", "washHandsSoapB4Eat"),
+             # list("HousePet", "DontTreatWater", "DontUseTP"),
+             
              list("DefecateField", "Antibiotics", "RiverCleaning"), #Wasting
              list("HousePet", "Antibiotics", "RiverCleaning"),
              list("DefecateField", "Antibiotics", "WalkBarefoot"),
+             # list("DefecateField", "Antibiotics", "RiverCleaning"),
+             # list("DefecateField", "WalkBarefoot", "Antibiotics"),
+             # list("Vaccine", "Antibiotics", "houseDustFloor"),
+             # list("HousePet", "Antibiotics", "RiverCleaning"),
+             # list("CookElectric", "Antibiotics", "RiverCleaning"),
+             
                 
              list("houseDustFloor", "Rash", "momFinishedPrimary"), #Thinness
              list("SheepGoat", "PotableWaterFromHouse", "momFinishedPrimary"),
              list("SheepGoat", "EatRawVeg", "momFinishedPrimary"),
              list("DefecateField", "Antibiotics", "momFinishedPrimary")
+             
+             # list("SheepGoat", "PotableWaterFromHouse", "momFinishedPrimary"),
+             # list("SheepGoat", "EatRawVeg", "momFinishedPrimary"),
+             # list("Rash", "houseDustFloor", "momFinished2Up"),
+             # list("HousePet", "DefecateField", "Antibiotics"),
+             # list("DefecateField", "Antibiotics", "momFinishedPrimary")
              )
 RiskSetsResponse = c(rep(1,2), #First 2 groups go with Stunting (index 1)
                      rep(3,3), #Next 3, with Wasting (index 3)
@@ -1727,6 +1784,14 @@ for (setnum in 1:9){
   data = data[,c(ncol(data)-1, ncol(data))]
   #Create table with 0 as reference category
   datatable = table(data)
+  # #Weird correction
+  # for (v in 1:2){
+  #   for (h in 1:2){
+  #     #if (datatable[[v,h]] == 0){
+  #       datatable[[v,h]] = datatable[[v,h]] + 0.5
+  #     #}
+  #   }
+  # }
   test = oddsratio(datatable, correction = FALSE)
   adj = oddsratio(datatable, correction = TRUE) #Run again for adjusted PVs
   
