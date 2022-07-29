@@ -1307,9 +1307,9 @@ RegResults = list("Stunting" = list("Full" = list(),
 
 for (i in 1:3){
   for (j in 1:7){
-    if ((i == 2 | i == 3) & j == 3){
-      next
-    }
+    # if ((i == 2 | i == 3) & j == 3){
+    #   next
+    # }
     if (i == 3 & (j == 6 | j == 7)){
       next
     }
@@ -1324,6 +1324,13 @@ for (i in 1:3){
     #                  )
     
       data = DATA[[i]][[j]]
+      if (j == 3){
+        if (i == 2){
+          data = data[,-c(15,31,33)]
+        }else if (i == 3){
+          data = data[,-c(15,20,31,33,36)]
+        }
+      }
       reg = glm(paste0(names(data)[ncol(data)],"~."),
                 data = data,
                 family = "binomial"
@@ -1522,31 +1529,33 @@ ruleSet = data.frame(rules = character(),
                      confidence = numeric(),
                      coverage = numeric(),
                      lift = numeric(),
-                     count = numeric())
+                     count = numeric()
+                     )
 
-for (i in 1:1032){
-  if(Stunting[[i,41]] == 1){
-    Stunting[[i,41]] = 0
-  }else{
-    Stunting[[i,41]] = 1
-  }
-}
-
-for (i in 1:1032){
-  if(Thinness[[i,41]] == 1){
-    Thinness[[i,41]] = 0
-  }else{
-    Thinness[[i,41]] = 1
-  }
-}
-
-for (i in 1:579){
-  if(Wasting[[i,41]] == 1){
-    Wasting[[i,41]] = 0
-  }else{
-    Wasting[[i,41]] = 1
-  }
-}
+# Invert to look for protective factors
+# for (i in 1:1032){
+#   if(Stunting[[i,41]] == 1){
+#     Stunting[[i,41]] = 0
+#   }else{
+#     Stunting[[i,41]] = 1
+#   }
+# }
+# 
+# for (i in 1:1032){
+#   if(Thinness[[i,41]] == 1){
+#     Thinness[[i,41]] = 0
+#   }else{
+#     Thinness[[i,41]] = 1
+#   }
+# }
+# 
+# for (i in 1:579){
+#   if(Wasting[[i,41]] == 1){
+#     Wasting[[i,41]] = 0
+#   }else{
+#     Wasting[[i,41]] = 1
+#   }
+# }
 ```
 
 
@@ -1920,7 +1929,6 @@ ProtectSetsResponse = c(rep(1,3), #Same pattern as RiskSetsResponse above
                         rep(3,4),
                         rep(2,3)
                         )
-################################################################################
 ```
 
 
@@ -1928,6 +1936,11 @@ ProtectSetsResponse = c(rep(1,3), #Same pattern as RiskSetsResponse above
 ```{r }
 library(epitools)
 library(DescTools)
+
+RiskResults = list("Stunting" = list(),
+                   "Thinness" = list(),
+                   "Wasting" = list()
+                   )
 
 setindex = 0
 for (setnum in 1:9){
@@ -1963,14 +1976,12 @@ for (setnum in 1:9){
   # datatable = table(factor(data[,1], levels = c("1", "0")),
   #                   factor(data[,2], levels = c("1", "0"))
   #                   )
-  test = riskratio(datatable, correction = TRUE)
+  test = oddsratio(datatable, correction = FALSE)
+  adj = oddsratio(datatable, correction = TRUE)
   test$p.value = test$p.value[[2,3]]
   test$measure = test$measure[2,]
-  #MLoR on subset
-  #Tidy
-  #Write results
-  
-  
+  test$adj.PV = adj$p.value[[2,3]]
+  RiskResults[[responseset]][[length(RiskResults[[responseset]])+1]] = test
   
 }
 ```
