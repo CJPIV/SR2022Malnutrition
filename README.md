@@ -10,7 +10,8 @@ INSTRUCTIONS FOR RUNNING:
 4. Run "Malnutrition Masterscript". You can press ctrl+shift+R to run everything at once. Alternatively, you can click on specific chunks and use ctrl + shift + enter to run the entire block.
 5. (OPTIONAL) Adjust number of features selected on line 931. Default is 10.
 
-ACCESSING RESULTS:\
+ACCESSING RESULTS:
+
 Feature selection is run on three response variable sets (stunting, thinness, and underweight/wasting), each of which contains seven subsets (full data, Urban-only, Non-urban-only, Male-only, Female-only, Youth-only (ages 10 and under), and Adolescent-only (ages 11 and older). Wasting can only be calculated for youths, so it does not contain a Youth or Adolescent split. Most results are stored in intuitive but layered data.frames in RStudio, making them very hard to write as .csvs in any meaningful way. These data.frames are stored in RStudio's environment, and are as follows:
   - "TopFeatures" holds the top n features (as determined by input on line 931, default is 10) for a specific subset as determined by various feature selection methods. For example, to find significant features for stunting in males, open "TopFeatures" from the RStudio environment iterate through "Stunting" ==> "Male".
   - "LinResults" holds results for linear regression runs. It is structured similarly to "TopFeatures" e.g. to find significant features for thinness in females according to stepwise multivariate linear regression, you open "LinResults" from the RStudio environment and iterate through "Thinness" ==> "Female".
