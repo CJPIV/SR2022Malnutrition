@@ -793,40 +793,62 @@ DATA = list("Stunting" = list("Full" = list(),
 DATA[["Stunting"]][["Full"]] = Stunting
 DATA[["Stunting"]][["Urban"]] = subset(Stunting, Urban == 1)
 DATA[["Stunting"]][["Nonurban"]] = subset(Stunting, Urban == 0)
-DATA[[1]][[2]] = DATA[[1]][[2]][,-6]
-DATA[[1]][[3]] = DATA[[1]][[3]][,-6]
+# DATA[[1]][[2]] = DATA[[1]][[2]][,-6]
+# DATA[[1]][[3]] = DATA[[1]][[3]][,-6]
 DATA[["Stunting"]][["Male"]] = subset(Stunting, Sex == 0)
 DATA[["Stunting"]][["Female"]] = subset(Stunting, Sex == 1)
-DATA[[1]][[4]] = DATA[[1]][[4]][,-2]
-DATA[[1]][[5]] = DATA[[1]][[5]][,-2]
+# DATA[[1]][[4]] = DATA[[1]][[4]][,-2]
+# DATA[[1]][[5]] = DATA[[1]][[5]][,-2]
 DATA[["Stunting"]][["Youth"]] = subset(Stunting, Age < 11)
 DATA[["Stunting"]][["Adolescent"]] = subset(Stunting, Age > 10)
-DATA[[1]][[6]] = DATA[[1]][[6]][,-1]
-DATA[[1]][[7]] = DATA[[1]][[7]][,-1]
+# DATA[[1]][[6]] = DATA[[1]][[6]][,-1]
+# DATA[[1]][[7]] = DATA[[1]][[7]][,-1]
 ################################################################################
 DATA[["Thinness"]][["Full"]] = Thinness
 DATA[["Thinness"]][["Urban"]] = subset(Thinness, Urban == 1)
 DATA[["Thinness"]][["Nonurban"]] = subset(Thinness, Urban == 0)
-DATA[[2]][[2]] = DATA[[2]][[2]][,-6]
-DATA[[2]][[3]] = DATA[[2]][[3]][,-6]
+# DATA[[2]][[2]] = DATA[[2]][[2]][,-6]
+# DATA[[2]][[3]] = DATA[[2]][[3]][,-6]
 DATA[["Thinness"]][["Male"]] = subset(Thinness, Sex == 0)
 DATA[["Thinness"]][["Female"]] = subset(Thinness, Sex == 1)
-DATA[[2]][[4]] = DATA[[2]][[4]][,-2]
-DATA[[2]][[5]] = DATA[[2]][[5]][,-2]
+# DATA[[2]][[4]] = DATA[[2]][[4]][,-2]
+# DATA[[2]][[5]] = DATA[[2]][[5]][,-2]
 DATA[["Thinness"]][["Youth"]] = subset(Thinness, Age < 11)
 DATA[["Thinness"]][["Adolescent"]] = subset(Thinness, Age > 10)
-DATA[[2]][[6]] = DATA[[2]][[6]][,-1]
-DATA[[2]][[7]] = DATA[[2]][[7]][,-1]
+# DATA[[2]][[6]] = DATA[[2]][[6]][,-1]
+# DATA[[2]][[7]] = DATA[[2]][[7]][,-1]
 ################################################################################
 DATA[["Wasting"]][["Full"]] = Wasting
 DATA[["Wasting"]][["Urban"]] = subset(Wasting, Urban == 1)
 DATA[["Wasting"]][["Nonurban"]] = subset(Wasting, Urban == 0)
-DATA[[3]][[2]] = DATA[[3]][[2]][,-6]
-DATA[[3]][[3]] = DATA[[3]][[3]][,-6]
+# DATA[[3]][[2]] = DATA[[3]][[2]][,-6]
+# DATA[[3]][[3]] = DATA[[3]][[3]][,-6]
 DATA[["Wasting"]][["Male"]] = subset(Wasting, Sex == 0)
 DATA[["Wasting"]][["Female"]] = subset(Wasting, Sex == 1)
-DATA[[3]][[4]] = DATA[[3]][[4]][,-2]
-DATA[[3]][[5]] = DATA[[3]][[5]][,-2]
+# DATA[[3]][[4]] = DATA[[3]][[4]][,-2]
+# DATA[[3]][[5]] = DATA[[3]][[5]][,-2]
+################################################################################
+subset = FALSE
+if (subset == TRUE){
+  DATA[[1]][[2]] = DATA[[1]][[2]][,-6]
+  DATA[[1]][[3]] = DATA[[1]][[3]][,-6]
+  DATA[[1]][[4]] = DATA[[1]][[4]][,-2]
+  DATA[[1]][[5]] = DATA[[1]][[5]][,-2]
+  DATA[[1]][[6]] = DATA[[1]][[6]][,-1]
+  DATA[[1]][[7]] = DATA[[1]][[7]][,-1]
+
+  DATA[[2]][[2]] = DATA[[2]][[2]][,-6]
+  DATA[[2]][[3]] = DATA[[2]][[3]][,-6]
+  DATA[[2]][[4]] = DATA[[2]][[4]][,-2]
+  DATA[[2]][[5]] = DATA[[2]][[5]][,-2]
+  DATA[[2]][[6]] = DATA[[2]][[6]][,-1]
+  DATA[[2]][[7]] = DATA[[2]][[7]][,-1]
+
+  DATA[[3]][[2]] = DATA[[3]][[2]][,-6]
+  DATA[[3]][[3]] = DATA[[3]][[3]][,-6]
+  DATA[[3]][[4]] = DATA[[3]][[4]][,-2]
+  DATA[[3]][[5]] = DATA[[3]][[5]][,-2]
+}
 #No Youth/Adolescent splits for Wasting; it's already limited to samples < 11 years old
 ```
 
@@ -917,6 +939,10 @@ for (i in 1:3){
 
 ```{r Feature Selection, warning = FALSE, output = FALSE}
 set.seed(13)
+library(broom)
+library(car)
+library(performance)
+library(MASS)
 #Preparing data structure to store results
 
 NUM_FEATURES = 10 #Change this for different feature selection cutoffs
@@ -988,10 +1014,6 @@ for (i in 1:3){
           data = FSSets[[i]][[j]][[k]][[l]] #Load specific dataset we'll use in this run
 ################################################################################
 # #ULoR
-# library(broom)
-# library(car)
-# library(performance)
-# library(MASS)
 # 
 #           for (feature in 1:40){
 #             ULoR = glm(formula = paste0(names(data)[41],"~",names(data)[feature]),
@@ -1270,8 +1292,8 @@ for (i in c(1)){
 
 
 ```{r Multivariate Logistic Regression (OR), warning = FALSE}
-#This MVLoR is for Odds Ratios, uses entire dataset.
-#NOT used for feature selection for classifier models; do not mistake this data for the training/test set-derived repeated multivariate logistic regression above.
+#NOTE!!
+#Go back into the DATA creation (line ~760) and re-run it with "subset" = TRUE. This will remove troublesome redundant categories within two of the subsets that result in this logistic regression failing.
 #library(devtools)
 library(broom)
 library(car)
