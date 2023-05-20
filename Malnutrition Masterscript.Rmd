@@ -6,6 +6,7 @@ output: pdf_document
 ---
 
 ```{r Install Required Packages}
+```
 install.packages("readxl")
 install.packages("dplyr")
 install.packages("VIM")
@@ -27,7 +28,12 @@ install.packages("arules")
 install.packages("arulesViz")
 install.packages("epitools")
 install.packages("DescTools")
-```
+install.packages("rlang")
+install.packages("rmcfs") #monte carlo FS
+install.packages("rpart") #CART 
+install.packages("WebPower") #LR psuedoR2
+install.packages("power")
+install.packages("randomForest")
 
 # PREPROCESSING: Preparing data from original survey for use in statistical/ML analysis.
 #####
@@ -396,7 +402,7 @@ for (sample in 1:1036){
   if (is.na(reducedSurvey[[sample, 10]])){
     next
   }
-  else if (reducedSurvey[[sample, 10]] == 1.79){
+  else if (reducedSurvey[[sample, 10]] == 1.79){ #misinput in survey
     reducedSurvey[[sample, 10]] = 1.29
   }
 }
@@ -764,20 +770,72 @@ for (i in 1:1036){
 
 
 
-```{r Saving Preprocessing}
+```{r Saving Preprocessing, Imputation}
+library(randomForest)
+################################################################################
 Stunting = processed[,-c(3, 4, 43, 45:48)]
+
+#kNN imputation
 imputed = kNN(Stunting, variable = colnames(Stunting), k = 5, impNA = TRUE) 
-Stunting = subset(imputed, select = 1:41)
+Stunting_kNN = subset(imputed, select = 1:41)
 
+#RF imputation
+Stunting_RF = rfImpute(Stunting~., Stunting)
+Stunting_RF = round(Stunting_RF, digits = 0)
+y = Stunting_RF[,1]
+Stunting_RF = Stunting_RF[,-1]
+Stunting_RF[,41] = y
+names(Stunting_RF)[[41]] = "Stunting"
+
+# % identical imputation between each method
+1 - sum(Stunting_RF!=Stunting_kNN) / sum(is.na(Stunting)) #90.3% the same - shouldn't have an issue regardless of imputation method
+sum(is.na(Stunting))
+
+Stunting = Stunting_kNN #keep as kNN so future code works
+
+################################################################################
 Thinness = processed[,-c(3, 4, 43:45, 47:48)]
-imputed = kNN(Thinness, variable = colnames(Thinness), k = 5, impNA = TRUE) 
-Thinness = subset(imputed, select = 1:41)
 
+#kNN imputation
+imputed = kNN(Thinness, variable = colnames(Thinness), k = 5, impNA = TRUE) 
+Thinness_kNN = subset(imputed, select = 1:41)
+
+#RF imputation
+Thinness_RF = rfImpute(Thinness~., Thinness)
+Thinness_RF = round(Thinness_RF, digits = 0)
+y = Thinness_RF[,1]
+Thinness_RF = Thinness_RF[,-1]
+Thinness_RF[,41] = y
+names(Thinness_RF)[[41]] = "Thinness"
+
+# % identical imputation between each method
+1 - sum(Thinness_RF!=Thinness_kNN) / sum(is.na(Thinness)) #88.4%
+sum(is.na(Thinness))
+
+Thinness = Thinness_kNN
+
+################################################################################
 Wasting = processed[,-c(3, 4, 43:47)]
-Wasting = subset(Wasting, Age < 11)
+
+#kNN imputation
+Wasting = subset(Wasting, Age < 11) #Wasting can't be calculated for age >11
 Wasting$Wasting = as.numeric(as.character(Wasting$Wasting))
-imputed = kNN(Wasting, variable = colnames(Wasting), k = 5, impNA = TRUE) 
-Wasting = subset(imputed, select = 1:41)
+imputed = kNN(Wasting, variable = colnames(Wasting), k = 5, impNA = TRUE)
+Wasting_kNN = subset(imputed, select = 1:41)
+
+#RF imputation
+Wasting_RF = rfImpute(Wasting~., Wasting)
+Wasting_RF = round(Wasting_RF, digits = 0)
+y = Wasting_RF[,1]
+Wasting_RF = Wasting_RF[,-1]
+Wasting_RF[,41] = y
+names(Wasting_RF)[[41]] = "Wasting"
+
+ #% identical imputation between each method
+1 - sum(Wasting_RF!=Wasting_kNN) / sum(is.na(Wasting)) #89.7%
+sum(is.na(Wasting))
+
+Wasting = Wasting_kNN
 
 #write.csv(Stunting, "Stunting.csv")
 #write.csv(Thinness, "Thinness.csv")
@@ -919,7 +977,7 @@ for (i in 1:3){
 # FEATURE SELECTION:
 ####################
 
-```{r Feature Selection, warning = FALSE, output = FALSE}
+```{r Feature Selection, warning=FALSE, output=FALSE, echo=FALSE, results='hide'}
 #NOTE: This will take about 5 minutes to run
 set.seed(13)
 library(broom)
@@ -959,7 +1017,8 @@ for (i in 1:3){
     FSResults[[i]][[j]] = list("MLR" = list(),
                                "ChiSq" = list(),
                                "mRMR" = list(),
-                               "JMI" = list()
+                               "JMI" = list(),
+                               "MC" = list()
                                )
   }
 }
@@ -974,11 +1033,12 @@ for (i in 1:3){
                                MLR = double(),
                                ChiSq = double(),
                                mRMR = double(),
-                               JMI = double()
+                               JMI = double(),
+                               MC = double()
                                )
       for (k in 1:40){ #Make score markers for all features to track importance
         FeatureList[[k,1]] = names(Stunting)[k] #Name every row
-        for (k1 in 2:5){
+        for (k1 in 2:6){
           FeatureList[[k,k1]] = 0 #Set initial scores for all 6 FS methods to 0
         }
       }
@@ -1044,6 +1104,33 @@ library(praznik)
           }
           FSResults[[i]][[j]][[4]] = FeatureList[,c(1,5)]
 ################################################################################
+#Monte Carlo. Will take at least ~3 hours
+library("rmcfs")
+          #works!
+          montecarlo = mcfs(formula = as.formula(paste0(names(data)[41],"~.")),
+                            data = data,
+                            cutoffPermutations = 0,
+                            featureFreq = 50,
+                            buildID = TRUE,
+                            finalCV = FALSE,
+                            finalRuleset = FALSE,
+                            threadsNumber = 4
+                            )
+          
+          results = montecarlo$RI
+          for (index in 1:NUM_FEATURES){
+            if (results[[index, 6]] > 0) { #if significance value > 0
+              Feature = results[[index,2]]
+              FeatureInd = which(names(Stunting) == Feature)
+              FeatureList[[FeatureInd, 6]] = FeatureList[[FeatureInd, 6]] + 1
+            }
+          }
+          FSResults[[i]][[j]][[5]] = FeatureList[,c(1,6)]
+          
+          #> df = FSResults[["Thinness"]][["Youth"]][["MC"]] #get subset result
+          #> df = df[order(-df$MC),] #order by most important features
+          #> df #print
+################################################################################
         }
       }
   }
@@ -1061,7 +1148,7 @@ for (i in 1:3){
     if (i == 3 & (j == 6 | j == 7)){ #Wasting has no youth/adolescent subsets; skip them
       next
     }
-    for (k in 1:4){
+    for (k in 1:5){
       if (length(FSResults[[i]][[j]][[k]]) == 0){
         next
       }
@@ -1076,6 +1163,74 @@ for (i in 1:3){
     }
   }
 }
+```
+
+
+
+```{r CART}
+library("rpart")
+library("rpart.plot")
+
+CART = list("Stunting" = list("Full" = list(),
+                                   "Urban" = list(),
+                                   "Nonurban" = list(),
+                                   "Male" = list(),
+                                   "Female" = list(),
+                                   "Youth" = list(),
+                                   "Adolescent" = list()
+                                   ),
+                 "Thinness" = list("Full" = list(),
+                                   "Urban" = list(),
+                                   "Nonurban" = list(),
+                                   "Male" = list(),
+                                   "Female" = list(),
+                                   "Youth" = list(),
+                                   "Adolescent" = list()
+                                   ),
+                 "Wasting" = list("Full" = list(),
+                                  "Urban" = list(),
+                                  "Nonurban" = list(),
+                                  "Male" = list(),
+                                  "Female" = list(),
+                                  "Youth" = list(),
+                                  "Adolescent" = list()
+                                  )
+                 )
+
+for (i in 2:2){ #1:3
+  tree_depth = c(0.002, 0.0000001, 0.000001) #for S/T/W
+  
+  for (j in 1:7){ #1:7
+    if (i == 3 & (j == 6 | j == 7)){ #Wasting has no youth/adolescent subsets; skip them
+      next
+    }
+    data = DATA[[i]][[j]]
+
+    train = sample(1:nrow(data), (nrow(data)/2))
+    CART_train = data[train,]
+    CART_test = data[-train,]
+    
+    test = data[-train]
+    
+    #Fit tree
+    fit.tree = rpart(
+      formula = as.formula(paste0(names(data)[ncol(data)],"~.")),
+      data = CART_train,
+      method = "class",
+      cp = tree_depth[i] #Change depth depending on which subset to account for class imbalances
+      )
+    fit.tree
+    
+    CART[[i]][[j]] = fit.tree
+    #visualize
+    rpart.plot(fit.tree)
+  }
+}
+
+#rpart.plot(CART[[1]][[1]])
+#rpart.plot(CART[[2]][[1]])
+#rpart.plot(CART[[3]][[1]])
+
 ```
 
 
@@ -1211,6 +1366,7 @@ library(car)
 library(performance)
 library(MASS)
 library(leaps)
+library(pwr)
 
 #NOTE!!
 
@@ -1282,14 +1438,37 @@ for (i in 1:3){
                 data = data,
                 family = "binomial"
                 )
+      
+      #Power calculation! McFadden's R^2
+      r2 = with(summary(reg), 1 - deviance/null.deviance)
+      df_num = 40 - 1 # predictors - 1
+      df_denom = 1032 - 40 #sample size - predictors
+      effectSize = r2/(1-r2)
+      power = pwr.f2.test(u = df_num, v = df_denom, f2 = effectSize, sig.level = 0.05)
+      power = power$power
+      
       tidied = tidy(reg, exponentiate = TRUE, conf.level = 0.95, n = length(data))
       results = cbind(tidied,
                       p.adjust(tidied$p.value, method = "BH"),
-                      exp(confint(na.omit(reg)))
+                      exp(confint(na.omit(reg))),
+                      power
                       )
       RegResults[[i]][[j]] = results
   }
 }
+```
+
+```{r MVLoR Power Analysis}
+library(WebPower)
+
+prob0 = sum(Stunting$Stunting == 0) / 1032
+prob1 = 1 - prob0
+
+prob0=0.15
+prob1=0.1
+
+wp.logistic(n = 1032, p0 = prob0, p1 = prob1, alpha = 0.05,
+  power = NULL, alternative = "two.sided", family = "Bernoulli", parameter = 0.5)
 ```
 
 # ARL:
@@ -1795,9 +1974,20 @@ for (setnum in 1:9){
   test = oddsratio(datatable, correction = FALSE)
   adj = oddsratio(datatable, correction = TRUE) #Run again for adjusted PVs
   
-  test$p.value = test$p.value[[2,3]]
-  test$measure = test$measure[2,]
-  test$adj.PV = adj$p.value[[2,3]]
+  # test$p.value = test$p.value[[2,3]]
+  # test$measure = test$measure[2,]
+  # test$adj.PV = adj$p.value[[2,3]]
+  
+  probs = datatable/sum(datatable)
+  
+  #power analysis
+  power = pwr.chisq.test(w = ES.w2(probs),
+                 N = sum(datatable),
+                 df = 1, #categories - 1
+                 sig.level = 0.05,
+                 ) 
+  test[['power']] = power$power
+  
   RiskResults[[responseset]][[length(RiskResults[[responseset]])+1]] = test #Make a space in the results for this specific test, then store it there
   newname = ""
   for (features in 1:(length(selected)-1)){
@@ -1806,5 +1996,7 @@ for (setnum in 1:9){
   newname = paste0(newname, "==>", selected[[length(selected)]])
   names(RiskResults[[responseset]])[[length(RiskResults[[responseset]])]] = newname
 }
+
 ```
+
 
