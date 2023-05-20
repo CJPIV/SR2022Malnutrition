@@ -6,7 +6,7 @@ output: pdf_document
 ---
 
 ```{r Install Required Packages}
-```
+
 install.packages("readxl")
 install.packages("dplyr")
 install.packages("VIM")
@@ -34,6 +34,7 @@ install.packages("rpart") #CART
 install.packages("WebPower") #LR psuedoR2
 install.packages("power")
 install.packages("randomForest")
+```
 
 # PREPROCESSING: Preparing data from original survey for use in statistical/ML analysis.
 #####
@@ -1197,7 +1198,7 @@ CART = list("Stunting" = list("Full" = list(),
                                   )
                  )
 
-for (i in 2:2){ #1:3
+for (i in 1:3){ #1:3
   tree_depth = c(0.002, 0.0000001, 0.000001) #for S/T/W
   
   for (j in 1:7){ #1:7
